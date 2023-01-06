@@ -1,2 +1,4 @@
 
-var x : i32 = 0;
+var uninitialized : i32;
+var auto_deduced_type = 0;
+var explicit_assigned : i32 = 0;

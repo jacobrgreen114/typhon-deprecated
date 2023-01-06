@@ -6,6 +6,20 @@
 #include <span>
 
 #include "lexical_analysis.hpp"
+#include "syntax_analysis.hpp"
+
+auto lex(const std::string& path) -> TokenCollection {
+  auto lexer   = Lexer{};
+  auto context = LexerContext{path};
+  lexer.run(context);
+  return context.tokens;
+}
+
+auto parse(const TokenCollection& tokens) {
+  auto parser  = Parser{};
+  auto context = ParserContext{tokens};
+  parser.run(context);
+}
 
 auto main(int argc, const char* argv[]) -> int {
 #ifdef _DEBUG
@@ -17,16 +31,16 @@ auto main(int argc, const char* argv[]) -> int {
     std::cout << arg << std::endl;
   }
 #endif
-  
-  auto lexer = Lexer{};
-  auto context = LexerContext{"./source/main.ty"};
-  lexer.run(context);
+
+  auto tokens = lex("./source/main.ty");
 
 #ifdef _DEBUG
-  for (auto& token : context.tokens) {
+  for (auto& token : tokens) {
     std::cout << token << std::endl;
   }
 #endif
+
+  parse(tokens);
 
   return 0;
 }

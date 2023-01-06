@@ -6,5 +6,5 @@ set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 20)
 
 add_executable(tyc
-    source/main.cpp source/lexical_analysis.cpp)
+    source/main.cpp source/lexical_analysis.cpp source/syntax_analysis.cpp source/syntax_analysis.hpp)
 

@@ -6,11 +6,9 @@
 #include <exception>
 #include <unordered_map>
 
-#define throw_not_implemented() throw std::exception("not implemented!")
-
 #pragma region Lexical Kind
 
-const auto             lexical_kind_names_ =
+const auto lexical_kind_names_ =
     std::unordered_map<LexicalKind, std::string_view>{
         {LexicalKind::Unknown, "Unknown"},
 
@@ -24,7 +22,7 @@ const auto             lexical_kind_names_ =
         {LexicalKind::SymbolSemicolon, "SymbolSemicolon"},
         {LexicalKind::SymbolColon, "SymbolColon"},
 
-        {LexicalKind::SymbolAssign, "SymbolAssign"},
+        {LexicalKind::SymbolEquals, "SymbolEquals"},
         {LexicalKind::SymbolBooleanEquals, "SymbolBooleanEquals"},
     };
 
@@ -78,10 +76,10 @@ constexpr auto matches_symbol(const char c) -> bool {
 
 #pragma region Lexer Global States
 
-constexpr auto              error_state = LexerState{
+constexpr auto error_state = LexerState{
     [](LexerContext &ctx) -> LexerState { throw_not_implemented(); }};
 
-constexpr auto          exit_state = LexerState{};
+constexpr auto exit_state = LexerState{};
 
 extern const LexerState whitespace_start_state;
 extern const LexerState identifier_start_state;
@@ -115,7 +113,7 @@ constexpr auto start_state = LexerState{[](LexerContext &ctx) -> LexerState {
 
 #pragma region Lexer Whitespace States
 
-constexpr LexerState            whitespace_state =
+constexpr LexerState whitespace_state =
     LexerState{[](LexerContext &ctx) -> LexerState {
       return ctx.move_next_state(matches_whitespace, whitespace_state,
                                  unknown_state, exit_state);
@@ -151,7 +149,7 @@ const auto keywords = std::unordered_map<std::string_view, LexicalKind>{
 };
 
 auto create_identifier_token(LexerContext &ctx) -> void {
-  const auto  str  = ctx.pop_buffer();
+  const auto str = ctx.pop_buffer();
   const auto &kind = keywords.find(str);
   if (kind == keywords.end()) {
     ctx.tokens.emplace_back(ctx.token_position(), LexicalKind::Identifier,
@@ -191,7 +189,7 @@ constexpr LexerState identifier_start_state =
 
 #pragma region Lexer Number States
 
-constexpr auto              create_number_token(LexerContext &ctx) -> void {
+constexpr auto create_number_token(LexerContext &ctx) -> void {
   create_value_token(ctx, LexicalKind::Number);
 }
 
@@ -228,7 +226,7 @@ const auto symbols = std::unordered_map<std::string_view, LexicalKind>{
     {"", LexicalKind::Unknown},
     {";", LexicalKind::SymbolSemicolon},
     {":", LexicalKind::SymbolColon},
-    {"=", LexicalKind::SymbolAssign},
+    {"=", LexicalKind::SymbolEquals},
     {"==", LexicalKind::SymbolBooleanEquals},
 };
 
@@ -242,7 +240,7 @@ auto get_symbol_token_kind(const std::string &str) -> LexicalKind {
 }
 
 auto create_symbol_token(LexerContext &ctx) -> bool {
-  auto str  = ctx.pop_buffer();
+  auto str = ctx.pop_buffer();
   auto kind = get_symbol_token_kind(str);
   if (kind == LexicalKind::Unknown) {
     return false;
@@ -307,7 +305,7 @@ auto operator<<(std::ostream &stream, const LexicalToken &token)
 
 #pragma region Lexer Context
 
-constexpr auto       null_char = '\0';
+constexpr auto null_char = '\0';
 
 LexerContext::LexerContext(const std::string &path)
     : stream_{path}, current_{null_char} {
@@ -319,7 +317,7 @@ LexerContext::LexerContext(const std::string &path)
 auto LexerContext::move_next() -> bool {
   constexpr auto eof = std::ifstream::traits_type::eof();
 
-  auto           c = stream_.get();
+  auto c = stream_.get();
   if (c == eof) {
     current_ = null_char;
     return false;

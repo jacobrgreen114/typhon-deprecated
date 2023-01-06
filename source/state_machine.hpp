@@ -5,6 +5,11 @@
 
 #pragma once
 
+#include <cassert>
+#include <exception>
+
+#define throw_not_implemented() throw std::exception("not implemented!")
+
 template <typename Ret, typename... Args>
 using Func = Ret (*)(Args...);
 
@@ -60,12 +65,24 @@ using Predicate = Func<bool, T>;
 template <typename TContext, typename TEnumType>
 class EnumeratingContext : public Enumerator<TEnumType> {
   using State = State<TContext>;
+  using RefPredicate = Predicate<const TEnumType &>;
   using Predicate = Predicate<TEnumType>;
 
  public:
   struct MatchCondition final {
     Predicate pred;
     State state;
+
+    constexpr MatchCondition(Predicate pred, State state)
+        : pred{pred}, state{state} {}
+  };
+
+  struct RefMatchCondition final {
+    RefPredicate pred;
+    State state;
+
+    constexpr RefMatchCondition(RefPredicate pred, State state)
+        : pred{pred}, state{state} {}
   };
 
   auto move_next_state(State success, State end_of_file) -> State {
@@ -73,6 +90,14 @@ class EnumeratingContext : public Enumerator<TEnumType> {
   }
 
   auto move_next_state(Predicate pred, State match, State fail, State end)
+      -> State {
+    if (!this->move_next()) {
+      return end;
+    }
+    return pred(this->current()) ? match : fail;
+  }
+
+  auto move_next_state(RefPredicate pred, State match, State fail, State end)
       -> State {
     if (!this->move_next()) {
       return end;
@@ -96,4 +121,6 @@ class EnumeratingContext : public Enumerator<TEnumType> {
   }
 };
 
+#else
+#error "!cplusplus"
 #endif  // __cplusplus
