@@ -16,6 +16,7 @@ class State final {
 
  public:
   constexpr explicit State(Handler handler) : handler_{handler} {}
+  constexpr explicit State() : State(nullptr) {}
   constexpr State(State &&) noexcept = default;
   constexpr State(const State &) = default;
   constexpr auto operator=(State &&) noexcept -> State & = default;
