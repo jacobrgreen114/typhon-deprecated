@@ -292,12 +292,12 @@ auto operator<<(std::ostream &stream, const FilePosition &position)
 auto operator<<(std::ostream &stream, const LexicalToken &token)
     -> std::ostream & {
   stream << R"({ "pos" : ")" << token.pos() << R"(", "kind" : ")"
-         << token.kind() << R"(" )";
+         << token.kind() << R"(")";
   if (token.has_value()) {
-    stream << R"(, "value" : )" << token.value() << R"(" )";
+    stream << R"(, "value" : ")" << *token.value() << R"(")";
   }
 
-  stream << R"(})";
+  stream << R"( })";
   return stream;
 }
 

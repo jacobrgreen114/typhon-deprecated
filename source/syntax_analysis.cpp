@@ -15,9 +15,15 @@ constexpr auto is_token_kind(const LexicalToken& token, const LexicalKind kind)
 constexpr LexicalTokenPredicate is_identifier = [](auto& token) {
   return is_token_kind(token, LexicalKind::Identifier);
 };
+
 constexpr LexicalTokenPredicate is_colon = [](auto& token) {
   return is_token_kind(token, LexicalKind::SymbolColon);
 };
+
+constexpr LexicalTokenPredicate is_semicolon = [](auto& token) {
+  return is_token_kind(token, LexicalKind::SymbolSemicolon);
+};
+
 constexpr LexicalTokenPredicate is_equals = [](auto& token) {
   return is_token_kind(token, LexicalKind::SymbolEquals);
 };
@@ -63,6 +69,37 @@ constexpr auto start_state = ParserState{[](ParserContext& ctx) -> ParserState {
 
 #pragma endregion
 
+#pragma region Parser Expression States
+
+constexpr ParserState expression_end_state = ParserState{
+    [](ParserContext& ctx) -> ParserState {
+      throw_not_implemented();
+    }};
+
+constexpr ParserState expression_number_state =
+    ParserState{[](ParserContext& ctx) -> ParserState {
+      const auto& value = ctx.current().value();
+      ctx.expression_stack.push(
+          std::make_shared<ConstantNumberExpressionNode>(value));
+      return expression_end_state;
+    }};
+
+constexpr ParserState expression_unknown_state =
+    ParserState{[](ParserContext& ctx) -> ParserState {
+      auto kind = ctx.current().kind();
+      switch (kind) {
+        case LexicalKind::Number:
+          return expression_number_state;
+        default:
+          throw_not_implemented();
+      }
+    }};
+
+constexpr ParserState expression_start_state = ParserState{
+    [](ParserContext& ctx) -> ParserState { return expression_unknown_state; }};
+
+#pragma endregion
+
 #pragma region Parser Variable Definition States
 
 constexpr ParserState definition_var_error_state = ParserState{
@@ -71,16 +108,39 @@ constexpr ParserState definition_var_error_state = ParserState{
 constexpr ParserState definition_var_unexpected_end_error_state = ParserState{
     [](ParserContext& ctx) -> ParserState { throw_not_implemented(); }};
 
-constexpr ParserState definition_var_assign_start_state = ParserState{
+constexpr ParserState definition_var_end_state = ParserState{
     [](ParserContext& ctx) -> ParserState { throw_not_implemented(); }};
 
+// var x : i32 = [ 0 ];
+constexpr ParserState definition_var_assign_end_state = ParserState{
+    [](ParserContext& ctx) -> ParserState { throw_not_implemented(); }};
+
+// var x : i32 = [ 0 ];
+constexpr ParserState definition_var_assign_state =
+    ParserState{[](ParserContext& ctx) -> ParserState {
+      ctx.state_stack.push(definition_var_assign_end_state);
+      return expression_start_state;
+    }};
+
+// var x : i32 [ = ] 0;
+constexpr ParserState definition_var_assign_start_state =
+    ParserState{[](ParserContext& ctx) -> ParserState {
+      assert(is_equals(ctx.current()));
+      return ctx.move_next_state(definition_var_assign_state,
+                                 definition_var_unexpected_end_error_state);
+    }};
+
+// var x : [ i32 ] = 0;
 constexpr ParserState definition_var_type_state =
     ParserState{[](ParserContext& ctx) -> ParserState {
       assert(is_identifier(ctx.current()));
       auto type_name = ctx.current().value();
-      throw_not_implemented();
+      return ctx.move_next_state(is_equals, definition_var_assign_start_state,
+                                 definition_var_end_state,
+                                 definition_var_unexpected_end_error_state);
     }};
 
+// var x [ : ] i32 = 0;
 constexpr ParserState definition_var_type_start_state =
     ParserState{[](ParserContext& ctx) -> ParserState {
       assert(is_colon(ctx.current()));
@@ -89,12 +149,13 @@ constexpr ParserState definition_var_type_start_state =
                                  definition_var_unexpected_end_error_state);
     }};
 
+// var [ x ] : i32 = 0;
 constexpr ParserState definition_var_identifier_state =
     ParserState{[](ParserContext& ctx) -> ParserState {
       assert(is_identifier(ctx.current()));
       auto identifier_name = ctx.current().value();
 
-      constexpr auto match_conditions =
+      constexpr auto conditions =
           std::array<ParserContext::RefMatchCondition, 2>{
               ParserContext::RefMatchCondition{is_colon,
                                                definition_var_type_start_state},
@@ -103,9 +164,10 @@ constexpr ParserState definition_var_identifier_state =
 
       return ctx.move_next_state(definition_var_error_state,
                                  definition_var_unexpected_end_error_state,
-                                 match_conditions);
+                                 conditions);
     }};
 
+// [ var ] x : i32 = 0;
 constexpr ParserState definition_var_start_state =
     ParserState{[](ParserContext& ctx) -> ParserState {
       assert(is_keyword_var(ctx.current()));
