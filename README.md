@@ -23,7 +23,7 @@ Typhon will let "you, do you" without trying to force any dogma or eliteness dow
   - interfaces
 
 #### Lessons Learned
-
+[ TODO ]
 
 ## Syntax
 
@@ -51,7 +51,14 @@ Typhon will let "you, do you" without trying to force any dogma or eliteness dow
   - ```string8``` - UTF-8 string
   - ```string16``` - UTF-16 string
   - ```string32``` - UTF-32 string
-  
+
+### Access Modifiers
+- ```private``` - allows access to the current scope
+- ```module``` - allows access to the current file
+- ```internal``` - allows access to the current project
+- ```protected``` - allows access to derived types
+- ```public``` - allows access to all scopes
+
 ### Variable Definition
 Declared by keyword ```var``` followed by an identifer.
 ```
@@ -117,4 +124,10 @@ func run(self : mut Application&) {
     // do stuff here
   }
 }
+```
+
+### Aliased Definition
+Declared by keyword ```alias``` followed by an identifer.
+```
+alias ByteArray = u8[];
 ```
