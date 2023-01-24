@@ -1,9 +1,11 @@
 // Copyright (c) 2023. Jacob R. Green
 // All Rights Reserved.
 
-#ifdef __cplusplus
-
 #pragma once
+
+#ifndef __cplusplus
+#error
+#endif
 
 #include <fstream>
 #include <string>
@@ -15,6 +17,8 @@
 #define pure [[nodiscard]]
 
 #pragma region FilePosition
+
+using String = std::shared_ptr<std::string>;
 
 class FilePosition final {
   using int_type = size_t;
@@ -53,19 +57,43 @@ enum class LexicalKind {
   KeywordFunc,
   KeywordObject,
 
+  KeywordReturn,
+
+  KeywordIf,
+  KeywordElif,
+  KeywordElse,
+
+  KeywordLoop,
+  KeywordWhile,
+  KeywordFor,
+  KeywordForeach,
+
   SymbolSemicolon,
   SymbolColon,
+  SymbolComma,
+
+  SymbolOpenBrace,
+  SymbolCloseBrace,
+
+  SymbolOpenParen,
+  SymbolCloseParen,
+
+  SymbolArrow,
 
   SymbolEquals,
   SymbolBooleanEquals,
 
+  SymbolAdd,
+  SymbolSubtract,
+  SymbolMultiply,
+  SymbolDivide,
 };
 
 auto operator<<(std::ostream& stream, LexicalKind kind) -> std::ostream&;
 
 class LexicalToken final {
  public:
-  using ValueType = std::shared_ptr<const std::string>;
+  using ValueType = String;
 
  private:
   const FilePosition pos_;
@@ -128,7 +156,3 @@ class Lexer : public StateMachine<LexerContext> {
 };
 
 #pragma endregion
-
-#else
-#error "!cplusplus"
-#endif

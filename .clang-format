@@ -10,12 +10,12 @@ PointerAlignment: Left
 #   Enabled: true
 #   AcrossComments: true
 #   AcrossEmptyLines: false
-#   AlignCompound: true
-#   PadOperators: true
+#   AlignCompound: false
+#   PadOperators: false
 
 # AlignConsecutiveDeclarations:
 #   Enabled: true
-#   AcrossEmptyLines: true
+#   AcrossEmptyLines: false
 #   AcrossComments: true
-#   AlignCompound: true
-#   PadOperators: true
+#   AlignCompound: false
+#   PadOperators: false

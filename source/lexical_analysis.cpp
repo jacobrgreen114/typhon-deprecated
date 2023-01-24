@@ -19,11 +19,37 @@ const auto lexical_kind_names_ =
         {LexicalKind::KeywordFunc, "KeywordFunc"},
         {LexicalKind::KeywordObject, "KeywordObject"},
 
+        {LexicalKind::KeywordReturn, "KeywordReturn"},
+
+        {LexicalKind::KeywordIf, "KeywordIf"},
+        {LexicalKind::KeywordElif, "KeywordElif"},
+        {LexicalKind::KeywordElse, "KeywordElse"},
+
+        {LexicalKind::KeywordLoop, "KeywordLoop"},
+        {LexicalKind::KeywordWhile, "KeywordWhile"},
+        {LexicalKind::KeywordFor, "KeywordFor"},
+        {LexicalKind::KeywordForeach, "KeywordForeach"},
+
         {LexicalKind::SymbolSemicolon, "SymbolSemicolon"},
         {LexicalKind::SymbolColon, "SymbolColon"},
+        {LexicalKind::SymbolComma, "SymbolComma"},
+
+        {LexicalKind::SymbolOpenBrace, "SymbolOpenBrace"},
+        {LexicalKind::SymbolCloseBrace, "SymbolCloseBrace"},
+
+        {LexicalKind::SymbolOpenParen, "SymbolOpenParen"},
+        {LexicalKind::SymbolCloseParen, "SymbolCloseParen"},
+
+        {LexicalKind::SymbolArrow, "SymbolArrow"},
 
         {LexicalKind::SymbolEquals, "SymbolEquals"},
         {LexicalKind::SymbolBooleanEquals, "SymbolBooleanEquals"},
+
+        {LexicalKind::SymbolAdd, "SymbolAdd"},
+        {LexicalKind::SymbolSubtract, "SymbolSubtract"},
+        {LexicalKind::SymbolMultiply, "SymbolMultiply"},
+        {LexicalKind::SymbolDivide, "SymbolDivide"},
+
     };
 
 auto operator<<(std::ostream &stream, LexicalKind kind) -> std::ostream & {
@@ -146,14 +172,37 @@ const auto keywords = std::unordered_map<std::string_view, LexicalKind>{
     {"var", LexicalKind::KeywordVar},
     {"func", LexicalKind::KeywordFunc},
     {"object", LexicalKind::KeywordObject},
+
+    {"return", LexicalKind::KeywordReturn},
+
+    {"if", LexicalKind::KeywordIf},
+    {"elif", LexicalKind::KeywordElif},
+    {"else", LexicalKind::KeywordElse},
+
+    {"loop", LexicalKind::KeywordLoop},
+    {"while", LexicalKind::KeywordWhile},
+    {"for", LexicalKind::KeywordFor},
+    {"foreach", LexicalKind::KeywordForeach},
 };
+
+auto identifier_cache = std::unordered_map<std::string, String>{};
+
+auto cached_identifier(const std::string &str) -> String {
+  auto &cache = identifier_cache;
+
+  if (auto cached = cache.find(str); cached != cache.end()) {
+    return cached->second;
+  }
+
+  return cache[str] = std::make_shared<std::string>(str);
+}
 
 auto create_identifier_token(LexerContext &ctx) -> void {
   const auto str = ctx.pop_buffer();
   const auto &kind = keywords.find(str);
   if (kind == keywords.end()) {
     ctx.tokens.emplace_back(ctx.token_position(), LexicalKind::Identifier,
-                            std::make_shared<std::string>(str));
+                            cached_identifier(str));
   } else {
     create_empty_token(ctx, kind->second);
   }
@@ -224,10 +273,26 @@ constexpr LexerState number_start_state =
 
 const auto symbols = std::unordered_map<std::string_view, LexicalKind>{
     {"", LexicalKind::Unknown},
+
     {";", LexicalKind::SymbolSemicolon},
     {":", LexicalKind::SymbolColon},
+    {",", LexicalKind::SymbolComma},
+
     {"=", LexicalKind::SymbolEquals},
     {"==", LexicalKind::SymbolBooleanEquals},
+
+    {"{", LexicalKind::SymbolOpenBrace},
+    {"}", LexicalKind::SymbolCloseBrace},
+
+    {"(", LexicalKind::SymbolOpenParen},
+    {")", LexicalKind::SymbolCloseParen},
+
+    {"->", LexicalKind::SymbolArrow},
+
+    {"+", LexicalKind::SymbolAdd},
+    {"-", LexicalKind::SymbolSubtract},
+    {"*", LexicalKind::SymbolMultiply},
+    {"/", LexicalKind::SymbolDivide},
 };
 
 auto get_symbol_token_kind(const std::string &str) -> LexicalKind {
@@ -249,8 +314,11 @@ auto create_symbol_token(LexerContext &ctx) -> bool {
   return true;
 }
 
-constexpr auto symbol_error_state = LexerState{
-    [](LexerContext &ctx) -> LexerState { throw_not_implemented(); }};
+constexpr auto symbol_error_state =
+    LexerState{[](LexerContext &ctx) -> LexerState {
+      //
+      throw_not_implemented();
+    }};
 
 constexpr auto symbol_end_exit_state =
     LexerState{[](LexerContext &ctx) -> LexerState {
