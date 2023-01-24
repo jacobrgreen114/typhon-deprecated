@@ -9,7 +9,7 @@
 
 #include <stack>
 
-#include "lexical_analysis.hpp"
+#include "lexical_analysis/token.hpp"
 #include "state_machine.hpp"
 
 enum class SyntaxKind {
@@ -29,6 +29,13 @@ enum class SyntaxKind {
   DefStruct,
   DefClass,
   DefInterface,
+};
+
+enum class BinaryOp {
+  Add,
+  Subtract,
+  Multiply,
+  Divide,
 };
 
 class SyntaxNode {
@@ -122,45 +129,25 @@ class Statement : public SyntaxNode {
   explicit Statement() : SyntaxNode(SyntaxKind::Statement) {}
 };
 
-class ReturnStatement final : public Statement {
+class ReturnStatement final : public Statement {};
 
-};
+class VarStatement final : public Statement {};
 
-class VarStatement final : public Statement {
+class BodyStatement : public Statement {};
 
-};
+class IfStatement final : public BodyStatement {};
 
-class BodyStatement : public Statement {
+class ElifStatement final : public BodyStatement {};
 
-};
+class ElseStatement final : public BodyStatement {};
 
-class IfStatement final : public BodyStatement {
+class LoopStatement final : public BodyStatement {};
 
-};
+class WhileStatement final : public BodyStatement {};
 
-class ElifStatement final : public BodyStatement {
+class ForStatement final : public BodyStatement {};
 
-};
-
-class ElseStatement final : public BodyStatement {
-
-};
-
-class LoopStatement final : public BodyStatement {
-
-};
-
-class WhileStatement final : public BodyStatement {
-
-};
-
-class ForStatement final : public BodyStatement {
-
-};
-
-class ForeachStatement final : public BodyStatement {
-
-};
+class ForeachStatement final : public BodyStatement {};
 
 class StatementBlock final : public SyntaxNode {
  public:
@@ -294,19 +281,19 @@ constexpr LexicalTokenPredicate is_comma = [](auto& token) {
 };
 
 constexpr LexicalTokenPredicate is_brace_open = [](auto& token) {
-  return is_token_kind(token, LexicalKind::SymbolOpenBrace);
+  return is_token_kind(token, LexicalKind::SymbolBraceOpen);
 };
 
 constexpr LexicalTokenPredicate is_brace_close = [](auto& token) {
-  return is_token_kind(token, LexicalKind::SymbolCloseBrace);
+  return is_token_kind(token, LexicalKind::SymbolBraceClose);
 };
 
 constexpr LexicalTokenPredicate is_paren_open = [](auto& token) {
-  return is_token_kind(token, LexicalKind::SymbolOpenParen);
+  return is_token_kind(token, LexicalKind::SymbolParenOpen);
 };
 
 constexpr LexicalTokenPredicate is_paren_close = [](auto& token) {
-  return is_token_kind(token, LexicalKind::SymbolCloseParen);
+  return is_token_kind(token, LexicalKind::SymbolParenClose);
 };
 
 constexpr LexicalTokenPredicate is_arrow = [](auto& token) {
@@ -329,8 +316,23 @@ constexpr LexicalTokenPredicate is_keyword_func = [](auto& token) {
 
 constexpr LexicalTokenPredicate is_binary_operator = [](auto& token) {
   auto kind = token.kind();
-  return kind is LexicalKind::SymbolAdd or
-         kind is LexicalKind::SymbolSubtract or
-         kind is LexicalKind::SymbolMultiply or
-         kind is LexicalKind::SymbolDivide;
+  return kind is LexicalKind::SymbolPlus or kind is LexicalKind::SymbolMinus or
+         kind is LexicalKind::SymbolStar or kind is LexicalKind::SymbolSlash;
 };
+
+#undef is
+
+constexpr auto get_binary_op(LexicalKind kind) -> BinaryOp {
+  switch (kind) {
+    case LexicalKind::SymbolPlus:
+      return BinaryOp::Add;
+    case LexicalKind::SymbolMinus:
+      return BinaryOp::Subtract;
+    case LexicalKind::SymbolStar:
+      return BinaryOp::Multiply;
+    case LexicalKind::SymbolSlash:
+      return BinaryOp::Divide;
+    default:
+      throw std::exception();
+  }
+}

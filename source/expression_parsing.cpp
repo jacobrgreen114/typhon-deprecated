@@ -35,8 +35,15 @@ constexpr ParserState expression_possible_end_state =
                                  expression_exit_end_state);
     }};
 
-constexpr ParserState expression_binary_state = ParserState{
-    [](ParserContext& ctx) -> ParserState { throw_not_implemented(); }};
+constexpr ParserState expression_binary_state =
+    ParserState{[](ParserContext& ctx) -> ParserState {
+      const auto& current = ctx.current();
+      assert(is_binary_operator(current));
+
+      const auto op = get_binary_op(current.kind());
+
+      throw_not_implemented();
+    }};
 
 constexpr ParserState expression_number_state =
     ParserState{[](ParserContext& ctx) -> ParserState {

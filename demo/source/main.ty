@@ -1,8 +1,15 @@
 
-var explicit_assigned : i32 = 0;
-var uninitialized : i32;
-var auto_deduced_type = 0;
+// Singleline comment
 
-func main ( argc : int32, argv : char8 ) -> int {
+/*
+    Multiline comment
+*/
+
+var explicit_assigned : int32 = 0;
+var uninitialized : int32;
+var auto_deduced_type = 0 + 1;
+
+
+func main(argv : string[]) -> int {
     return 0;
 }

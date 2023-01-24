@@ -7,16 +7,9 @@
 #error
 #endif
 
-#include <fstream>
-#include <string>
-#include <utility>
+#include <iostream>
+#include <memory>
 #include <vector>
-
-#include "state_machine.hpp"
-
-#define pure [[nodiscard]]
-
-#pragma region FilePosition
 
 using String = std::shared_ptr<std::string>;
 
@@ -63,6 +56,9 @@ enum class LexicalKind {
   KeywordElif,
   KeywordElse,
 
+  KeywordSwitch,
+  KeywordMatch,
+
   KeywordLoop,
   KeywordWhile,
   KeywordFor,
@@ -72,21 +68,46 @@ enum class LexicalKind {
   SymbolColon,
   SymbolComma,
 
-  SymbolOpenBrace,
-  SymbolCloseBrace,
+  SymbolParenOpen,
+  SymbolParenClose,
 
-  SymbolOpenParen,
-  SymbolCloseParen,
+  SymbolBraceOpen,
+  SymbolBraceClose,
+
+  SymbolAngleOpen,
+  SymbolAngleClose,
+
+  SymbolBracketOpen,
+  SymbolBracketClose,
 
   SymbolArrow,
 
   SymbolEquals,
-  SymbolBooleanEquals,
 
-  SymbolAdd,
-  SymbolSubtract,
-  SymbolMultiply,
-  SymbolDivide,
+  SymbolBoolEquals,
+  SymbolBoolNotEquals,
+  SymbolBoolNot,
+  SymbolBoolOr,
+  SymbolBoolAnd,
+
+  SymbolBitNot,
+  SymbolBitOr,
+  SymbolBitAnd,
+  SymbolBitXor,
+
+  SymbolPlus,
+  SymbolPlusPlus,
+  SymbolPlusEquals,
+
+  SymbolMinus,
+  SymbolMinusMinus,
+  SymbolMinusEquals,
+
+  SymbolStar,
+  SymbolStarEquals,
+
+  SymbolSlash,
+  SymbolSlashEquals,
 };
 
 auto operator<<(std::ostream& stream, LexicalKind kind) -> std::ostream&;
@@ -115,44 +136,7 @@ class LexicalToken final {
   pure auto has_value() const -> bool { return static_cast<bool>(value_); }
 };
 
-auto operator<<(std::ostream& stream, const LexicalToken& token)
-    -> std::ostream&;
-
-#pragma endregion
-
-#pragma region Lexer
-
-class LexerContext;
-using LexerState = State<LexerContext>;
-
 using TokenCollection = std::vector<LexicalToken>;
 
-class LexerContext final : public EnumeratingContext<LexerContext, char> {
-  std::ifstream stream_;
-  char current_;
-  FilePosition current_pos_;
-  FilePosition token_pos_;
-  std::string buffer_;
-
- public:
-  TokenCollection tokens;
-
-  explicit LexerContext(const std::string& path);
-
-  auto current() -> const char& override { return current_; }
-  auto move_next() -> bool override;
-
-  pure constexpr auto token_position() const -> auto& { return token_pos_; }
-
-  auto buffer_current() -> void;
-  auto mark_start_of_token() -> void;
-
-  constexpr auto pop_buffer() { return std::move(buffer_); }
-};
-
-class Lexer : public StateMachine<LexerContext> {
- public:
-  Lexer();
-};
-
-#pragma endregion
+auto operator<<(std::ostream& stream, const LexicalToken& token)
+    -> std::ostream&;

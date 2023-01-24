@@ -19,9 +19,9 @@ auto get_func_def_param_syntax_node(ParserContext& ctx) -> FuncParameter* {
 
 auto pop_func_def_param_syntax_node(ParserContext& ctx)
     -> std::shared_ptr<FuncParameter> {
-  auto p_syntax = ctx.syntax_stack.top();
-  assert(p_syntax && p_syntax->kind() == SyntaxKind::DefParam);
+  auto p_syntax = std::move(ctx.syntax_stack.top());
   ctx.syntax_stack.pop();
+  assert(p_syntax && p_syntax->kind() == SyntaxKind::DefParam);
   return static_pointer_cast<FuncParameter>(p_syntax);
 }
 

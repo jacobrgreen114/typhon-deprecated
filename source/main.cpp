@@ -5,15 +5,8 @@
 #include <iostream>
 #include <span>
 
-#include "lexical_analysis.hpp"
+#include "lexical_analysis/lexer.hpp"
 #include "syntax_analysis.hpp"
-
-auto lex(const std::string& path) -> TokenCollection {
-  auto lexer = Lexer{};
-  auto context = LexerContext{path};
-  lexer.run(context);
-  return context.tokens;
-}
 
 auto parse(const TokenCollection& tokens) {
   auto parser = Parser{};

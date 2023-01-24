@@ -30,7 +30,7 @@ static constexpr ParserState statement_unknown_state =
       ctx.push_states(statement_end_state, statement_end_exit_state);
       switch (kind) {
         case LexicalKind::KeywordVar: {
-          return func_def_start_state;
+          throw_not_implemented();
         }
         case LexicalKind::KeywordReturn: {
           throw_not_implemented();
