@@ -2,6 +2,7 @@ Language: Cpp
 BasedOnStyle: Google
 
 SortIncludes: Never
+ReflowComments: false
 
 ColumnLimit: 80
 IndentWidth: 2

@@ -17,7 +17,18 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <filesystem>
+#include <iostream>
+#include <span>
+
+#ifndef NODISCARD
+#define NODISCARD [[nodiscard]]
+#endif
 
 #include "state_machine.hpp"
+#include "lexical_analysis/token.hpp"
 
-#define pure [[nodiscard]]
+#ifdef _DEBUG
+#define assert(expr) \
+  if (!(expr)) throw std::exception("assert failed!");
+#endif

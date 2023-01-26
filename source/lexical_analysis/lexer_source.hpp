@@ -35,7 +35,9 @@ class LexerContext final : public EnumeratingContext<LexerContext, char> {
   auto current() -> const char& override { return current_; }
   auto move_next() -> bool override;
 
-  pure constexpr auto token_position() const -> auto& { return token_pos_; }
+  NODISCARD constexpr auto token_position() const -> auto& {
+    return token_pos_;
+  }
 
   auto buffer_current() -> void;
   auto mark_start_of_token() -> void;

@@ -12,7 +12,11 @@ const auto lexical_kind_names_ =
 
         {LexicalKind::KeywordVar, "KeywordVar"},
         {LexicalKind::KeywordFunc, "KeywordFunc"},
+        {LexicalKind::KeywordStruct, "KeywordStruct"},
         {LexicalKind::KeywordObject, "KeywordObject"},
+
+        {LexicalKind::KeywordConcept, "KeywordConcept"},
+        {LexicalKind::KeywordInterface, "KeywordInterface"},
 
         {LexicalKind::KeywordReturn, "KeywordReturn"},
 
@@ -63,6 +67,12 @@ const auto lexical_kind_names_ =
         {LexicalKind::SymbolMinus, "SymbolMinus"},
         {LexicalKind::SymbolStar, "SymbolStar"},
         {LexicalKind::SymbolSlash, "SymbolSlash"},
+
+        {LexicalKind::SymbolShiftLeft, "SymbolShiftLeft"},
+        {LexicalKind::SymbolShiftRight, "SymbolShiftRight"},
+
+        {LexicalKind::SymbolLessThanEqual, "SymbolLessThanEqual"},
+        {LexicalKind::SymbolGreaterThanEqual, "SymbolGreaterThanEqual"},
 
     };
 

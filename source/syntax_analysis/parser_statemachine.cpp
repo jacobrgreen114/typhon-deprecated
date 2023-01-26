@@ -1,14 +1,10 @@
 // Copyright (c) 2023. Jacob R. Green
 // All Rights Reserved.
 
-#include "syntax_analysis.hpp"
+#include "parser_statemachine.hpp"
 
-#include "fndef_parsing.hpp"
-#include "vardef_parsing.hpp"
-
-#pragma region Predicates
-
-#pragma endregion
+#include "parser_def_func.hpp"
+#include "parser_def_var.hpp"
 
 #pragma region Global Parser States
 

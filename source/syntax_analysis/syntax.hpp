@@ -5,12 +5,11 @@
 
 #ifndef __cplusplus
 #error
-#endif
+#endif  //__cplusplus
 
-#include <stack>
-
-#include "lexical_analysis/token.hpp"
-#include "state_machine.hpp"
+#include <string>
+#include <memory>
+#include <vector>
 
 enum class SyntaxKind {
   Unknown,
@@ -22,6 +21,7 @@ enum class SyntaxKind {
 
   Statement,
   StatementBlock,
+  StmReturn,
 
   DefVar,
   DefFunc,
@@ -31,12 +31,92 @@ enum class SyntaxKind {
   DefInterface,
 };
 
-enum class BinaryOp {
+constexpr auto is_expression(SyntaxKind kind) -> bool {
+  switch (kind) {
+    case SyntaxKind::ExprConstNumber:
+    case SyntaxKind::ExprBinary: {
+      return true;
+    }
+    default:
+      return false;
+  }
+}
+
+constexpr auto is_statement(SyntaxKind kind) -> bool {
+  switch (kind) {
+    case SyntaxKind::StmReturn:
+      return true;
+    default:
+      return false;
+  }
+}
+
+enum class Operator {
   Add,
   Subtract,
   Multiply,
   Divide,
+
+  Equals,
+  NotEquals,
+  Or,
+  And,
+
+  LessThan,
+  GreaterThan,
+  LessThanEquals,
+  GreaterThanEquals,
+
+  BitOr,
+  BitAnd,
+  BitXor,
+
+  ShiftLeft,
+  ShiftRight
 };
+
+enum class Precedence {
+
+  BitOr,
+  BitXor,
+  BitAnd,
+  Equality,
+  Relation,
+  Shift,
+  AddSub,
+  MulDiv,
+};
+
+constexpr auto get_precedence(Operator op) -> Precedence {
+  switch (op) {
+    case Operator::Equals:
+    case Operator::NotEquals: {
+      return Precedence::Equality;
+    }
+    case Operator::LessThan:
+    case Operator::GreaterThan:
+    case Operator::LessThanEquals:
+    case Operator::GreaterThanEquals: {
+      return Precedence::Relation;
+    }
+
+    case Operator::ShiftLeft:
+    case Operator::ShiftRight: {
+      return Precedence::Shift;
+    }
+    case Operator::Add:
+    case Operator::Subtract: {
+      return Precedence::AddSub;
+    }
+    case Operator::Multiply:
+    case Operator::Divide: {
+      return Precedence::MulDiv;
+    }
+
+    default:
+      throw std::exception();
+  }
+}
 
 class SyntaxNode {
  private:
@@ -51,9 +131,39 @@ class SyntaxNode {
   constexpr auto kind() const noexcept { return kind_; }
 };
 
+template <typename T>
+concept IsSyntaxNode = requires(T) { std::is_base_of_v<SyntaxNode, T>; };
+
 class ExpressionNode : public SyntaxNode {
  protected:
-  explicit ExpressionNode(const SyntaxKind kind) : SyntaxNode{kind} {}
+  explicit constexpr ExpressionNode(const SyntaxKind kind) : SyntaxNode{kind} {}
+};
+
+class Operation : public ExpressionNode {
+  Operator op_;
+
+ public:
+  constexpr Operation(SyntaxKind kind, Operator op)
+      : ExpressionNode{kind}, op_{op} {}
+
+  auto op() const { return op_; }
+};
+
+class BinaryExpression final : public Operation {
+ public:
+  using Expression = std::shared_ptr<ExpressionNode>;
+
+ private:
+  Expression lhs_;
+  Expression rhs_;
+
+ public:
+  constexpr BinaryExpression(Operator op)
+      : Operation{SyntaxKind::ExprBinary, op} {}
+
+  auto set_lhs(const Expression& lhs) -> void { lhs_ = lhs; }
+
+  auto set_rhs(const Expression& rhs) -> void { rhs_ = rhs; }
 };
 
 class ConstantExpressionNode : public ExpressionNode {
@@ -126,10 +236,19 @@ class FuncParameter final : public Definition {
 
 class Statement : public SyntaxNode {
  public:
-  explicit Statement() : SyntaxNode(SyntaxKind::Statement) {}
+  constexpr explicit Statement(SyntaxKind kind) : SyntaxNode{kind} {}
 };
 
-class ReturnStatement final : public Statement {};
+class ReturnStatement final : public Statement {
+  std::shared_ptr<ExpressionNode> _expression;
+
+ public:
+  constexpr ReturnStatement() : Statement{SyntaxKind::StmReturn} {}
+
+  auto set_expr(const std::shared_ptr<ExpressionNode>& expr) {
+    _expression = expr;
+  }
+};
 
 class VarStatement final : public Statement {};
 
@@ -195,143 +314,48 @@ class SourceNode final : public SyntaxNode {
   auto push_node(const Node& node) { nodes_.emplace_back(node); }
 };
 
-#pragma region Parser Context
 
-using LexicalTokenPredicate = Predicate<const LexicalToken&>;
-
-class ParserContext;
-using ParserState = State<ParserContext>;
-
-struct ReturnState {
-  ParserState ret;
-  ParserState end;
-};
-
-class ParserContext final
-    : public EnumeratingContext<ParserContext, LexicalToken> {
- public:
-  using Source = std::shared_ptr<SourceNode>;
-  using StateStack = std::stack<ReturnState>;
-  using ExpressionStack = std::stack<std::shared_ptr<ExpressionNode>>;
-  using SyntaxStack = std::stack<std::shared_ptr<SyntaxNode>>;
-
- private:
-  const TokenCollection tokens_;
-  bool started_;
-  std::vector<LexicalToken>::const_iterator current_;
-
-  StateStack state_stack;
-
- public:
-  // todo : privitize fields
-
-  Source source;
-
-  SyntaxStack syntax_stack;
-  ExpressionStack expression_stack;
-
-  explicit ParserContext(const TokenCollection& tokens);
-  virtual ~ParserContext() = default;
-
-  auto current() -> const LexicalToken& override;
-  auto move_next() -> bool override;
-
-  auto push_states(ParserState ret_state, ParserState end_state) {
-    state_stack.push({ret_state, end_state});
-  }
-
-  auto pop_states() {
-    auto state = state_stack.top();
-    state_stack.pop();
-    return state;
-  }
-
-  auto move_next_stack() -> ParserState {
-    auto states = pop_states();
-    return move_next_state(states.ret, states.end);
-  }
-};
-
-#pragma endregion
-
-class Parser final : public StateMachine<ParserContext> {
- public:
-  Parser();
-};
-
-constexpr auto is_token_kind(const LexicalToken& token, const LexicalKind kind)
-    -> bool {
-  return token.kind() == kind;
-};
-
-constexpr LexicalTokenPredicate is_identifier = [](auto& token) {
-  return is_token_kind(token, LexicalKind::Identifier);
-};
-
-constexpr LexicalTokenPredicate is_semicolon = [](auto& token) {
-  return is_token_kind(token, LexicalKind::SymbolSemicolon);
-};
-
-constexpr LexicalTokenPredicate is_colon = [](auto& token) {
-  return is_token_kind(token, LexicalKind::SymbolColon);
-};
-
-constexpr LexicalTokenPredicate is_comma = [](auto& token) {
-  return is_token_kind(token, LexicalKind::SymbolComma);
-};
-
-constexpr LexicalTokenPredicate is_brace_open = [](auto& token) {
-  return is_token_kind(token, LexicalKind::SymbolBraceOpen);
-};
-
-constexpr LexicalTokenPredicate is_brace_close = [](auto& token) {
-  return is_token_kind(token, LexicalKind::SymbolBraceClose);
-};
-
-constexpr LexicalTokenPredicate is_paren_open = [](auto& token) {
-  return is_token_kind(token, LexicalKind::SymbolParenOpen);
-};
-
-constexpr LexicalTokenPredicate is_paren_close = [](auto& token) {
-  return is_token_kind(token, LexicalKind::SymbolParenClose);
-};
-
-constexpr LexicalTokenPredicate is_arrow = [](auto& token) {
-  return is_token_kind(token, LexicalKind::SymbolArrow);
-};
-
-constexpr LexicalTokenPredicate is_equals = [](auto& token) {
-  return is_token_kind(token, LexicalKind::SymbolEquals);
-};
-
-constexpr LexicalTokenPredicate is_keyword_var = [](auto& token) {
-  return is_token_kind(token, LexicalKind::KeywordVar);
-};
-
-constexpr LexicalTokenPredicate is_keyword_func = [](auto& token) {
-  return is_token_kind(token, LexicalKind::KeywordFunc);
-};
-
-#define is ==
-
-constexpr LexicalTokenPredicate is_binary_operator = [](auto& token) {
-  auto kind = token.kind();
-  return kind is LexicalKind::SymbolPlus or kind is LexicalKind::SymbolMinus or
-         kind is LexicalKind::SymbolStar or kind is LexicalKind::SymbolSlash;
-};
-
-#undef is
-
-constexpr auto get_binary_op(LexicalKind kind) -> BinaryOp {
+constexpr auto get_binary_op(LexicalKind kind) -> Operator {
   switch (kind) {
     case LexicalKind::SymbolPlus:
-      return BinaryOp::Add;
+      return Operator::Add;
     case LexicalKind::SymbolMinus:
-      return BinaryOp::Subtract;
+      return Operator::Subtract;
     case LexicalKind::SymbolStar:
-      return BinaryOp::Multiply;
+      return Operator::Multiply;
     case LexicalKind::SymbolSlash:
-      return BinaryOp::Divide;
+      return Operator::Divide;
+
+    case LexicalKind::SymbolBoolEquals:
+      return Operator::Equals;
+    case LexicalKind::SymbolBoolNotEquals:
+      return Operator::NotEquals;
+    case LexicalKind::SymbolBoolOr:
+      return Operator::Or;
+    case LexicalKind::SymbolBoolAnd:
+      return Operator::And;
+
+    case LexicalKind::SymbolAngleOpen:
+      return Operator::LessThan;
+    case LexicalKind::SymbolAngleClose:
+      return Operator::GreaterThan;
+    case LexicalKind::SymbolLessThanEqual:
+      return Operator::LessThanEquals;
+    case LexicalKind::SymbolGreaterThanEqual:
+      return Operator::GreaterThanEquals;
+
+    case LexicalKind::SymbolBitOr:
+      return Operator::BitOr;
+    case LexicalKind::SymbolBitAnd:
+      return Operator::BitAnd;
+    case LexicalKind::SymbolBitXor:
+      return Operator::BitXor;
+
+    case LexicalKind::SymbolShiftLeft:
+      return Operator::ShiftLeft;
+    case LexicalKind::SymbolShiftRight:
+      return Operator::ShiftRight;
+
     default:
       throw std::exception();
   }

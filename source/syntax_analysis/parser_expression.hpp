@@ -7,6 +7,6 @@
 #error
 #endif
 
-#include "syntax_analysis.hpp"
+#include "parser_statemachine.hpp"
 
-extern const ParserState var_def_start_state;
+extern const ParserState expr_start_state;

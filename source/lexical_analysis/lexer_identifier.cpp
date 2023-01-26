@@ -6,7 +6,11 @@
 const auto keywords = std::unordered_map<std::string_view, LexicalKind>{
     {"var", LexicalKind::KeywordVar},
     {"func", LexicalKind::KeywordFunc},
+    {"struct", LexicalKind::KeywordStruct},
     {"object", LexicalKind::KeywordObject},
+
+    {"concept", LexicalKind::KeywordConcept},
+    {"interface", LexicalKind::KeywordInterface},
 
     {"return", LexicalKind::KeywordReturn},
 

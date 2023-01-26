@@ -18,14 +18,21 @@ add_executable(tyc
     source/lexical_analysis/lexer_source.cpp
     source/lexical_analysis/lexer_symbol.cpp
     source/lexical_analysis/lexer_identifier.cpp
-    source/syntax_analysis.cpp
-    source/vardef_parsing.cpp
-    source/fndef_parsing.cpp
-    source/statement_parsing.cpp
-    source/expression_parsing.cpp
+    source/syntax_analysis/syntax.cpp
+    source/syntax_analysis/parser.cpp
+    source/syntax_analysis/parser_def_var.cpp
+    source/syntax_analysis/parser_def_func.cpp
+    source/syntax_analysis/parser_statement.cpp
+    source/syntax_analysis/parser_expression.cpp
+    source/syntax_analysis/parser_statemachine.cpp
 )
 
 target_precompile_headers(tyc
 PRIVATE
   source/pch.hpp
+)
+
+target_compile_definitions(tyc
+PRIVATE
+    TRACE
 )

@@ -7,16 +7,25 @@
 
 #include <cassert>
 #include <exception>
+#include <vector>
 
 #define throw_not_implemented() throw std::exception("not implemented!")
+
+#ifdef _DEBUG
+#define STATE_MACHINE_TRACING
+#else
+#define STATE_MACHINE_TRACING
+#endif
 
 template <typename Ret, typename... Args>
 using Func = Ret (*)(Args...);
 
 template <typename TContext>
 class State final {
+ public:
   using Handler = Func<State, TContext &>;
 
+ private:
   Handler handler_;
 
  public:
@@ -29,6 +38,8 @@ class State final {
 
   auto operator()(TContext &ctx) const -> State { return handler_(ctx); }
 
+  auto handler() const { return handler_; }
+
   operator bool() { return handler_ != nullptr; }
 };
 
@@ -40,6 +51,10 @@ class StateMachine {
  private:
   const State initial_state_;
 
+#ifdef STATE_MACHINE_TRACING
+  std::vector<State> states_;
+#endif
+
  public:
   constexpr explicit StateMachine(const State &initialState)
       : initial_state_(initialState) {}
@@ -47,6 +62,9 @@ class StateMachine {
   constexpr auto run(TContext &context) -> void {
     auto state = initial_state_;
     while (state) {
+#ifdef STATE_MACHINE_TRACING
+      states_.emplace_back(state);
+#endif
       state = state(context);
     }
   }

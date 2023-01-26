@@ -23,8 +23,8 @@ class FilePosition final {
   FilePosition(int_type line, int_type col) : line_{line}, col_{col} {}
   FilePosition() : FilePosition{1, 0} {}
 
-  pure constexpr auto line() const -> auto& { return line_; }
-  pure constexpr auto col() const -> auto& { return col_; }
+  NODISCARD constexpr auto line() const -> auto& { return line_; }
+  NODISCARD constexpr auto col() const -> auto& { return col_; }
 
   constexpr auto next() -> void { ++col_; }
   constexpr auto nextline() -> void {
@@ -46,68 +46,136 @@ enum class LexicalKind {
   Identifier,
   Number,
 
+  // var
   KeywordVar,
+  // func
   KeywordFunc,
+  // struct
+  KeywordStruct,
+  // object
   KeywordObject,
 
+  // concept
+  KeywordConcept,
+  // interface
+  KeywordInterface,
+
+  // return
   KeywordReturn,
 
+  // if
   KeywordIf,
+  // elif
   KeywordElif,
+  // else
   KeywordElse,
 
+  // switch
   KeywordSwitch,
+  // match
   KeywordMatch,
 
+  // loop
   KeywordLoop,
+  // while
   KeywordWhile,
+  // for
   KeywordFor,
+  // foreach
   KeywordForeach,
 
+  // ;
   SymbolSemicolon,
+  // :
   SymbolColon,
+  // ,
   SymbolComma,
 
+  // (
   SymbolParenOpen,
+  // )
   SymbolParenClose,
 
+  // [
   SymbolBraceOpen,
+  // ]
   SymbolBraceClose,
 
+  // <
   SymbolAngleOpen,
+  // >
   SymbolAngleClose,
 
+  // {
   SymbolBracketOpen,
+  // }
   SymbolBracketClose,
 
+  // ->
   SymbolArrow,
 
+  // =
   SymbolEquals,
 
+  // ==
   SymbolBoolEquals,
+  // !=
   SymbolBoolNotEquals,
+  // !
   SymbolBoolNot,
+  // ||
   SymbolBoolOr,
+  // &&
   SymbolBoolAnd,
 
+  // ~
   SymbolBitNot,
+  // |
   SymbolBitOr,
+  // &
   SymbolBitAnd,
+  // ^
   SymbolBitXor,
 
+  // |=
+  SymbolBitOrEquals,
+  // &=
+  SymbolBitAndEquals,
+  // ^=
+  SymbolBitXorEquals,
+
+  // +
   SymbolPlus,
-  SymbolPlusPlus,
-  SymbolPlusEquals,
-
+  // -
   SymbolMinus,
-  SymbolMinusMinus,
-  SymbolMinusEquals,
-
+  // *
   SymbolStar,
-  SymbolStarEquals,
-
+  // /
   SymbolSlash,
+
+  // ++
+  SymbolPlusPlus,
+  // --
+  SymbolMinusMinus,
+
+  // +=
+  SymbolPlusEquals,
+  // -=
+  SymbolMinusEquals,
+  // *=
+  SymbolStarEquals,
+  // /=
   SymbolSlashEquals,
+
+  // <<
+  SymbolShiftLeft,
+  // >>
+  SymbolShiftRight,
+
+  // <=
+  SymbolLessThanEqual,
+  // >=
+  SymbolGreaterThanEqual,
 };
 
 auto operator<<(std::ostream& stream, LexicalKind kind) -> std::ostream&;
@@ -128,12 +196,12 @@ class LexicalToken final {
   LexicalToken(const FilePosition& pos, LexicalKind kind)
       : LexicalToken{pos, kind, nullptr} {}
 
-  pure constexpr auto pos() const -> auto& { return pos_; }
-  pure constexpr auto kind() const -> auto& { return kind_; }
-  pure constexpr auto value() const -> auto& {
+  NODISCARD constexpr auto pos() const -> auto& { return pos_; }
+  NODISCARD constexpr auto kind() const -> auto& { return kind_; }
+  NODISCARD constexpr auto value() const -> auto& {
     return value_ ? value_ : throw std::exception();
   }
-  pure auto has_value() const -> bool { return static_cast<bool>(value_); }
+  NODISCARD auto has_value() const -> bool { return static_cast<bool>(value_); }
 };
 
 using TokenCollection = std::vector<LexicalToken>;
