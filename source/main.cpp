@@ -26,5 +26,13 @@ auto main(int argc, const char* argv[]) -> int {
 
   auto source = parse(tokens);
 
+#ifdef TRACE
+  {
+    auto syntax_file = std::ofstream{"./obj/main.syn.xml",
+                                     std::ofstream::out | std::ofstream::trunc};
+    source->serialize(syntax_file, "Source");
+  }
+#endif
+
   return 0;
 }

@@ -3,25 +3,7 @@
 
 #include "parser_expression.hpp"
 
-//auto pop_expr_node(ParserContext& ctx) -> std::shared_ptr<ExpressionNode> {
-//  auto expr = std::move(ctx.syntax_stack.top());
-//  ctx.syntax_stack.pop();
-//  if (!is_expression(expr->kind())) {
-//    throw std::exception();
-//  }
-//
-//  return std::static_pointer_cast<ExpressionNode>(expr);
-//}
-//
-//auto pop_expr_binary_node(ParserContext& ctx) {
-//  auto expr = std::move(ctx.syntax_stack.top());
-//  ctx.syntax_stack.pop();
-//  if (expr->kind() != SyntaxKind::ExprBinary) {
-//    throw std::exception();
-//  }
-//
-//  return std::static_pointer_cast<BinaryExpression>(expr);
-//}
+// todo : implement proper precedence handling
 
 auto expr_error_handler_(ParserContext& ctx) -> ParserState {
   throw_not_implemented();
@@ -103,6 +85,16 @@ auto expr_binary_handler_(ParserContext& ctx) -> ParserState {
   assert(is_binary_operator(current));
 
   const auto op = get_binary_op(current.kind());
+
+  //const auto precedence = get_precedence(op);
+  //if (!ctx.precedence_stack.empty()) {
+  //  if (ctx.precedence_stack.top() > precedence) {
+  //    auto states = ctx.pop_states();
+  //    return states.ret;
+  //  }
+  //}
+  //ctx.precedence_stack.emplace(precedence);
+
   ctx.syntax_stack.emplace(std::make_shared<BinaryExpression>(op));
 
   ctx.push_states(expr_binary_end_state, expr_binary_end_exit_state);

@@ -25,7 +25,7 @@ add_executable(tyc
     source/syntax_analysis/parser_statement.cpp
     source/syntax_analysis/parser_expression.cpp
     source/syntax_analysis/parser_statemachine.cpp
-)
+    source/xml/serialization.cpp source/xml/serialization.hpp)
 
 target_precompile_headers(tyc
 PRIVATE

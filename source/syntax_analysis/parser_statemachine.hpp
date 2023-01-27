@@ -25,8 +25,8 @@ class ParserContext final
  public:
   using Source = std::shared_ptr<SourceNode>;
   using StateStack = std::stack<ReturnState>;
-  //using ExpressionStack = std::stack<std::shared_ptr<ExpressionNode>>;
   using SyntaxStack = std::stack<std::shared_ptr<SyntaxNode>>;
+  using PrecedenceStack = std::stack<Precedence>;
 
  private:
   const TokenCollection tokens_;
@@ -41,7 +41,7 @@ class ParserContext final
   Source source;
 
   SyntaxStack syntax_stack;
-  //ExpressionStack expression_stack;
+  PrecedenceStack precedence_stack;
 
   explicit ParserContext(const TokenCollection& tokens);
   virtual ~ParserContext() = default;
@@ -88,6 +88,8 @@ class ParserContext final
 
   auto get_statement_node() { return get_syntax_node<Statement>(); }
   auto pop_statement_node() { return pop_syntax_node<Statement>(); }
+
+  auto get_statement_expr_node() { return get_syntax_node<ExprStatement>(); }
 
   auto get_statement_return_node() {
     return get_syntax_node<ReturnStatement>();

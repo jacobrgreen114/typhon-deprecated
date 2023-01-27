@@ -6,21 +6,34 @@
 #include "parser_expression.hpp"
 #include "parser_def_func.hpp"
 
-static constexpr ParserState statement_unexpected_end_error_state = ParserState{
-    [](ParserContext& ctx) -> ParserState { throw_not_implemented(); }};
+auto statement_unexpected_end_error_handler_(ParserContext& ctx)
+    -> ParserState {
+  throw_not_implemented();
+}
 
-static constexpr ParserState statement_end_exit_state = ParserState{
-    [](ParserContext& ctx) -> ParserState { throw_not_implemented(); }};
+static constexpr ParserState statement_unexpected_end_error_state =
+    ParserState{statement_unexpected_end_error_handler_};
 
-// auto statement_end_handler_(ParserContext& ctx) -> ParserState {
-//   throw_not_implemented();
-// }
+auto statement_expected_semicolon_error_handler_(ParserContext& ctx)
+    -> ParserState {
+  // todo : redo error message
+  const auto& current = ctx.current();
+  std::cerr << "Error : Expected semicolon " << current.pos() << std::endl;
+  exit(-1);
+}
 
-// constexpr ParserState statement_end_state =
-//     ParserState{statement_end_handler_};
+static constexpr ParserState statement_expected_semicolon_error_state =
+    ParserState{statement_expected_semicolon_error_handler_};
+
+/*
+ * Return Statement
+ */
 
 auto statement_return_end_handler_(ParserContext& ctx) -> ParserState {
-  assert(is_semicolon(ctx.current()));
+  if (!is_semicolon(ctx.current())) {
+    return statement_expected_semicolon_error_state;
+  }
+
   auto expr = ctx.pop_expr_node();
   auto ret = ctx.get_statement_return_node();
   ret->set_expr(expr);
@@ -41,6 +54,38 @@ auto statement_return_handler_(ParserContext& ctx) -> ParserState {
 
 static constexpr ParserState statement_return_state =
     ParserState{statement_return_handler_};
+
+/*
+ * Expression Statement
+ */
+
+auto statement_expr_end_handler_(ParserContext& ctx) -> ParserState {
+  if (!is_semicolon(ctx.current())) {
+    return statement_expected_semicolon_error_state;
+  }
+
+  auto expr = ctx.pop_expr_node();
+  auto ret = ctx.get_statement_expr_node();
+  ret->set_expr(expr);
+  return ctx.move_next_stack();
+}
+
+static constexpr ParserState statement_expr_end_state =
+    ParserState{statement_expr_end_handler_};
+
+auto statement_expr_handler_(ParserContext& ctx) -> ParserState {
+  ctx.syntax_stack.push(std::make_shared<ExprStatement>());
+  ctx.push_states(statement_expr_end_state,
+                  statement_unexpected_end_error_state);
+  return expr_start_state;
+}
+
+static constexpr ParserState statement_expr_state =
+    ParserState{statement_expr_handler_};
+
+/*
+ * Statement Start
+ */
 
 auto statement_unknown_handler_(ParserContext& ctx) -> ParserState {
   auto& current = ctx.current();
@@ -79,7 +124,7 @@ auto statement_unknown_handler_(ParserContext& ctx) -> ParserState {
       throw_not_implemented();
     }
     default: {
-      return expr_start_state;
+      return statement_expr_state;
     }
   }
 

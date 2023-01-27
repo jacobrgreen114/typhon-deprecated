@@ -11,6 +11,8 @@
 #include <memory>
 #include <vector>
 
+#include "../xml/serialization.hpp"
+
 enum class SyntaxKind {
   Unknown,
 
@@ -21,6 +23,7 @@ enum class SyntaxKind {
 
   Statement,
   StatementBlock,
+  StmExpr,
   StmReturn,
 
   DefVar,
@@ -44,6 +47,7 @@ constexpr auto is_expression(SyntaxKind kind) -> bool {
 
 constexpr auto is_statement(SyntaxKind kind) -> bool {
   switch (kind) {
+    case SyntaxKind::StmExpr:
     case SyntaxKind::StmReturn:
       return true;
     default:
@@ -76,7 +80,6 @@ enum class Operator {
 };
 
 enum class Precedence {
-
   BitOr,
   BitXor,
   BitAnd,
@@ -118,7 +121,11 @@ constexpr auto get_precedence(Operator op) -> Precedence {
   }
 }
 
-class SyntaxNode {
+class SyntaxNode
+#ifdef TRACE
+    : public xml::Serializable
+#endif
+{
  private:
   const SyntaxKind kind_;
 
@@ -129,6 +136,11 @@ class SyntaxNode {
   virtual ~SyntaxNode() = default;
 
   constexpr auto kind() const noexcept { return kind_; }
+
+ protected:
+#ifdef TRACE
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
 };
 
 template <typename T>
@@ -147,6 +159,11 @@ class Operation : public ExpressionNode {
       : ExpressionNode{kind}, op_{op} {}
 
   auto op() const { return op_; }
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
 };
 
 class BinaryExpression final : public Operation {
@@ -164,6 +181,11 @@ class BinaryExpression final : public Operation {
   auto set_lhs(const Expression& lhs) -> void { lhs_ = lhs; }
 
   auto set_rhs(const Expression& rhs) -> void { rhs_ = rhs; }
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
 };
 
 class ConstantExpressionNode : public ExpressionNode {
@@ -176,6 +198,11 @@ class ConstantExpressionNode : public ExpressionNode {
  protected:
   explicit ConstantExpressionNode(const SyntaxKind kind, const ValueType& value)
       : ExpressionNode{kind}, value_{value} {}
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
 };
 
 class ConstantNumberExpressionNode : public ConstantExpressionNode {
@@ -192,7 +219,14 @@ class Definition : public SyntaxNode {
       : SyntaxNode(kind), name_{name} {}
 
  public:
+  auto& name() const { return name_; }
+
   auto set_name(const String& name) noexcept -> void { name_ = name; }
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
 };
 
 class VarDefinition : public Definition {
@@ -219,6 +253,11 @@ class VarDefinition : public Definition {
   auto set_assignment(const Assignment& assignment) noexcept -> void {
     assignment_ = assignment;
   }
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
 };
 
 class FuncParameter final : public Definition {
@@ -237,6 +276,17 @@ class FuncParameter final : public Definition {
 class Statement : public SyntaxNode {
  public:
   constexpr explicit Statement(SyntaxKind kind) : SyntaxNode{kind} {}
+};
+
+class ExprStatement final : public Statement {
+  std::shared_ptr<ExpressionNode> _expression;
+
+ public:
+  constexpr ExprStatement() : Statement{SyntaxKind::StmReturn} {}
+
+  auto set_expr(const std::shared_ptr<ExpressionNode>& expr) {
+    _expression = expr;
+  }
 };
 
 class ReturnStatement final : public Statement {
@@ -316,6 +366,11 @@ class SourceNode final : public SyntaxNode {
   constexpr SourceNode() : SyntaxNode(SyntaxKind::Source) {}
 
   auto push_node(const Node& node) { nodes_.emplace_back(node); }
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
 };
 
 constexpr auto get_binary_op(LexicalKind kind) -> Operator {
