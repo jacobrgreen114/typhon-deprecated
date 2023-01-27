@@ -88,6 +88,8 @@ enum class LexicalKind {
   // foreach
   KeywordForeach,
 
+  // .
+  SymbolPeriod,
   // ;
   SymbolSemicolon,
   // :

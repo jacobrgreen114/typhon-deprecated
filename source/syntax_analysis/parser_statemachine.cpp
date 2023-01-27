@@ -37,6 +37,8 @@ auto is_unary_post_operator(const LexicalToken& token) -> bool {
 auto is_binary_operator(const LexicalToken& token) -> bool {
   auto kind = token.kind();
   switch (kind) {
+    case LexicalKind::SymbolPeriod:
+
     case LexicalKind::SymbolPlus:
     case LexicalKind::SymbolMinus:
     case LexicalKind::SymbolStar:

@@ -20,6 +20,7 @@ enum class SyntaxKind {
 
   ExprNumber,
   //ExprString,
+  ExprIdentifier,
   ExprUnary,
   ExprBinary,
   // ExprTernary,
@@ -50,6 +51,7 @@ enum class Precedence {
   AddSub,
   MulDiv,
   Prefix,
+  Access,
   Postfix,
 };
 
@@ -67,6 +69,8 @@ consteval auto operator_value(OperatorType type, Precedence precedence,
 
 enum class Operator : uint32_t {
   // Binary
+  Access = operator_value(OperatorType::Binary, Precedence::Access, 0),
+
   Add      = operator_value(OperatorType::Binary, Precedence::AddSub, 0),
   Subtract = operator_value(OperatorType::Binary, Precedence::AddSub, 1),
   Multiply = operator_value(OperatorType::Binary, Precedence::MulDiv, 0),
@@ -169,6 +173,39 @@ class Operation : public ExpressionNode {
 #endif
 };
 
+class ConstantExpression : public ExpressionNode {
+ private:
+  String value_;
+
+ protected:
+  explicit ConstantExpression(const SyntaxKind kind, const String& value)
+      : ExpressionNode{kind}, value_{value} {}
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
+};
+
+class NumberExpression final : public ConstantExpression {
+ public:
+  explicit NumberExpression(const String& value)
+      : ConstantExpression{SyntaxKind::ExprNumber, value} {}
+};
+
+class IdentifierExpression final : public ExpressionNode {
+  String identifier_;
+
+ public:
+  explicit IdentifierExpression(const String& identifier)
+      : ExpressionNode{SyntaxKind::ExprIdentifier}, identifier_{identifier} {}
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
+};
+
 class UnaryExpression final : public Operation {
   Expression expr_;
 
@@ -201,29 +238,6 @@ class BinaryExpression final : public Operation {
  protected:
   auto on_serialize(xml::SerializationContext& context) const -> void override;
 #endif
-};
-
-class ConstantExpressionNode : public ExpressionNode {
- public:
-  using ValueType = std::shared_ptr<const std::string>;
-
- private:
-  ValueType value_;
-
- protected:
-  explicit ConstantExpressionNode(const SyntaxKind kind, const ValueType& value)
-      : ExpressionNode{kind}, value_{value} {}
-
-#ifdef TRACE
- protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
-};
-
-class ConstantNumberExpressionNode : public ConstantExpressionNode {
- public:
-  explicit ConstantNumberExpressionNode(const ValueType& value)
-      : ConstantExpressionNode{SyntaxKind::ExprNumber, value} {}
 };
 
 class Definition : public SyntaxNode {

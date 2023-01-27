@@ -9,32 +9,34 @@
 
 #define is ==
 
-constexpr auto colon = ':';
+constexpr auto period    = '.';
+constexpr auto colon     = ':';
 constexpr auto semicolon = ';';
 
-constexpr auto paren_open = '(';
+constexpr auto paren_open  = '(';
 constexpr auto paren_close = ')';
 
-constexpr auto brace_open = '[';
+constexpr auto brace_open  = '[';
 constexpr auto brace_close = ']';
 
-constexpr auto angle_open = '<';
+constexpr auto angle_open  = '<';
 constexpr auto angle_close = '>';
 
-constexpr auto bracket_open = '{';
+constexpr auto bracket_open  = '{';
 constexpr auto bracket_close = '}';
 
 constexpr auto equals = '=';
 
-constexpr auto pipe = '|';
-constexpr auto amp = '&';
+constexpr auto pipe  = '|';
+constexpr auto amp   = '&';
 constexpr auto caret = '^';
 
-constexpr auto plus = '+';
+constexpr auto plus  = '+';
 constexpr auto minus = '-';
-constexpr auto star = '*';
+constexpr auto star  = '*';
 constexpr auto slash = '/';
 
+constexpr auto is_period(char c) -> bool { return c is period; }
 constexpr auto is_colon(char c) -> bool { return c is colon; }
 constexpr auto is_semicolon(char c) -> bool { return c is semicolon; }
 
@@ -72,6 +74,17 @@ constexpr auto symbol_error_state =
     LexerState{[](LexerContext& ctx) -> LexerState {
       std::cout << "Symbol error at " << ctx.token_position() << std::endl;
       throw_not_implemented();
+    }};
+
+// Symbol Colon States
+
+constexpr auto symbol_period_state =
+    LexerState{[](LexerContext& ctx) -> LexerState {
+      auto current = ctx.current();
+      assert(is_period(current));
+
+      create_symbol_token(ctx, LexicalKind::SymbolPeriod);
+      return ctx.move_next_state(unknown_state, exit_state);
     }};
 
 // Symbol Colon States
@@ -621,6 +634,9 @@ constexpr LexerState symbol_unknown_state =
     LexerState{[](LexerContext& ctx) -> LexerState {
       auto& current = ctx.current();
       switch (current) {
+        case period:
+          return symbol_period_state;
+
         case colon:
           return symbol_colon_state;
         case semicolon:

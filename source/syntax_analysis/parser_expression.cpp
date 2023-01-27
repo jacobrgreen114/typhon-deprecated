@@ -4,6 +4,11 @@
 #include "parser_expression.hpp"
 
 // todo : implement postfix operators
+// todo : convert period binary operator to access expression
+
+/*
+ * Error
+ */
 
 auto expr_error_handler_(ParserContext& ctx) -> ParserState {
   throw_not_implemented();
@@ -17,6 +22,10 @@ auto expr_unexpected_end_error_handler_(ParserContext& ctx) -> ParserState {
 
 constexpr ParserState expr_unexpected_end_error_state =
     ParserState{expr_unexpected_end_error_handler_};
+
+/*
+ * Exit
+ */
 
 auto expr_exit_end_handler_(ParserContext& ctx) -> ParserState {
   return ctx.pop_end_state();
@@ -47,6 +56,40 @@ auto expr_possible_end_handler_(ParserContext& ctx) -> ParserState {
 
 constexpr ParserState expr_possible_end_state =
     ParserState{expr_possible_end_handler_};
+
+/*
+ * Number
+ */
+
+auto expr_number_handler_(ParserContext& ctx) -> ParserState {
+  const auto& value = ctx.current().value();
+  ctx.syntax_stack.push(std::make_shared<NumberExpression>(value));
+  return expr_possible_end_state;
+}
+constexpr ParserState expr_number_state = ParserState{expr_number_handler_};
+
+/*
+ * Identifier
+ */
+
+// auto expr_ident_possible_end_handler_(ParserContext& ctx) -> ParserState {
+//   throw_not_implemented();
+// }
+//
+// constexpr ParserState expr_ident_possible_end_state =
+//     ParserState{expr_ident_possible_end_handler_};
+
+auto expr_ident_handler_(ParserContext& ctx) -> ParserState {
+  const auto& value = ctx.current().value();
+  ctx.syntax_stack.push(std::make_shared<IdentifierExpression>(value));
+  return expr_possible_end_state;
+}
+
+constexpr ParserState expr_ident_state = ParserState{expr_ident_handler_};
+
+/*
+ * Binary
+ */
 
 auto do_expr_binary_end(ParserContext& ctx) -> void {
   ctx.precedence_stack.pop();
@@ -102,12 +145,9 @@ auto expr_binary_handler_(ParserContext& ctx) -> ParserState {
 }
 constexpr ParserState expr_binary_state = ParserState{expr_binary_handler_};
 
-auto expr_number_handler_(ParserContext& ctx) -> ParserState {
-  const auto& value = ctx.current().value();
-  ctx.syntax_stack.push(std::make_shared<ConstantNumberExpressionNode>(value));
-  return expr_possible_end_state;
-}
-constexpr ParserState expr_number_state = ParserState{expr_number_handler_};
+/*
+ * Unary
+ */
 
 void do_expr_unary_end(ParserContext& ctx) {
   ctx.precedence_stack.pop();
@@ -150,6 +190,10 @@ ParserState expr_unary_handler_(ParserContext& ctx) {
 
 constexpr auto expr_unary_state = ParserState{expr_unary_handler_};
 
+/*
+ * Start
+ */
+
 auto expr_unknown_handler_(ParserContext& ctx) -> ParserState {
   auto kind = ctx.current().kind();
   if (is_unary_pre_operator(ctx.current())) {
@@ -160,7 +204,7 @@ auto expr_unknown_handler_(ParserContext& ctx) -> ParserState {
     case LexicalKind::Number:
       return expr_number_state;
     case LexicalKind::Identifier:
-      throw_not_implemented();
+      return expr_ident_state;
     default:
       throw_not_implemented();
   }

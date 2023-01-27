@@ -11,6 +11,8 @@ auto to_string(SyntaxKind kind) -> const char* {
 
     case SyntaxKind::ExprNumber:
       return "ExprNumber";
+    case SyntaxKind::ExprIdentifier:
+      return "ExprIdentifier";
     case SyntaxKind::ExprUnary:
       return "ExprUnary";
     case SyntaxKind::ExprBinary:
@@ -43,6 +45,9 @@ auto to_string(SyntaxKind kind) -> const char* {
 
 auto to_string(Operator op) -> const char* {
   switch (op) {
+    case Operator::Access:
+      return "Access";
+
     case Operator::Add:
       return "Add";
     case Operator::Subtract:
@@ -176,6 +181,9 @@ auto get_unary_post_op(LexicalKind kind) -> Operator {
 
 auto get_binary_op(LexicalKind kind) -> Operator {
   switch (kind) {
+    case LexicalKind::SymbolPeriod:
+      return Operator::Access;
+
     case LexicalKind::SymbolPlus:
       return Operator::Add;
     case LexicalKind::SymbolMinus:
@@ -222,6 +230,9 @@ auto get_binary_op(LexicalKind kind) -> Operator {
 
 auto get_precedence(Operator op) -> Precedence {
   switch (op) {
+    case Operator::Access:
+      return Precedence::Access;
+
     case Operator::BitOr:
       return Precedence::BitOr;
     case Operator::BitXor:
@@ -275,11 +286,19 @@ auto SyntaxNode::on_serialize(xml::SerializationContext& context) const
   context.add_attribute("kind", to_string(kind()));
 }
 
-void ConstantExpressionNode::on_serialize(
+void ConstantExpression::on_serialize(
     xml::SerializationContext& context) const {
   SyntaxNode::on_serialize(context);
   if (value_) {
     context.add_attribute("value", *value_);
+  }
+}
+
+void IdentifierExpression::on_serialize(
+    xml::SerializationContext& context) const {
+  ExpressionNode::on_serialize(context);
+  if (identifier_) {
+    context.add_attribute("name", *identifier_);
   }
 }
 

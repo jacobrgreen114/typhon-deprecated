@@ -15,7 +15,7 @@ func main(argc : i32) -> i32 {
 	--32 * 64;
 	
 	
-
+	++hello.x.y;
 
     return 0;
 }

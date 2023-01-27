@@ -32,6 +32,7 @@ const auto lexical_kind_names_ =
         {LexicalKind::KeywordFor, "KeywordFor"},
         {LexicalKind::KeywordForeach, "KeywordForeach"},
 
+        {LexicalKind::SymbolPeriod, "SymbolPeriod"},
         {LexicalKind::SymbolSemicolon, "SymbolSemicolon"},
         {LexicalKind::SymbolColon, "SymbolColon"},
         {LexicalKind::SymbolComma, "SymbolComma"},
@@ -86,19 +87,19 @@ auto to_string(LexicalKind kind) -> std::string_view {
   throw std::exception("");
 }
 
-auto operator<<(std::ostream &stream, LexicalKind kind) -> std::ostream & {
+auto operator<<(std::ostream& stream, LexicalKind kind) -> std::ostream& {
   stream << to_string(kind);
   return stream;
 }
 
-auto operator<<(std::ostream &stream, const FilePosition &position)
-    -> std::ostream & {
+auto operator<<(std::ostream& stream, const FilePosition& position)
+    -> std::ostream& {
   stream << '(' << position.line() << ", " << position.col() << ')';
   return stream;
 }
 
-auto operator<<(std::ostream &stream, const LexicalToken &token)
-    -> std::ostream & {
+auto operator<<(std::ostream& stream, const LexicalToken& token)
+    -> std::ostream& {
   stream << R"({ "pos" : ")" << token.pos() << R"(", "kind" : ")"
          << token.kind() << R"(")";
   if (token.has_value()) {
@@ -110,7 +111,7 @@ auto operator<<(std::ostream &stream, const LexicalToken &token)
 }
 
 #ifdef TRACE
-void LexicalToken::on_serialize(xml::SerializationContext &context) const {
+void LexicalToken::on_serialize(xml::SerializationContext& context) const {
   Serializable::on_serialize(context);
   context.add_attribute("pos", pos());
   context.add_attribute("kind", to_string(kind()));
