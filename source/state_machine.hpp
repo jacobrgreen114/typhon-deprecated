@@ -11,9 +11,7 @@
 
 #define throw_not_implemented() throw std::exception("not implemented!")
 
-#ifdef _DEBUG
-#define STATE_MACHINE_TRACING
-#else
+#ifdef TRACE
 #define STATE_MACHINE_TRACING
 #endif
 

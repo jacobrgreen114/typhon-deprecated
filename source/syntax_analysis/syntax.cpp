@@ -95,7 +95,7 @@ auto SyntaxNode::on_serialize(xml::SerializationContext& context) const
 void ConstantExpressionNode::on_serialize(
     xml::SerializationContext& context) const {
   SyntaxNode::on_serialize(context);
-  context.add_content(value_->c_str());
+  context.add_attribute("value", *value_);
 }
 
 auto Operation::on_serialize(xml::SerializationContext& context) const -> void {

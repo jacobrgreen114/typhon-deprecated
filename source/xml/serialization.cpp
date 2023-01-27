@@ -6,22 +6,27 @@
 namespace xml {
 
 SerializationContext::SerializationContext(std::ostream& writer,
-                                           const char* name, size_t indent)
+                                           std::string_view name, size_t indent)
     : writer_{writer},
       element_name_{name},
       indent_{indent},
       attr_end_{false},
+      content_{false},
       element_count_{0} {
   write_indent();
   writer_ << '<' << name;
 }
 
 SerializationContext::~SerializationContext() {
-  terminate_open();
-  if (element_count_ > 0) {
-    write_indent();
+  if (is_empty()) {
+    writer_ << "/>" << std::endl;
+  } else {
+    //terminate_open();
+    if (element_count_ > 0) {
+      write_indent();
+    }
+    writer_ << '<' << '/' << element_name_ << '>' << std::endl;
   }
-  writer_ << '<' << '/' << element_name_ << '>' << std::endl;
 }
 
 auto SerializationContext::write_indent() -> void {
@@ -37,15 +42,20 @@ auto SerializationContext::terminate_open() -> void {
   }
 }
 
-auto SerializationContext::add_attribute(const char* name, const char* value)
-    -> void {
+auto SerializationContext::is_empty() const -> bool {
+  return element_count_ == 0 && !content_;
+}
+
+auto SerializationContext::add_attribute(std::string_view name,
+                                         std::string_view value) -> void {
   if (attr_end_) {
     throw std::exception();
   }
   writer_ << ' ' << name << '=' << '"' << value << '"';
 }
 
-auto SerializationContext::add_content(const char* value) -> void {
+auto SerializationContext::add_content(std::string_view value) -> void {
+  content_ = true;
   terminate_open();
   if (element_count_ > 0) {
     throw std::exception();
@@ -54,6 +64,7 @@ auto SerializationContext::add_content(const char* value) -> void {
 }
 
 auto SerializationContext::add_content(uintptr_t value) -> void {
+  content_ = true;
   terminate_open();
   if (element_count_ > 0) {
     throw std::exception();
@@ -61,6 +72,7 @@ auto SerializationContext::add_content(uintptr_t value) -> void {
   writer_ << value;
 }
 auto SerializationContext::add_content(intptr_t value) -> void {
+  content_ = true;
   terminate_open();
   if (element_count_ > 0) {
     throw std::exception();
@@ -68,7 +80,7 @@ auto SerializationContext::add_content(intptr_t value) -> void {
   writer_ << value;
 }
 
-auto SerializationContext::add_element(const char* name,
+auto SerializationContext::add_element(std::string_view name,
                                        const Serializable& serializable)
     -> void {
   terminate_open();
@@ -81,8 +93,8 @@ auto SerializationContext::add_element(const char* name,
 
 auto Serializable::on_serialize(SerializationContext& context) const -> void {}
 
-auto Serializable::serialize(std::ostream& writer, const char* root_name) const
-    -> void {
+auto Serializable::serialize(std::ostream& writer,
+                             std::string_view root_name) const -> void {
   auto context = SerializationContext{writer, root_name};
   on_serialize(context);
   writer.flush();

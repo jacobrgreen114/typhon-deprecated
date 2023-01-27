@@ -73,15 +73,18 @@ const auto lexical_kind_names_ =
 
         {LexicalKind::SymbolLessThanEqual, "SymbolLessThanEqual"},
         {LexicalKind::SymbolGreaterThanEqual, "SymbolGreaterThanEqual"},
-
     };
 
-auto operator<<(std::ostream &stream, LexicalKind kind) -> std::ostream & {
-  const auto x = lexical_kind_names_.find(kind);
-  if (x == lexical_kind_names_.end()) {
-    throw std::exception("");
+auto to_string(LexicalKind kind) -> std::string_view {
+  if (auto name = lexical_kind_names_.find(kind);
+      name != lexical_kind_names_.end()) {
+    return name->second;
   }
-  stream << x->second;
+  throw std::exception("");
+}
+
+auto operator<<(std::ostream &stream, LexicalKind kind) -> std::ostream & {
+  stream << to_string(kind);
   return stream;
 }
 
@@ -102,3 +105,14 @@ auto operator<<(std::ostream &stream, const LexicalToken &token)
   stream << R"( })";
   return stream;
 }
+
+#ifdef TRACE
+void LexicalToken::on_serialize(xml::SerializationContext &context) const {
+  Serializable::on_serialize(context);
+  context.add_attribute("pos", pos());
+  context.add_attribute("kind", to_string(kind()));
+  if (value_) {
+    context.add_attribute("value", *value());
+  }
+}
+#endif

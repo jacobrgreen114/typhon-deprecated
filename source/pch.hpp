@@ -14,6 +14,7 @@
 #include <memory>
 #include <stack>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -21,11 +22,14 @@
 #include <iostream>
 #include <span>
 
+namespace fs = std::filesystem;
+
 #ifndef NODISCARD
 #define NODISCARD [[nodiscard]]
 #endif
 
 #include "state_machine.hpp"
+#include "xml/serialization.hpp"
 #include "lexical_analysis/token.hpp"
 
 #ifdef _DEBUG

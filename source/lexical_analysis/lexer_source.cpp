@@ -10,7 +10,7 @@
 #pragma region Lexer Global States
 
 constexpr LexerState error_state = LexerState{
-    [](LexerContext &ctx) -> LexerState { throw_not_implemented(); }};
+    [](LexerContext& ctx) -> LexerState { throw_not_implemented(); }};
 
 constexpr LexerState exit_state = LexerState{};
 
@@ -20,8 +20,8 @@ extern const LexerState number_start_state;
 extern const LexerState symbol_start_state;
 
 constexpr LexerState unknown_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
-      const auto &current = ctx.current();
+    LexerState{[](LexerContext& ctx) -> LexerState {
+      const auto& current = ctx.current();
 
       if (should_match_whitespace(current)) {
         return whitespace_start_state;
@@ -39,7 +39,7 @@ constexpr LexerState unknown_state =
       return error_state;
     }};
 
-constexpr auto start_state = LexerState{[](LexerContext &ctx) -> LexerState {
+constexpr auto start_state = LexerState{[](LexerContext& ctx) -> LexerState {
   return ctx.move_next_state(unknown_state, exit_state);
 }};
 
@@ -48,20 +48,16 @@ constexpr auto start_state = LexerState{[](LexerContext &ctx) -> LexerState {
 #pragma region Lexer Whitespace States
 
 constexpr LexerState whitespace_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       return ctx.move_next_state(matches_whitespace, whitespace_state,
                                  unknown_state, exit_state);
     }};
 
 constexpr LexerState whitespace_start_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       // ctx.mark_start_of_token();
       return whitespace_state;
     }};
-
-#pragma endregion
-
-#pragma region Lexer Symbol States
 
 #pragma endregion
 
@@ -69,7 +65,7 @@ constexpr LexerState whitespace_start_state =
 
 constexpr auto null_char = '\0';
 
-LexerContext::LexerContext(const std::string &path)
+LexerContext::LexerContext(const std::string& path)
     : stream_{path}, current_{null_char} {
   if (stream_.fail()) {
     throw std::exception("failed to open file.");

@@ -11,6 +11,10 @@
 #include <memory>
 #include <vector>
 
+#ifdef TRACE
+#include "../xml/serialization.hpp"
+#endif
+
 using String = std::shared_ptr<std::string>;
 
 class FilePosition final {
@@ -180,7 +184,11 @@ enum class LexicalKind {
 
 auto operator<<(std::ostream& stream, LexicalKind kind) -> std::ostream&;
 
-class LexicalToken final {
+class LexicalToken final
+#ifdef TRACE
+    : public xml::Serializable
+#endif
+{
  public:
   using ValueType = String;
 
@@ -198,10 +206,13 @@ class LexicalToken final {
 
   NODISCARD constexpr auto pos() const -> auto& { return pos_; }
   NODISCARD constexpr auto kind() const -> auto& { return kind_; }
-  NODISCARD constexpr auto value() const -> auto& {
-    return value_ ? value_ : throw std::exception();
-  }
+  NODISCARD constexpr auto value() const -> auto& { return value_; }
   NODISCARD auto has_value() const -> bool { return static_cast<bool>(value_); }
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
 };
 
 using TokenCollection = std::vector<LexicalToken>;
