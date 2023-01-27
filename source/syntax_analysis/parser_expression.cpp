@@ -52,6 +52,8 @@ constexpr ParserState expr_possible_end_state =
     ParserState{expr_possible_end_handler_};
 
 auto do_expr_binary_end(ParserContext& ctx) -> void {
+  ctx.precedence_stack.pop();
+
   auto rhs = ctx.pop_expr_node();
   auto op = ctx.pop_expr_binary_node();
   auto lhs = ctx.pop_expr_node();
@@ -73,6 +75,10 @@ constexpr ParserState expr_binary_end_exit_state =
 
 auto expr_binary_end_handler_(ParserContext& ctx) -> ParserState {
   do_expr_binary_end(ctx);
+  if (is_binary_operator(ctx.current())) {
+    return expr_binary_state;
+  }
+
   auto ret_states = ctx.pop_states();
   return ret_states.ret;
 }
@@ -85,16 +91,15 @@ auto expr_binary_handler_(ParserContext& ctx) -> ParserState {
   assert(is_binary_operator(current));
 
   const auto op = get_binary_op(current.kind());
+  const auto precedence = get_precedence(op);
 
-  //const auto precedence = get_precedence(op);
-  //if (!ctx.precedence_stack.empty()) {
-  //  if (ctx.precedence_stack.top() > precedence) {
-  //    auto states = ctx.pop_states();
-  //    return states.ret;
-  //  }
-  //}
-  //ctx.precedence_stack.emplace(precedence);
+  if (!ctx.precedence_stack.empty() &&
+      ctx.precedence_stack.top() > precedence) {
+    auto states = ctx.pop_states();
+    return states.ret;
+  }
 
+  ctx.precedence_stack.emplace(precedence);
   ctx.syntax_stack.emplace(std::make_shared<BinaryExpression>(op));
 
   ctx.push_states(expr_binary_end_state, expr_binary_end_exit_state);

@@ -21,6 +21,7 @@ class LexerContext;
 using LexerState = State<LexerContext>;
 
 class LexerContext final : public EnumeratingContext<LexerContext, char> {
+  fs::path path_;
   std::ifstream stream_;
   char current_;
   FilePosition current_pos_;
@@ -30,7 +31,7 @@ class LexerContext final : public EnumeratingContext<LexerContext, char> {
  public:
   TokenCollection tokens;
 
-  explicit LexerContext(const std::string& path);
+  explicit LexerContext(const fs::path& path);
 
   auto current() -> const char& override { return current_; }
   auto move_next() -> bool override;

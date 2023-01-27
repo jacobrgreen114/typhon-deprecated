@@ -18,13 +18,14 @@ enum class SyntaxKind {
 
   Source,
 
-  ExprConstNumber,
+  ExprNumber,
+  //ExprString,
   ExprBinary,
+  // ExprTernary,
 
-  Statement,
-  StatementBlock,
   StmExpr,
   StmReturn,
+  StmBlock,
 
   DefVar,
   DefFunc,
@@ -36,7 +37,7 @@ enum class SyntaxKind {
 
 constexpr auto is_expression(SyntaxKind kind) -> bool {
   switch (kind) {
-    case SyntaxKind::ExprConstNumber:
+    case SyntaxKind::ExprNumber:
     case SyntaxKind::ExprBinary: {
       return true;
     }
@@ -208,7 +209,7 @@ class ConstantExpressionNode : public ExpressionNode {
 class ConstantNumberExpressionNode : public ConstantExpressionNode {
  public:
   explicit ConstantNumberExpressionNode(const ValueType& value)
-      : ConstantExpressionNode{SyntaxKind::ExprConstNumber, value} {}
+      : ConstantExpressionNode{SyntaxKind::ExprNumber, value} {}
 };
 
 class Definition : public SyntaxNode {
@@ -290,14 +291,17 @@ class ExprStatement final : public Statement {
 };
 
 class ReturnStatement final : public Statement {
-  std::shared_ptr<ExpressionNode> _expression;
+  std::shared_ptr<ExpressionNode> expr_;
 
  public:
   constexpr ReturnStatement() : Statement{SyntaxKind::StmReturn} {}
 
-  auto set_expr(const std::shared_ptr<ExpressionNode>& expr) {
-    _expression = expr;
-  }
+  auto set_expr(const std::shared_ptr<ExpressionNode>& expr) { expr_ = expr; }
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
 };
 
 class VarStatement final : public Statement {};
@@ -327,10 +331,15 @@ class StatementBlock final : public SyntaxNode {
   StatementCollection statements_;
 
  public:
-  explicit StatementBlock() : SyntaxNode(SyntaxKind::StatementBlock) {}
+  explicit StatementBlock() : SyntaxNode(SyntaxKind::StmBlock) {}
   auto push_statement(const Statement& statement) -> void {
     statements_.emplace_back(statement);
   }
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
 };
 
 class FuncDefinition final : public Definition {
@@ -347,13 +356,18 @@ class FuncDefinition final : public Definition {
  public:
   explicit FuncDefinition() : Definition(SyntaxKind::DefFunc) {}
 
-  auto set_return_type(const String& ret_type) -> void { return_ = ret_type; }
+  void set_return_type(const String& ret_type) { return_ = ret_type; }
 
-  auto push_parameter(const Parameter& param) -> void {
+  void push_parameter(const Parameter& param) {
     parameters_.emplace_back(param);
   }
 
   auto set_body(const Body& body) { body_ = body; }
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
 };
 
 class SourceNode final : public SyntaxNode {

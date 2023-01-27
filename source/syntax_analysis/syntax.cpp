@@ -9,13 +9,13 @@ constexpr auto to_string(SyntaxKind kind) -> const char* {
     case SyntaxKind::Source:
       return "Source";
 
-    case SyntaxKind::ExprConstNumber:
-      return "ExprConstNumber";
+    case SyntaxKind::ExprNumber:
+      return "ExprNumber";
     case SyntaxKind::ExprBinary:
       return "ExprBinary";
 
-    case SyntaxKind::StatementBlock:
-      return "StatementBlock";
+    case SyntaxKind::StmBlock:
+      return "StmBlock";
     case SyntaxKind::StmExpr:
       return "StmExpr";
     case SyntaxKind::StmReturn:
@@ -109,11 +109,17 @@ void BinaryExpression::on_serialize(xml::SerializationContext& context) const {
   context.add_element("rhs", *rhs_);
 }
 
-auto SourceNode::on_serialize(xml::SerializationContext& context) const
-    -> void {
+void ReturnStatement::on_serialize(xml::SerializationContext& context) const {
   SyntaxNode::on_serialize(context);
-  for (auto& node : nodes_) {
-    context.add_element("node", *node);
+  if (expr_) {
+    context.add_element("expr", *expr_);
+  }
+}
+
+void StatementBlock::on_serialize(xml::SerializationContext& context) const {
+  SyntaxNode::on_serialize(context);
+  for (auto& statement : statements_) {
+    context.add_element("statement", *statement);
   }
 }
 
@@ -134,4 +140,23 @@ void VarDefinition::on_serialize(xml::SerializationContext& context) const {
     context.add_element("assign", *assignment_);
   }
 }
+
+void FuncDefinition::on_serialize(xml::SerializationContext& context) const {
+  Definition::on_serialize(context);
+  if (return_) {
+    context.add_attribute("return", *return_);
+  }
+  if (body_) {
+    context.add_element("body", *body_);
+  }
+}
+
+auto SourceNode::on_serialize(xml::SerializationContext& context) const
+    -> void {
+  SyntaxNode::on_serialize(context);
+  for (auto& node : nodes_) {
+    context.add_element("node", *node);
+  }
+}
+
 #endif

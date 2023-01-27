@@ -5,12 +5,12 @@
 
 var explicit_assigned : i32 = 1;
 var uninitialized : i32;
-var auto_deduced_type = 0 * 1 + 3;
+var auto_deduced_type = 0 * 1 + 3 * 6;
 
 
 func main(argc : i32) -> i32 {
-	16 + 32 * 64;
-	16 * 32 + 64;
+	// 16 + 32 * 64;
+	// 16 * 32 + 64;
 
     return 0;
 }

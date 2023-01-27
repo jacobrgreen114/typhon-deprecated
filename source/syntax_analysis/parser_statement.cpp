@@ -19,6 +19,7 @@ auto statement_expected_semicolon_error_handler_(ParserContext& ctx)
   // todo : redo error message
   const auto& current = ctx.current();
   std::cerr << "Error : Expected semicolon " << current.pos() << std::endl;
+  assert(false);
   exit(-1);
 }
 
@@ -138,7 +139,7 @@ static constexpr ParserState statement_start_state =
     ParserState{statement_unknown_handler_};
 
 /*
- * Statement Block
+ * Statement StmBlock
  */
 
 auto statement_block_error_handler_(ParserContext& ctx) -> ParserState {

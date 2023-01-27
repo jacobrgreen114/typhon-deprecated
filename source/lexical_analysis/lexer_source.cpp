@@ -65,8 +65,8 @@ constexpr LexerState whitespace_start_state =
 
 constexpr auto null_char = '\0';
 
-LexerContext::LexerContext(const std::string& path)
-    : stream_{path}, current_{null_char} {
+LexerContext::LexerContext(const fs::path& path)
+    : path_{path}, stream_{path}, current_{null_char} {
   if (stream_.fail()) {
     throw std::exception("failed to open file.");
   }
