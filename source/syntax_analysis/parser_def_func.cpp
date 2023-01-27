@@ -19,15 +19,25 @@ auto func_def_unexpected_end_error_handler_(ParserContext& ctx) -> ParserState {
 constexpr ParserState func_def_unexpected_end_error_state =
     ParserState{func_def_unexpected_end_error_handler_};
 
+auto do_func_def_body_end(ParserContext& ctx) -> void {
+  auto block = ctx.pop_statement_block();
+  auto* def = ctx.get_func_def_node();
+  def->set_body(block);
+}
+
 auto func_def_body_end_exit_handler_(ParserContext& ctx) -> ParserState {
-  throw_not_implemented();
+  do_func_def_body_end(ctx);
+  auto states = ctx.pop_states();
+  return states.end;
 }
 
 constexpr ParserState func_def_body_end_exit_state =
     ParserState{func_def_body_end_exit_handler_};
 
 auto func_def_body_end_handler_(ParserContext& ctx) -> ParserState {
-  throw_not_implemented();
+  do_func_def_body_end(ctx);
+  auto states = ctx.pop_states();
+  return states.ret;
 }
 
 constexpr ParserState func_def_body_end_state =

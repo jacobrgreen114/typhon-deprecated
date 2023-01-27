@@ -8,23 +8,31 @@
 
 #pragma region Global Parser States
 
-constexpr auto error_state = ParserState{
-    [](ParserContext& ctx) -> ParserState { throw_not_implemented(); }};
+auto error_handler_(ParserContext& ctx) -> ParserState {
+  throw_not_implemented();
+}
 
-constexpr auto unexpected_token_error_state = ParserState{
-    [](ParserContext& ctx) -> ParserState { throw_not_implemented(); }};
+constexpr auto error_state = ParserState{error_handler_};
+
+auto unexpected_token_error_handler_(ParserContext& ctx) -> ParserState {
+  throw_not_implemented();
+}
+
+constexpr auto unexpected_token_error_state =
+    ParserState{unexpected_token_error_handler_};
 
 constexpr auto exit_state = ParserState{nullptr};
 
-constexpr auto end_state =
-    ParserState{[](ParserContext& ctx) -> ParserState { return exit_state; }};
+auto end_handler_(ParserContext& ctx) -> ParserState { return exit_state; }
+
+constexpr auto end_state = ParserState{end_handler_};
 
 extern const ParserState unknown_state;
 
 auto append_source_node(ParserContext& ctx) -> void {
-  auto& node = ctx.syntax_stack.top();
-  ctx.source->push_node(node);
+  auto node = std::move(ctx.syntax_stack.top());
   ctx.syntax_stack.pop();
+  ctx.source->push_node(node);
   assert(ctx.syntax_stack.empty());
 }
 
@@ -62,9 +70,11 @@ auto unknown_handler(ParserContext& ctx) -> ParserState {
 
 constexpr ParserState unknown_state = ParserState{unknown_handler};
 
-constexpr auto start_state = ParserState{[](ParserContext& ctx) -> ParserState {
+auto start_handler_(ParserContext& ctx) -> ParserState {
   return ctx.move_next_state(unknown_state, exit_state);
-}};
+}
+
+constexpr auto start_state = ParserState{start_handler_};
 
 #pragma endregion
 

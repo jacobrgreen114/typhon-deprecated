@@ -93,6 +93,9 @@ class ParserContext final
     return get_syntax_node<ReturnStatement>();
   }
 
+  auto get_statement_block() { return get_syntax_node<StatementBlock>(); }
+  auto pop_statement_block() { return pop_syntax_node<StatementBlock>(); }
+
   auto pop_expr_node() { return pop_syntax_node<ExpressionNode>(); }
   auto pop_expr_binary_node() { return pop_syntax_node<BinaryExpression>(); }
 };

@@ -29,6 +29,8 @@
 #include "lexical_analysis/token.hpp"
 
 #ifdef _DEBUG
-#define assert(expr) \
-  if (!(expr)) throw std::exception("assert failed!");
+#define assert(expr)                           \
+  if (!(expr)) {                               \
+    throw std::exception("assertion failed!"); \
+  }
 #endif

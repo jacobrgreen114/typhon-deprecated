@@ -287,10 +287,12 @@ class FuncDefinition final : public Definition {
  public:
   using Parameter = std::shared_ptr<FuncParameter>;
   using ParameterCollection = std::vector<Parameter>;
+  using Body = std::shared_ptr<StatementBlock>;
 
  private:
   ParameterCollection parameters_;
   String return_;
+  Body body_;
 
  public:
   explicit FuncDefinition() : Definition(SyntaxKind::DefFunc) {}
@@ -300,6 +302,8 @@ class FuncDefinition final : public Definition {
   auto push_parameter(const Parameter& param) -> void {
     parameters_.emplace_back(param);
   }
+
+  auto set_body(const Body& body) { body_ = body; }
 };
 
 class SourceNode final : public SyntaxNode {
@@ -313,7 +317,6 @@ class SourceNode final : public SyntaxNode {
 
   auto push_node(const Node& node) { nodes_.emplace_back(node); }
 };
-
 
 constexpr auto get_binary_op(LexicalKind kind) -> Operator {
   switch (kind) {
