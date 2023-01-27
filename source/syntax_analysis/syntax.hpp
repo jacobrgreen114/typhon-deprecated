@@ -20,12 +20,14 @@ enum class SyntaxKind {
 
   ExprNumber,
   //ExprString,
+  ExprUnary,
   ExprBinary,
   // ExprTernary,
 
   StmExpr,
   StmReturn,
-  StmBlock,
+
+  Block,
 
   DefVar,
   DefFunc,
@@ -35,52 +37,10 @@ enum class SyntaxKind {
   DefInterface,
 };
 
-constexpr auto is_expression(SyntaxKind kind) -> bool {
-  switch (kind) {
-    case SyntaxKind::ExprNumber:
-    case SyntaxKind::ExprBinary: {
-      return true;
-    }
-    default:
-      return false;
-  }
-}
-
-constexpr auto is_statement(SyntaxKind kind) -> bool {
-  switch (kind) {
-    case SyntaxKind::StmExpr:
-    case SyntaxKind::StmReturn:
-      return true;
-    default:
-      return false;
-  }
-}
-
-enum class Operator {
-  Add,
-  Subtract,
-  Multiply,
-  Divide,
-
-  Equals,
-  NotEquals,
-  Or,
-  And,
-
-  LessThan,
-  GreaterThan,
-  LessThanEquals,
-  GreaterThanEquals,
-
-  BitOr,
-  BitAnd,
-  BitXor,
-
-  ShiftLeft,
-  ShiftRight
-};
-
 enum class Precedence {
+  Assignment,
+  BoolOr,
+  BoolAnd,
   BitOr,
   BitXor,
   BitAnd,
@@ -89,38 +49,77 @@ enum class Precedence {
   Shift,
   AddSub,
   MulDiv,
+  Prefix,
+  Postfix,
 };
 
-constexpr auto get_precedence(Operator op) -> Precedence {
-  switch (op) {
-    case Operator::Equals:
-    case Operator::NotEquals: {
-      return Precedence::Equality;
-    }
-    case Operator::LessThan:
-    case Operator::GreaterThan:
-    case Operator::LessThanEquals:
-    case Operator::GreaterThanEquals: {
-      return Precedence::Relation;
-    }
+enum class OperatorType { Unary = 1, Binary = 2, Ternary = 3 };
 
-    case Operator::ShiftLeft:
-    case Operator::ShiftRight: {
-      return Precedence::Shift;
-    }
-    case Operator::Add:
-    case Operator::Subtract: {
-      return Precedence::AddSub;
-    }
-    case Operator::Multiply:
-    case Operator::Divide: {
-      return Precedence::MulDiv;
-    }
+constexpr auto operator_type_offset = 30;
+constexpr auto operator_prec_offset = 24;
 
-    default:
-      throw std::exception();
-  }
+consteval auto operator_value(OperatorType type, Precedence precedence,
+                              uint32_t base_value = 0) -> uint32_t {
+  return (static_cast<uint32_t>(type) << operator_type_offset) |
+         (static_cast<uint32_t>(precedence) << operator_prec_offset) |
+         base_value;
 }
+
+enum class Operator : uint32_t {
+  // Binary
+  Add      = operator_value(OperatorType::Binary, Precedence::AddSub, 0),
+  Subtract = operator_value(OperatorType::Binary, Precedence::AddSub, 1),
+  Multiply = operator_value(OperatorType::Binary, Precedence::MulDiv, 0),
+  Divide   = operator_value(OperatorType::Binary, Precedence::MulDiv, 1),
+
+  Equals    = operator_value(OperatorType::Binary, Precedence::Equality, 0),
+  NotEquals = operator_value(OperatorType::Binary, Precedence::Equality, 1),
+  Or        = operator_value(OperatorType::Binary, Precedence::BoolOr, 0),
+  And       = operator_value(OperatorType::Binary, Precedence::BoolAnd, 0),
+
+  LessThan    = operator_value(OperatorType::Binary, Precedence::Relation, 0),
+  GreaterThan = operator_value(OperatorType::Binary, Precedence::Relation, 1),
+  LessThanEquals =
+      operator_value(OperatorType::Binary, Precedence::Relation, 2),
+  GreaterThanEquals =
+      operator_value(OperatorType::Binary, Precedence::Relation, 3),
+
+  BitOr  = operator_value(OperatorType::Binary, Precedence::BitOr, 0),
+  BitXor = operator_value(OperatorType::Binary, Precedence::BitXor, 0),
+  BitAnd = operator_value(OperatorType::Binary, Precedence::BitAnd, 0),
+
+  ShiftLeft  = operator_value(OperatorType::Binary, Precedence::Shift, 0),
+  ShiftRight = operator_value(OperatorType::Binary, Precedence::Shift, 1),
+
+  // Unary
+  BoolNot = operator_value(OperatorType::Unary, Precedence::Prefix, 0),
+  BitNot  = operator_value(OperatorType::Unary, Precedence::Prefix, 1),
+
+  Positive = operator_value(OperatorType::Unary, Precedence::Prefix, 2),
+  Negative = operator_value(OperatorType::Unary, Precedence::Prefix, 3),
+
+  PreInc = operator_value(OperatorType::Unary, Precedence::Prefix, 4),
+  PreDec = operator_value(OperatorType::Unary, Precedence::Prefix, 5),
+
+  PostInc = operator_value(OperatorType::Unary, Precedence::Postfix, 0),
+  PostDec = operator_value(OperatorType::Unary, Precedence::Postfix, 1),
+};
+
+auto to_string(SyntaxKind kind) -> const char*;
+
+auto to_string(Operator op) -> const char*;
+
+auto is_expression(SyntaxKind kind) -> bool;
+
+auto is_statement(SyntaxKind kind) -> bool;
+
+auto is_definition(SyntaxKind kind) -> bool;
+
+auto get_unary_pre_op(LexicalKind kind) -> Operator;
+
+auto get_binary_op(LexicalKind kind) -> Operator;
+
+auto get_precedence(Operator op) -> Precedence;
 
 class SyntaxNode
 #ifdef TRACE
@@ -153,6 +152,9 @@ class ExpressionNode : public SyntaxNode {
 };
 
 class Operation : public ExpressionNode {
+ public:
+  using Expression = std::shared_ptr<ExpressionNode>;
+
   Operator op_;
 
  public:
@@ -167,10 +169,22 @@ class Operation : public ExpressionNode {
 #endif
 };
 
-class BinaryExpression final : public Operation {
- public:
-  using Expression = std::shared_ptr<ExpressionNode>;
+class UnaryExpression final : public Operation {
+  Expression expr_;
 
+ public:
+  constexpr UnaryExpression(Operator op)
+      : Operation{SyntaxKind::ExprUnary, op} {}
+
+  auto set_expr(const Expression& expr) -> void { expr_ = expr; }
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
+};
+
+class BinaryExpression final : public Operation {
  private:
   Expression lhs_;
   Expression rhs_;
@@ -239,8 +253,8 @@ class VarDefinition : public Definition {
   Assignment assignment_;
 
  public:
-  explicit VarDefinition(const String& name = nullptr,
-                         const String& type_name = nullptr,
+  explicit VarDefinition(const String& name       = nullptr,
+                         const String& type_name  = nullptr,
                          const Assignment& assign = nullptr)
       : Definition(SyntaxKind::DefVar, name),
         type_name_{type_name},
@@ -280,14 +294,17 @@ class Statement : public SyntaxNode {
 };
 
 class ExprStatement final : public Statement {
-  std::shared_ptr<ExpressionNode> _expression;
+  std::shared_ptr<ExpressionNode> expr_;
 
  public:
-  constexpr ExprStatement() : Statement{SyntaxKind::StmReturn} {}
+  constexpr ExprStatement() : Statement{SyntaxKind::StmExpr} {}
 
-  auto set_expr(const std::shared_ptr<ExpressionNode>& expr) {
-    _expression = expr;
-  }
+  auto set_expr(const std::shared_ptr<ExpressionNode>& expr) { expr_ = expr; }
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
 };
 
 class ReturnStatement final : public Statement {
@@ -324,14 +341,14 @@ class ForeachStatement final : public BodyStatement {};
 
 class StatementBlock final : public SyntaxNode {
  public:
-  using Statement = std::shared_ptr<Statement>;
+  using Statement           = std::shared_ptr<Statement>;
   using StatementCollection = std::vector<Statement>;
 
  private:
   StatementCollection statements_;
 
  public:
-  explicit StatementBlock() : SyntaxNode(SyntaxKind::StmBlock) {}
+  explicit StatementBlock() : SyntaxNode(SyntaxKind::Block) {}
   auto push_statement(const Statement& statement) -> void {
     statements_.emplace_back(statement);
   }
@@ -344,9 +361,9 @@ class StatementBlock final : public SyntaxNode {
 
 class FuncDefinition final : public Definition {
  public:
-  using Parameter = std::shared_ptr<FuncParameter>;
+  using Parameter           = std::shared_ptr<FuncParameter>;
   using ParameterCollection = std::vector<Parameter>;
-  using Body = std::shared_ptr<StatementBlock>;
+  using Body                = std::shared_ptr<StatementBlock>;
 
  private:
   ParameterCollection parameters_;
@@ -371,7 +388,7 @@ class FuncDefinition final : public Definition {
 };
 
 class SourceNode final : public SyntaxNode {
-  using Node = std::shared_ptr<SyntaxNode>;
+  using Node      = std::shared_ptr<SyntaxNode>;
   using NodeArray = std::vector<Node>;
 
   NodeArray nodes_;
@@ -386,49 +403,3 @@ class SourceNode final : public SyntaxNode {
   auto on_serialize(xml::SerializationContext& context) const -> void override;
 #endif
 };
-
-constexpr auto get_binary_op(LexicalKind kind) -> Operator {
-  switch (kind) {
-    case LexicalKind::SymbolPlus:
-      return Operator::Add;
-    case LexicalKind::SymbolMinus:
-      return Operator::Subtract;
-    case LexicalKind::SymbolStar:
-      return Operator::Multiply;
-    case LexicalKind::SymbolSlash:
-      return Operator::Divide;
-
-    case LexicalKind::SymbolBoolEquals:
-      return Operator::Equals;
-    case LexicalKind::SymbolBoolNotEquals:
-      return Operator::NotEquals;
-    case LexicalKind::SymbolBoolOr:
-      return Operator::Or;
-    case LexicalKind::SymbolBoolAnd:
-      return Operator::And;
-
-    case LexicalKind::SymbolAngleOpen:
-      return Operator::LessThan;
-    case LexicalKind::SymbolAngleClose:
-      return Operator::GreaterThan;
-    case LexicalKind::SymbolLessThanEqual:
-      return Operator::LessThanEquals;
-    case LexicalKind::SymbolGreaterThanEqual:
-      return Operator::GreaterThanEquals;
-
-    case LexicalKind::SymbolBitOr:
-      return Operator::BitOr;
-    case LexicalKind::SymbolBitAnd:
-      return Operator::BitAnd;
-    case LexicalKind::SymbolBitXor:
-      return Operator::BitXor;
-
-    case LexicalKind::SymbolShiftLeft:
-      return Operator::ShiftLeft;
-    case LexicalKind::SymbolShiftRight:
-      return Operator::ShiftRight;
-
-    default:
-      throw std::exception();
-  }
-}

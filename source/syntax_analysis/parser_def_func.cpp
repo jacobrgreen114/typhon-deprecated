@@ -27,8 +27,7 @@ auto do_func_def_body_end(ParserContext& ctx) -> void {
 
 auto func_def_body_end_exit_handler_(ParserContext& ctx) -> ParserState {
   do_func_def_body_end(ctx);
-  auto states = ctx.pop_states();
-  return states.end;
+  return ctx.pop_end_state();
 }
 
 constexpr ParserState func_def_body_end_exit_state =
@@ -36,8 +35,7 @@ constexpr ParserState func_def_body_end_exit_state =
 
 auto func_def_body_end_handler_(ParserContext& ctx) -> ParserState {
   do_func_def_body_end(ctx);
-  auto states = ctx.pop_states();
-  return states.ret;
+  return ctx.pop_ret_state();
 }
 
 constexpr ParserState func_def_body_end_state =

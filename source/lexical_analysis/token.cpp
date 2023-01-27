@@ -68,6 +68,9 @@ const auto lexical_kind_names_ =
         {LexicalKind::SymbolStar, "SymbolStar"},
         {LexicalKind::SymbolSlash, "SymbolSlash"},
 
+        {LexicalKind::SymbolInc, "SymbolInc"},
+        {LexicalKind::SymbolDec, "SymbolDec"},
+
         {LexicalKind::SymbolShiftLeft, "SymbolShiftLeft"},
         {LexicalKind::SymbolShiftRight, "SymbolShiftRight"},
 

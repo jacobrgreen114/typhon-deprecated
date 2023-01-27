@@ -11,12 +11,12 @@ DerivePointerAlignment: false
 PointerAlignment: Left
 ReferenceAlignment: Pointer
 
-# AlignConsecutiveAssignments:
-#   Enabled: true
-#   AcrossComments: true
-#   AcrossEmptyLines: false
-#   AlignCompound: false
-#   PadOperators: false
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossComments: true
+  AcrossEmptyLines: false
+  AlignCompound: false
+  PadOperators: false
 
 # AlignConsecutiveDeclarations:
 #   Enabled: true

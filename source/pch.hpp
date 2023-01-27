@@ -21,8 +21,10 @@
 #include <filesystem>
 #include <iostream>
 #include <span>
+#include <chrono>
 
-namespace fs = std::filesystem;
+namespace fs     = std::filesystem;
+namespace chrono = std::chrono;
 
 #ifndef NODISCARD
 #define NODISCARD [[nodiscard]]
@@ -32,9 +34,9 @@ namespace fs = std::filesystem;
 #include "xml/serialization.hpp"
 #include "lexical_analysis/token.hpp"
 
-#ifdef _DEBUG
-#define assert(expr)                           \
-  if (!(expr)) {                               \
-    throw std::exception("assertion failed!"); \
-  }
-#endif
+// #ifdef _DEBUG
+// #define assert(expr)                           \
+//   if (!(expr)) {                               \
+//     throw std::exception("assertion failed!"); \
+//   }
+// #endif

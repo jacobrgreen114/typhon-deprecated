@@ -63,13 +63,13 @@ constexpr auto is_slash(char c) -> bool { return c is slash; }
 
 #undef is
 
-constexpr auto create_symbol_token(LexerContext &ctx, LexicalKind kind)
+constexpr auto create_symbol_token(LexerContext& ctx, LexicalKind kind)
     -> void {
   create_empty_token(ctx, kind);
 }
 
 constexpr auto symbol_error_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       std::cout << "Symbol error at " << ctx.token_position() << std::endl;
       throw_not_implemented();
     }};
@@ -77,7 +77,7 @@ constexpr auto symbol_error_state =
 // Symbol Colon States
 
 constexpr auto symbol_colon_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_colon(current));
 
@@ -88,7 +88,7 @@ constexpr auto symbol_colon_state =
 // Symbol Semicolon States
 
 constexpr auto symbol_semicolon_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_semicolon(current));
 
@@ -99,7 +99,7 @@ constexpr auto symbol_semicolon_state =
 // Symbol Brace States
 
 constexpr auto symbol_paren_open_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_paren_open(current));
 
@@ -108,7 +108,7 @@ constexpr auto symbol_paren_open_state =
     }};
 
 constexpr auto symbol_paren_close_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_paren_close(current));
 
@@ -119,7 +119,7 @@ constexpr auto symbol_paren_close_state =
 // Symbol Brace States
 
 constexpr auto symbol_brace_open_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_brace_open(current));
 
@@ -128,7 +128,7 @@ constexpr auto symbol_brace_open_state =
     }};
 
 constexpr auto symbol_brace_close_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_brace_close(current));
 
@@ -140,21 +140,21 @@ constexpr auto symbol_brace_close_state =
 
 // <
 constexpr auto symbol_angle_open_end_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolAngleOpen);
       return exit_state;
     }};
 
 // <
 constexpr auto symbol_angle_open_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolAngleOpen);
       return unknown_state;
     }};
 
 // <<
 constexpr auto symbol_shift_left_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_angle_open(current));
 
@@ -164,7 +164,7 @@ constexpr auto symbol_shift_left_state =
 
 // <=
 constexpr auto symbol_angle_open_equal_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_equals(current));
 
@@ -173,7 +173,7 @@ constexpr auto symbol_angle_open_equal_state =
     }};
 
 constexpr auto symbol_angle_open_unknown_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_plus(current));
 
@@ -189,21 +189,21 @@ constexpr auto symbol_angle_open_unknown_state =
 
 // >
 constexpr auto symbol_angle_close_end_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolAngleClose);
       return exit_state;
     }};
 
 // >
 constexpr auto symbol_angle_close_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolAngleClose);
       return unknown_state;
     }};
 
 // >>
 constexpr auto symbol_shift_right_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_angle_close(current));
 
@@ -213,7 +213,7 @@ constexpr auto symbol_shift_right_state =
 
 // >=
 constexpr auto symbol_angle_close_equal_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_equals(current));
 
@@ -222,7 +222,7 @@ constexpr auto symbol_angle_close_equal_state =
     }};
 
 constexpr auto symbol_angle_close_unknown_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_plus(current));
 
@@ -238,31 +238,31 @@ constexpr auto symbol_angle_close_unknown_state =
 
 // +
 constexpr auto symbol_plus_end_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolPlus);
       return exit_state;
     }};
 
 // +
 constexpr auto symbol_plus_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolPlus);
       return unknown_state;
     }};
 
 // ++
 constexpr auto symbol_plus_plus_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_plus(current));
 
-      create_symbol_token(ctx, LexicalKind::SymbolPlusPlus);
+      create_symbol_token(ctx, LexicalKind::SymbolInc);
       return ctx.move_next_state(unknown_state, exit_state);
     }};
 
 // +=
 constexpr auto symbol_plus_equal_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_equals(current));
 
@@ -271,7 +271,7 @@ constexpr auto symbol_plus_equal_state =
     }};
 
 constexpr auto symbol_plus_unknown_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_plus(current));
 
@@ -286,7 +286,7 @@ constexpr auto symbol_plus_unknown_state =
 // Symbol Bracket States
 
 constexpr auto symbol_bracket_open_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_bracket_open(current));
 
@@ -295,7 +295,7 @@ constexpr auto symbol_bracket_open_state =
     }};
 
 constexpr auto symbol_bracket_close_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_bracket_close(current));
 
@@ -307,21 +307,21 @@ constexpr auto symbol_bracket_close_state =
 
 // =
 constexpr auto symbol_equals_end_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolEquals);
       return exit_state;
     }};
 
 // =
 constexpr auto symbol_equals_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolEquals);
       return unknown_state;
     }};
 
 // ==
 constexpr auto symbol_equals_equal_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_equals(current));
 
@@ -330,7 +330,7 @@ constexpr auto symbol_equals_equal_state =
     }};
 
 constexpr auto symbol_equals_unknown_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_equals(current));
 
@@ -345,21 +345,21 @@ constexpr auto symbol_equals_unknown_state =
 
 // |
 constexpr auto symbol_pipe_end_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolBitOr);
       return exit_state;
     }};
 
 // |
 constexpr auto symbol_pipe_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolBitOr);
       return unknown_state;
     }};
 
 // ||
 constexpr auto symbol_pipe_pipe_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_pipe(current));
 
@@ -369,7 +369,7 @@ constexpr auto symbol_pipe_pipe_state =
 
 // |=
 constexpr auto symbol_pipe_equal_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_equals(current));
 
@@ -378,7 +378,7 @@ constexpr auto symbol_pipe_equal_state =
     }};
 
 constexpr auto symbol_pipe_unknown_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_pipe(current));
 
@@ -394,21 +394,21 @@ constexpr auto symbol_pipe_unknown_state =
 
 // &
 constexpr auto symbol_amp_end_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolBitAnd);
       return exit_state;
     }};
 
 // &
 constexpr auto symbol_amp_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolBitAnd);
       return unknown_state;
     }};
 
 // &&
 constexpr auto symbol_amp_amp_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_amp(current));
 
@@ -418,7 +418,7 @@ constexpr auto symbol_amp_amp_state =
 
 // &=
 constexpr auto symbol_amp_equal_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_equals(current));
 
@@ -427,7 +427,7 @@ constexpr auto symbol_amp_equal_state =
     }};
 
 constexpr auto symbol_amp_unknown_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_amp(current));
 
@@ -443,21 +443,21 @@ constexpr auto symbol_amp_unknown_state =
 
 // ^
 constexpr auto symbol_caret_end_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolBitXor);
       return exit_state;
     }};
 
 // ^
 constexpr auto symbol_caret_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolBitXor);
       return unknown_state;
     }};
 
 // ^=
 constexpr auto symbol_caret_equal_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_equals(current));
 
@@ -466,7 +466,7 @@ constexpr auto symbol_caret_equal_state =
     }};
 
 constexpr auto symbol_caret_unknown_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_caret(current));
 
@@ -481,31 +481,31 @@ constexpr auto symbol_caret_unknown_state =
 
 // -
 constexpr auto symbol_minus_end_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolMinus);
       return exit_state;
     }};
 
 // -
 constexpr auto symbol_minus_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolMinus);
       return unknown_state;
     }};
 
 // --
 constexpr auto symbol_minus_minus_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_minus(current));
 
-      create_symbol_token(ctx, LexicalKind::SymbolMinusMinus);
+      create_symbol_token(ctx, LexicalKind::SymbolDec);
       return ctx.move_next_state(unknown_state, exit_state);
     }};
 
 // -=
 constexpr auto symbol_minus_equal_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_equals(current));
 
@@ -515,7 +515,7 @@ constexpr auto symbol_minus_equal_state =
 
 // ->
 constexpr auto symbol_arrow_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_angle_close(current));
 
@@ -524,7 +524,7 @@ constexpr auto symbol_arrow_state =
     }};
 
 constexpr auto symbol_minus_unknown_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_minus(current));
 
@@ -541,21 +541,21 @@ constexpr auto symbol_minus_unknown_state =
 
 // *
 constexpr auto symbol_star_end_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolStar);
       return exit_state;
     }};
 
 // *
 constexpr auto symbol_star_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolStar);
       return unknown_state;
     }};
 
 // *=
 constexpr auto symbol_star_equal_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_equals(current));
 
@@ -564,7 +564,7 @@ constexpr auto symbol_star_equal_state =
     }};
 
 constexpr auto symbol_star_unknown_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_star(current));
 
@@ -579,21 +579,21 @@ constexpr auto symbol_star_unknown_state =
 
 // /
 constexpr auto symbol_slash_end_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolSlash);
       return exit_state;
     }};
 
 // /
 constexpr auto symbol_slash_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       create_symbol_token(ctx, LexicalKind::SymbolSlash);
       return unknown_state;
     }};
 
 // /=
 constexpr auto symbol_slash_equal_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_equals(current));
 
@@ -602,7 +602,7 @@ constexpr auto symbol_slash_equal_state =
     }};
 
 constexpr auto symbol_slash_unknown_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       auto current = ctx.current();
       assert(is_slash(current));
 
@@ -618,8 +618,8 @@ constexpr auto symbol_slash_unknown_state =
 // Symbol Start States
 
 constexpr LexerState symbol_unknown_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
-      auto &current = ctx.current();
+    LexerState{[](LexerContext& ctx) -> LexerState {
+      auto& current = ctx.current();
       switch (current) {
         case colon:
           return symbol_colon_state;
@@ -668,7 +668,7 @@ constexpr LexerState symbol_unknown_state =
     }};
 
 constexpr LexerState symbol_start_state =
-    LexerState{[](LexerContext &ctx) -> LexerState {
+    LexerState{[](LexerContext& ctx) -> LexerState {
       ctx.mark_start_of_token();
       return symbol_unknown_state;
     }};

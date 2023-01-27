@@ -139,7 +139,7 @@ static constexpr ParserState statement_start_state =
     ParserState{statement_unknown_handler_};
 
 /*
- * Statement StmBlock
+ * Statement Block
  */
 
 auto statement_block_error_handler_(ParserContext& ctx) -> ParserState {

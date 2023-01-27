@@ -158,9 +158,9 @@ enum class LexicalKind {
   SymbolSlash,
 
   // ++
-  SymbolPlusPlus,
+  SymbolInc,
   // --
-  SymbolMinusMinus,
+  SymbolDec,
 
   // +=
   SymbolPlusEquals,

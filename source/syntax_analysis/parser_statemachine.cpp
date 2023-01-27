@@ -6,6 +6,67 @@
 #include "parser_def_func.hpp"
 #include "parser_def_var.hpp"
 
+auto is_unary_pre_operator(const LexicalToken& token) -> bool {
+  switch (token.kind()) {
+    case LexicalKind::SymbolPlus:
+    case LexicalKind::SymbolMinus:
+    case LexicalKind::SymbolInc:
+    case LexicalKind::SymbolDec:
+    //case LexicalKind::SymbolStar:
+    case LexicalKind::SymbolBoolNot:
+    case LexicalKind::SymbolBitNot:
+      return true;
+
+    default:
+      return false;
+  }
+};
+
+auto is_unary_post_operator(const LexicalToken& token) -> bool {
+  switch (token.kind()) {
+    case LexicalKind::SymbolInc:
+    case LexicalKind::SymbolDec:
+      return true;
+
+    default:
+      return false;
+  }
+};
+
+// todo : reorder kind enum to optimize jump table
+auto is_binary_operator(const LexicalToken& token) -> bool {
+  auto kind = token.kind();
+  switch (kind) {
+    case LexicalKind::SymbolPlus:
+    case LexicalKind::SymbolMinus:
+    case LexicalKind::SymbolStar:
+    case LexicalKind::SymbolSlash:
+
+    case LexicalKind::SymbolEquals:
+
+    case LexicalKind::SymbolBoolEquals:
+    case LexicalKind::SymbolBoolNotEquals:
+    case LexicalKind::SymbolBoolOr:
+    case LexicalKind::SymbolBoolAnd:
+
+    case LexicalKind::SymbolAngleOpen:
+    case LexicalKind::SymbolAngleClose:
+    case LexicalKind::SymbolLessThanEqual:
+    case LexicalKind::SymbolGreaterThanEqual:
+
+    case LexicalKind::SymbolBitOr:
+    case LexicalKind::SymbolBitAnd:
+    case LexicalKind::SymbolBitXor:
+
+    case LexicalKind::SymbolShiftLeft:
+    case LexicalKind::SymbolShiftRight:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
 #pragma region Global Parser States
 
 auto error_handler_(ParserContext& ctx) -> ParserState {

@@ -53,11 +53,17 @@ class ParserContext final
     state_stack.push({ret_state, end_state});
   }
 
+ private:
   auto pop_states() {
     auto state = state_stack.top();
     state_stack.pop();
     return state;
   }
+
+ public:
+  auto pop_ret_state() -> ParserState { return pop_states().ret; }
+
+  auto pop_end_state() -> ParserState { return pop_states().end; }
 
   auto move_next_stack() -> ParserState {
     auto states = pop_states();
@@ -99,6 +105,9 @@ class ParserContext final
   auto pop_statement_block() { return pop_syntax_node<StatementBlock>(); }
 
   auto pop_expr_node() { return pop_syntax_node<ExpressionNode>(); }
+
+  auto get_expr_unary_node() { return get_syntax_node<UnaryExpression>(); }
+
   auto pop_expr_binary_node() { return pop_syntax_node<BinaryExpression>(); }
 };
 
@@ -176,35 +185,7 @@ constexpr LexicalTokenPredicate is_keyword_return = [](auto& token) {
   return is_token_kind(token, LexicalKind::KeywordReturn);
 };
 
-// todo : reorder kind enum to optimize jump table
-constexpr LexicalTokenPredicate is_binary_operator = [](auto& token) {
-  auto kind = token.kind();
-  switch (kind) {
-    case LexicalKind::SymbolPlus:
-    case LexicalKind::SymbolMinus:
-    case LexicalKind::SymbolStar:
-    case LexicalKind::SymbolSlash:
+auto is_unary_pre_operator(const LexicalToken& token) -> bool;
+auto is_unary_post_operator(const LexicalToken& token) -> bool;
 
-    case LexicalKind::SymbolBoolEquals:
-    case LexicalKind::SymbolBoolNotEquals:
-    case LexicalKind::SymbolBoolOr:
-    case LexicalKind::SymbolBoolAnd:
-
-    case LexicalKind::SymbolAngleOpen:
-    case LexicalKind::SymbolAngleClose:
-    case LexicalKind::SymbolLessThanEqual:
-    case LexicalKind::SymbolGreaterThanEqual:
-
-    case LexicalKind::SymbolBitOr:
-    case LexicalKind::SymbolBitAnd:
-    case LexicalKind::SymbolBitXor:
-
-    case LexicalKind::SymbolShiftLeft:
-    case LexicalKind::SymbolShiftRight: {
-      return true;
-    }
-
-    default:
-      return false;
-  }
-};
+auto is_binary_operator(const LexicalToken& token) -> bool;
