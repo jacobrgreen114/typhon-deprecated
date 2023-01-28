@@ -35,6 +35,7 @@ namespace chrono = std::chrono;
 #include "state_machine.hpp"
 #include "xml/serialization.hpp"
 #include "lexical_analysis/token.hpp"
+#include "timer.hpp"
 
 // #ifdef _DEBUG
 // #define assert(expr)                           \

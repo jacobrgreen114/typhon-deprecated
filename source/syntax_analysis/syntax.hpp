@@ -476,6 +476,12 @@ class ForStatement final : public BodyStatement {
   auto set_prefix(const Prefix& prefix) { prefix_ = prefix; }
   auto set_cond(const Condition& cond) { cond_ = cond; }
   auto set_postfix(const Postfix& postfix) { postfix_ = postfix; }
+
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
 };
 
 class ForeachStatement final : public BodyStatement {};

@@ -320,6 +320,23 @@ auto WhileStatement::on_serialize(xml::SerializationContext& context) const -> v
   }
 }
 
+auto ForStatement::on_serialize(xml::SerializationContext& context) const -> void {
+  SyntaxNode::on_serialize(context);
+  if (prefix_) {
+    context.add_element("pre", *prefix_);
+  }
+  if (cond_) {
+    context.add_element("cond", *cond_);
+  }
+  if (postfix_) {
+    context.add_element("post", *postfix_);
+  }
+
+  if (body()) {
+    context.add_element("body", *body());
+  }
+}
+
 void StatementBlock::on_serialize(xml::SerializationContext& context) const {
   //SyntaxNode::on_serialize(context);
   for (auto& statement : statements_) {
