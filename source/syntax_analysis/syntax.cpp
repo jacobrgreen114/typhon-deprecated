@@ -8,31 +8,24 @@
  * Syntax Kind
  */
 
-const auto syntax_kind_names =
-    std::unordered_map<SyntaxKind, std::string_view>{ENUM_NAME(SyntaxKind, Source),
+const auto syntax_kind_names = std::unordered_map<SyntaxKind, std::string_view>{
+    ENUM_NAME(SyntaxKind, Source),
 
-                                                     ENUM_NAME(SyntaxKind, ExprNumber),
-                                                     ENUM_NAME(SyntaxKind, ExprString),
-                                                     ENUM_NAME(SyntaxKind, ExprIdentifier),
+    ENUM_NAME(SyntaxKind, ExprNumber),     ENUM_NAME(SyntaxKind, ExprString),
+    ENUM_NAME(SyntaxKind, ExprIdentifier),
 
-                                                     ENUM_NAME(SyntaxKind, ExprUnary),
-                                                     ENUM_NAME(SyntaxKind, ExprBinary),
-                                                     ENUM_NAME(SyntaxKind, ExprTernary),
+    ENUM_NAME(SyntaxKind, ExprUnary),      ENUM_NAME(SyntaxKind, ExprBinary),
+    ENUM_NAME(SyntaxKind, ExprTernary),
 
-                                                     ENUM_NAME(SyntaxKind, StmExpr),
-                                                     ENUM_NAME(SyntaxKind, StmReturn),
-                                                     ENUM_NAME(SyntaxKind, StmIf),
-                                                     ENUM_NAME(SyntaxKind, StmElif),
-                                                     ENUM_NAME(SyntaxKind, StmElse),
+    ENUM_NAME(SyntaxKind, StmExpr),        ENUM_NAME(SyntaxKind, StmDef),
+    ENUM_NAME(SyntaxKind, StmReturn),      ENUM_NAME(SyntaxKind, StmIf),
+    ENUM_NAME(SyntaxKind, StmElif),        ENUM_NAME(SyntaxKind, StmElse),
 
-                                                     ENUM_NAME(SyntaxKind, Block),
+    ENUM_NAME(SyntaxKind, Block),
 
-                                                     ENUM_NAME(SyntaxKind, DefVar),
-                                                     ENUM_NAME(SyntaxKind, DefFunc),
-                                                     ENUM_NAME(SyntaxKind, DefParam),
-                                                     ENUM_NAME(SyntaxKind, DefStruct),
-                                                     ENUM_NAME(SyntaxKind, DefClass),
-                                                     ENUM_NAME(SyntaxKind, DefInterface)};
+    ENUM_NAME(SyntaxKind, DefVar),         ENUM_NAME(SyntaxKind, DefFunc),
+    ENUM_NAME(SyntaxKind, DefParam),       ENUM_NAME(SyntaxKind, DefStruct),
+    ENUM_NAME(SyntaxKind, DefClass),       ENUM_NAME(SyntaxKind, DefInterface)};
 
 auto to_string(SyntaxKind kind) -> const std::string_view& {
   if (auto it = syntax_kind_names.find(kind); it != syntax_kind_names.end()) {
@@ -93,6 +86,7 @@ const auto expressions =
     std::unordered_set<SyntaxKind>{SyntaxKind::ExprNumber, SyntaxKind::ExprBinary};
 
 const auto statements = std::unordered_set<SyntaxKind>{
+    SyntaxKind::StmDef,
     SyntaxKind::StmExpr,
     SyntaxKind::StmReturn,
     SyntaxKind::StmIf,
@@ -263,6 +257,13 @@ void BinaryExpression::on_serialize(xml::SerializationContext& context) const {
   }
   if (rhs_) {
     context.add_element("rhs", *rhs_);
+  }
+}
+
+auto DefStatement::on_serialize(xml::SerializationContext& context) const -> void {
+  SyntaxNode::on_serialize(context);
+  if (def_) {
+    context.add_element("def", *def_);
   }
 }
 

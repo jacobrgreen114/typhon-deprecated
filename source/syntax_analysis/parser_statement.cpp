@@ -5,6 +5,7 @@
 
 #include "parser_expression.hpp"
 #include "parser_def_func.hpp"
+#include "parser_def_var.hpp"
 
 /*
  * Exit
@@ -203,13 +204,38 @@ auto statement_expr_handler_(ParserContext& ctx) -> ParserState {
 }
 
 /*
+ * Definition Statement
+ */
+
+auto statement_def_var_end_handler_(ParserContext& ctx) -> ParserState;
+auto statement_def_var_start_handler_(ParserContext& ctx) -> ParserState;
+
+constexpr auto statement_def_var_end_state   = ParserState{statement_def_var_end_handler_};
+constexpr auto statement_def_var_start_state = ParserState{statement_def_var_start_handler_};
+
+auto statement_def_var_end_handler_(ParserContext& ctx) -> ParserState {
+  auto def   = ctx.pop_def_node();
+  auto* node = ctx.get_statement_def_node();
+  node->set_def(def);
+  return ctx.pop_ret_state();
+}
+
+auto statement_def_var_start_handler_(ParserContext& ctx) -> ParserState {
+  auto& current = ctx.current();
+  assert(is_keyword_var(current));
+  ctx.syntax_stack.emplace(std::make_shared<DefStatement>());
+  ctx.push_states(statement_def_var_end_state, statement_unexpected_end_error_state);
+  return var_def_start_state;
+}
+
+/*
  * Statement Start
  */
 
 auto statement_unknown_handler_(ParserContext& ctx) -> ParserState {
   switch (ctx.current().kind()) {
     case LexicalKind::KeywordVar:
-      throw_not_implemented();
+      return statement_def_var_start_state;
     case LexicalKind::KeywordReturn:
       return statement_return_state;
     case LexicalKind::KeywordIf:

@@ -86,6 +86,7 @@ class ParserContext final : public EnumeratingContext<ParserContext, LexicalToke
   }
 
   auto get_var_def_node() { return get_syntax_node<VarDefinition>(); }
+  auto pop_def_node() { return pop_syntax_node<Definition>(); }
 
   auto get_func_def_node() { return get_syntax_node<FuncDefinition>(); }
   auto get_func_param_node() { return get_syntax_node<FuncParameter>(); }
@@ -94,6 +95,7 @@ class ParserContext final : public EnumeratingContext<ParserContext, LexicalToke
   auto get_statement_node() { return get_syntax_node<Statement>(); }
   auto pop_statement_node() { return pop_syntax_node<Statement>(); }
 
+  auto get_statement_def_node() { return get_syntax_node<DefStatement>(); }
   auto get_statement_expr_node() { return get_syntax_node<ExprStatement>(); }
 
   auto get_statement_return_node() { return get_syntax_node<ReturnStatement>(); }

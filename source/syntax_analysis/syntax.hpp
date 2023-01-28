@@ -47,11 +47,12 @@ enum class SyntaxKind : syntax_kind_t {
   ExprString     = make_syntax_kind(SyntaxType::Expression, 5),
   ExprIdentifier = make_syntax_kind(SyntaxType::Expression, 6),
 
-  StmExpr   = make_syntax_kind(SyntaxType::Statement, 1),
-  StmReturn = make_syntax_kind(SyntaxType::Statement, 2),
-  StmIf     = make_syntax_kind(SyntaxType::Statement, 3),
-  StmElif   = make_syntax_kind(SyntaxType::Statement, 4),
-  StmElse   = make_syntax_kind(SyntaxType::Statement, 5),
+  StmDef    = make_syntax_kind(SyntaxType::Statement, 1),
+  StmExpr   = make_syntax_kind(SyntaxType::Statement, 2),
+  StmReturn = make_syntax_kind(SyntaxType::Statement, 3),
+  StmIf     = make_syntax_kind(SyntaxType::Statement, 4),
+  StmElif   = make_syntax_kind(SyntaxType::Statement, 5),
+  StmElse   = make_syntax_kind(SyntaxType::Statement, 6),
 
   DefVar       = make_syntax_kind(SyntaxType::Definition, 1),
   DefFunc      = make_syntax_kind(SyntaxType::Definition, 2),
@@ -221,23 +222,6 @@ class ExpressionNode : public SyntaxNode {
   explicit constexpr ExpressionNode(const SyntaxKind kind) : SyntaxNode{kind} {}
 };
 
-class Operation : public ExpressionNode {
- public:
-  using Expression = std::shared_ptr<ExpressionNode>;
-
-  Operator op_;
-
- public:
-  constexpr Operation(SyntaxKind kind, Operator op) : ExpressionNode{kind}, op_{op} {}
-
-  auto op() const { return op_; }
-
-#ifdef TRACE
- protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
-};
-
 class ConstantExpression : public ExpressionNode {
  private:
   String value_;
@@ -264,6 +248,27 @@ class IdentifierExpression final : public ExpressionNode {
  public:
   explicit IdentifierExpression(const String& identifier)
       : ExpressionNode{SyntaxKind::ExprIdentifier}, identifier_{identifier} {}
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
+};
+
+/*
+ * Operation Expressions
+ */
+
+class Operation : public ExpressionNode {
+ public:
+  using Expression = std::shared_ptr<ExpressionNode>;
+
+  Operator op_;
+
+ public:
+  constexpr Operation(SyntaxKind kind, Operator op) : ExpressionNode{kind}, op_{op} {}
+
+  auto op() const { return op_; }
 
 #ifdef TRACE
  protected:
@@ -312,6 +317,25 @@ class Statement : public SyntaxNode {
   constexpr explicit Statement(SyntaxKind kind) : SyntaxNode{kind} {}
 };
 
+class StatementBlock final : public SyntaxNode {
+ public:
+  using Statement           = std::shared_ptr<Statement>;
+  using StatementCollection = std::vector<Statement>;
+
+ private:
+  StatementCollection statements_;
+
+ public:
+  explicit StatementBlock() : SyntaxNode(SyntaxKind::Block) {}
+
+  auto push_statement(const Statement& statement) -> void { statements_.emplace_back(statement); }
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
+};
+
 class ExprStatement final : public Statement {
   std::shared_ptr<ExpressionNode> expr_;
 
@@ -340,26 +364,9 @@ class ReturnStatement final : public Statement {
 #endif
 };
 
-class VarStatement final : public Statement {};
-
-class StatementBlock final : public SyntaxNode {
- public:
-  using Statement           = std::shared_ptr<Statement>;
-  using StatementCollection = std::vector<Statement>;
-
- private:
-  StatementCollection statements_;
-
- public:
-  explicit StatementBlock() : SyntaxNode(SyntaxKind::Block) {}
-
-  auto push_statement(const Statement& statement) -> void { statements_.emplace_back(statement); }
-
-#ifdef TRACE
- protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
-};
+/*
+ * Statements
+ */
 
 class BodyStatement : public Statement {
   std::shared_ptr<StatementBlock> block_;
@@ -490,6 +497,28 @@ class FuncDefinition final : public Definition {
   auto on_serialize(xml::SerializationContext& context) const -> void override;
 #endif
 };
+
+/*
+ * Definition Statements
+ */
+
+class DefStatement final : public Statement {
+  std::shared_ptr<Definition> def_;
+
+ public:
+  constexpr DefStatement() : Statement{SyntaxKind::StmDef} {}
+
+  auto set_def(const std::shared_ptr<Definition>& def) { def_ = def; }
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
+};
+
+/*
+ * Root
+ */
 
 class SourceNode final : public SyntaxNode {
   using Node      = std::shared_ptr<SyntaxNode>;
