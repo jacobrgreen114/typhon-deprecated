@@ -1,4 +1,4 @@
-// Copyright (c) 2023. Jacob R. Green
+// Copyright (c) 2023 Jacob R. Green
 // All Rights Reserved.
 
 #pragma once
@@ -16,6 +16,10 @@
 #endif
 
 using String = std::shared_ptr<std::string>;
+
+/*
+ * File Position
+ */
 
 class FilePosition final {
   using int_type = size_t;
@@ -37,56 +41,118 @@ class FilePosition final {
   }
 };
 
-auto operator<<(std::ostream& stream, const FilePosition& position)
-    -> std::ostream&;
+auto operator<<(std::ostream& stream, const FilePosition& position) -> std::ostream&;
 
-#pragma endregion
+/*
+ * Lexical Kind
+ */
 
-#pragma region Token
+using lexical_kind_t = uint32_t;
 
-enum class LexicalKind {
+enum class LexicalType {
+  Misc       = 0x00,
+  Keyword    = 0x01,
+  Symbol     = 0x02,
+  Constant   = 0x03,
+  Identifier = 0x04,
+};
+
+constexpr auto lexical_kind_type_offset  = 24;
+constexpr auto lexical_kind_type_bitmask = 0xff;
+constexpr auto lexical_kind_type_mask    = lexical_kind_type_bitmask << lexical_kind_type_offset;
+
+constexpr auto lexical_kind_unary_flag_offset  = 16;
+constexpr auto lexical_kind_unary_flag_bitmask = 0b1;
+constexpr auto lexical_kind_unary_flag_mask    = lexical_kind_unary_flag_bitmask
+                                              << lexical_kind_unary_flag_offset;
+
+constexpr auto lexical_kind_binary_flag_offset  = 17;
+constexpr auto lexical_kind_binary_flag_bitmask = 0b1;
+constexpr auto lexical_kind_binary_flag_mask    = lexical_kind_binary_flag_bitmask
+                                               << lexical_kind_binary_flag_offset;
+
+constexpr auto lexical_kind_ternary_flag_offset  = 18;
+constexpr auto lexical_kind_ternary_flag_bitmask = 0b1;
+constexpr auto lexical_kind_ternary_flag_mask    = lexical_kind_ternary_flag_bitmask
+                                                << lexical_kind_ternary_flag_offset;
+
+constexpr auto lexical_kind_prefix_flag_offset  = 19;
+constexpr auto lexical_kind_prefix_flag_bitmask = 0b1;
+constexpr auto lexical_kind_prefix_flag_mask    = lexical_kind_prefix_flag_bitmask
+                                               << lexical_kind_prefix_flag_offset;
+
+constexpr auto lexical_kind_postfix_flag_offset  = 20;
+constexpr auto lexical_kind_postfix_flag_bitmask = 0b1;
+constexpr auto lexical_kind_postfix_flag_mask    = lexical_kind_postfix_flag_bitmask
+                                                << lexical_kind_postfix_flag_offset;
+
+constexpr auto make_lexical_kind(LexicalType type, lexical_kind_t value) -> lexical_kind_t {
+  return (static_cast<std::underlying_type_t<LexicalType>>(type) << lexical_kind_type_offset) |
+         value;
+}
+
+constexpr auto make_lexical_kind_keyword(lexical_kind_t value) -> lexical_kind_t {
+  return make_lexical_kind(LexicalType::Keyword, value);
+}
+constexpr auto make_lexical_kind_constant(lexical_kind_t value) -> lexical_kind_t {
+  return make_lexical_kind(LexicalType::Constant, value);
+}
+
+constexpr auto make_lexical_kind_operator(
+    bool unary, bool binary, bool ternary, bool prefix, bool postfix, lexical_kind_t value)
+    -> lexical_kind_t {
+  return make_lexical_kind(
+      LexicalType::Symbol,
+      (static_cast<lexical_kind_t>(unary) << lexical_kind_unary_flag_offset) |
+          (static_cast<lexical_kind_t>(binary) << lexical_kind_binary_flag_offset) |
+          (static_cast<lexical_kind_t>(ternary) << lexical_kind_ternary_flag_offset) |
+          (static_cast<lexical_kind_t>(prefix) << lexical_kind_prefix_flag_offset) |
+          (static_cast<lexical_kind_t>(postfix) << lexical_kind_postfix_flag_offset) | value);
+}
+
+// todo : pack flags into enum value
+enum class LexicalKind : lexical_kind_t {
   Unknown,
 
-  Identifier,
-  Number,
+  Identifier = make_lexical_kind(LexicalType::Identifier, 0x01),
+  Number     = make_lexical_kind_constant(0x0001),
+  String     = make_lexical_kind_constant(0x0002),
 
   // var
-  KeywordVar,
+  KeywordVar       = make_lexical_kind_keyword(0x0011),
   // func
-  KeywordFunc,
+  KeywordFunc      = make_lexical_kind_keyword(0x0012),
   // struct
-  KeywordStruct,
+  KeywordStruct    = make_lexical_kind_keyword(0x0013),
   // object
-  KeywordObject,
-
+  KeywordObject    = make_lexical_kind_keyword(0x0014),
   // concept
-  KeywordConcept,
+  KeywordConcept   = make_lexical_kind_keyword(0x0015),
   // interface
-  KeywordInterface,
+  KeywordInterface = make_lexical_kind_keyword(0x0016),
 
   // return
-  KeywordReturn,
-
+  KeywordReturn = make_lexical_kind_keyword(0x0021),
   // if
-  KeywordIf,
+  KeywordIf     = make_lexical_kind_keyword(0x0022),
   // elif
-  KeywordElif,
+  KeywordElif   = make_lexical_kind_keyword(0x0023),
   // else
-  KeywordElse,
+  KeywordElse   = make_lexical_kind_keyword(0x0024),
 
   // switch
-  KeywordSwitch,
+  KeywordSwitch = make_lexical_kind_keyword(0x0031),
   // match
-  KeywordMatch,
+  KeywordMatch  = make_lexical_kind_keyword(0x0032),
 
   // loop
-  KeywordLoop,
+  KeywordLoop    = make_lexical_kind_keyword(0x0041),
   // while
-  KeywordWhile,
+  KeywordWhile   = make_lexical_kind_keyword(0x0042),
   // for
-  KeywordFor,
+  KeywordFor     = make_lexical_kind_keyword(0x0043),
   // foreach
-  KeywordForeach,
+  KeywordForeach = make_lexical_kind_keyword(0x0044),
 
   // .
   SymbolPeriod,
@@ -186,6 +252,10 @@ enum class LexicalKind {
 
 auto operator<<(std::ostream& stream, LexicalKind kind) -> std::ostream&;
 
+/*
+ * Lexical Token
+ */
+
 class LexicalToken final
 #ifdef TRACE
     : public xml::Serializable
@@ -203,8 +273,7 @@ class LexicalToken final
   LexicalToken(const FilePosition& pos, LexicalKind kind, ValueType value)
       : pos_{pos}, kind_{kind}, value_{std::move(value)} {}
 
-  LexicalToken(const FilePosition& pos, LexicalKind kind)
-      : LexicalToken{pos, kind, nullptr} {}
+  LexicalToken(const FilePosition& pos, LexicalKind kind) : LexicalToken{pos, kind, nullptr} {}
 
   NODISCARD constexpr auto pos() const -> auto& { return pos_; }
   NODISCARD constexpr auto kind() const -> auto& { return kind_; }
@@ -217,7 +286,6 @@ class LexicalToken final
 #endif
 };
 
-using TokenCollection = std::vector<LexicalToken>;
+auto operator<<(std::ostream& stream, const LexicalToken& token) -> std::ostream&;
 
-auto operator<<(std::ostream& stream, const LexicalToken& token)
-    -> std::ostream&;
+using TokenCollection = std::vector<LexicalToken>;

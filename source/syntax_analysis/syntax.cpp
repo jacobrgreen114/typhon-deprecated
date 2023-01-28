@@ -89,172 +89,140 @@ auto to_string(Operator op) -> const std::string_view& {
   throw std::exception();
 }
 
-bool is_expression(SyntaxKind kind) {
-  switch (kind) {
-    case SyntaxKind::ExprNumber:
-    case SyntaxKind::ExprBinary: {
-      return true;
-    }
-    default:
-      return false;
-  }
-}
+const auto expressions =
+    std::unordered_set<SyntaxKind>{SyntaxKind::ExprNumber, SyntaxKind::ExprBinary};
 
-auto is_statement(SyntaxKind kind) -> bool {
-  switch (kind) {
-    case SyntaxKind::StmExpr:
-    case SyntaxKind::StmReturn:
-      return true;
-    default:
-      return false;
-  }
-}
+const auto statements = std::unordered_set<SyntaxKind>{
+    SyntaxKind::StmExpr,
+    SyntaxKind::StmReturn,
+    SyntaxKind::StmIf,
+    SyntaxKind::StmElif,
+    SyntaxKind::StmElse,
+};
 
-auto is_definition(SyntaxKind kind) -> bool {
-  switch (kind) {
-    case SyntaxKind::DefVar:
-    case SyntaxKind::DefFunc:
-    case SyntaxKind::DefParam:
-    case SyntaxKind::DefStruct:
-    case SyntaxKind::DefClass:
-    case SyntaxKind::DefInterface:
-      return true;
+const auto definitions = std::unordered_set<SyntaxKind>{
+    SyntaxKind::DefVar,
+    SyntaxKind::DefFunc,
+    SyntaxKind::DefParam,
+    SyntaxKind::DefStruct,
+    SyntaxKind::DefClass,
+    SyntaxKind::DefInterface,
+};
 
-    default:
-      return false;
-  }
-}
+const auto unary_pre_op_map = std::unordered_map<LexicalKind, Operator>{
+    {LexicalKind::SymbolPlus, Operator::Positive},
+    {LexicalKind::SymbolMinus, Operator::Negative},
+
+    {LexicalKind::SymbolInc, Operator::PreInc},
+    {LexicalKind::SymbolDec, Operator::PreDec},
+
+    {LexicalKind::SymbolBoolNot, Operator::BoolNot},
+    {LexicalKind::SymbolBitNot, Operator::BitNot},
+};
+
+const auto unary_post_op_map = std::unordered_map<LexicalKind, Operator>{
+    {LexicalKind::SymbolInc, Operator::PostInc},
+    {LexicalKind::SymbolDec, Operator::PostDec},
+};
+
+const auto binary_op_map = std::unordered_map<LexicalKind, Operator>{
+    {LexicalKind::SymbolPeriod, Operator::Access},
+
+    {LexicalKind::SymbolPlus, Operator::Add},
+    {LexicalKind::SymbolMinus, Operator::Subtract},
+    {LexicalKind::SymbolStar, Operator::Multiply},
+    {LexicalKind::SymbolSlash, Operator::Divide},
+
+    {LexicalKind::SymbolBoolEquals, Operator::Equals},
+    {LexicalKind::SymbolBoolNotEquals, Operator::NotEquals},
+    {LexicalKind::SymbolBoolOr, Operator::Or},
+    {LexicalKind::SymbolBoolAnd, Operator::And},
+
+    {LexicalKind::SymbolAngleOpen, Operator::LessThan},
+    {LexicalKind::SymbolAngleClose, Operator::GreaterThan},
+    {LexicalKind::SymbolLessThanEqual, Operator::LessThanEquals},
+    {LexicalKind::SymbolGreaterThanEqual, Operator::GreaterThanEquals},
+
+    {LexicalKind::SymbolBitOr, Operator::BitOr},
+    {LexicalKind::SymbolBitAnd, Operator::BitAnd},
+    {LexicalKind::SymbolBitXor, Operator::BitXor},
+
+    {LexicalKind::SymbolShiftLeft, Operator::ShiftLeft},
+    {LexicalKind::SymbolShiftRight, Operator::ShiftRight},
+};
+
+const auto operator_precedence_map = std::unordered_map<Operator, Precedence>{
+    {Operator::Access, Precedence::Access},
+
+    {Operator::BitOr, Precedence::BitOr},
+    {Operator::BitXor, Precedence::BitXor},
+    {Operator::BitAnd, Precedence::BitAnd},
+
+    {Operator::Equals, Precedence::Equality},
+    {Operator::NotEquals, Precedence::Equality},
+
+    {Operator::LessThan, Precedence::Relation},
+    {Operator::GreaterThan, Precedence::Relation},
+    {Operator::LessThanEquals, Precedence::Relation},
+    {Operator::GreaterThanEquals, Precedence::Relation},
+
+    {Operator::ShiftLeft, Precedence::Shift},
+    {Operator::ShiftRight, Precedence::Shift},
+
+    {Operator::Add, Precedence::AddSub},
+    {Operator::Subtract, Precedence::AddSub},
+
+    {Operator::Multiply, Precedence::MulDiv},
+    {Operator::Divide, Precedence::MulDiv},
+
+    {Operator::BoolNot, Precedence::Prefix},
+    {Operator::BitNot, Precedence::Prefix},
+    {Operator::Positive, Precedence::Prefix},
+    {Operator::Negative, Precedence::Prefix},
+    {Operator::PreInc, Precedence::Prefix},
+    {Operator::PreDec, Precedence::Prefix},
+
+    {Operator::PostInc, Precedence::Postfix},
+    {Operator::PostDec, Precedence::Postfix},
+};
+
+// bool is_expression(SyntaxKind kind) { return expressions.contains(kind); }
+
+// auto is_statement(SyntaxKind kind) -> bool { return statements.contains(kind); }
+
+// auto is_definition(SyntaxKind kind) -> bool { return definitions.contains(kind); }
 
 auto get_unary_pre_op(LexicalKind kind) -> Operator {
-  switch (kind) {
-    case LexicalKind::SymbolPlus:
-      return Operator::Positive;
-    case LexicalKind::SymbolMinus:
-      return Operator::Negative;
-    case LexicalKind::SymbolInc:
-      return Operator::PreInc;
-    case LexicalKind::SymbolDec:
-      return Operator::PreDec;
-
-    case LexicalKind::SymbolBoolNot:
-      return Operator::BoolNot;
-    case LexicalKind::SymbolBitNot:
-      return Operator::BitNot;
-    default:
-      throw std::exception();
+  auto it = unary_pre_op_map.find(kind);
+  if (it == unary_pre_op_map.end()) {
+    throw std::exception();
   }
+  return it->second;
 }
 
 auto get_unary_post_op(LexicalKind kind) -> Operator {
-  switch (kind) {
-    case LexicalKind::SymbolInc:
-      return Operator::PostInc;
-    case LexicalKind::SymbolDec:
-      return Operator::PostDec;
-    default:
-      throw std::exception();
+  auto it = unary_post_op_map.find(kind);
+  if (it == unary_post_op_map.end()) {
+    throw std::exception();
   }
+  return it->second;
 }
 
 auto get_binary_op(LexicalKind kind) -> Operator {
-  switch (kind) {
-    case LexicalKind::SymbolPeriod:
-      return Operator::Access;
-
-    case LexicalKind::SymbolPlus:
-      return Operator::Add;
-    case LexicalKind::SymbolMinus:
-      return Operator::Subtract;
-    case LexicalKind::SymbolStar:
-      return Operator::Multiply;
-    case LexicalKind::SymbolSlash:
-      return Operator::Divide;
-
-    case LexicalKind::SymbolBoolEquals:
-      return Operator::Equals;
-    case LexicalKind::SymbolBoolNotEquals:
-      return Operator::NotEquals;
-    case LexicalKind::SymbolBoolOr:
-      return Operator::Or;
-    case LexicalKind::SymbolBoolAnd:
-      return Operator::And;
-
-    case LexicalKind::SymbolAngleOpen:
-      return Operator::LessThan;
-    case LexicalKind::SymbolAngleClose:
-      return Operator::GreaterThan;
-    case LexicalKind::SymbolLessThanEqual:
-      return Operator::LessThanEquals;
-    case LexicalKind::SymbolGreaterThanEqual:
-      return Operator::GreaterThanEquals;
-
-    case LexicalKind::SymbolBitOr:
-      return Operator::BitOr;
-    case LexicalKind::SymbolBitAnd:
-      return Operator::BitAnd;
-    case LexicalKind::SymbolBitXor:
-      return Operator::BitXor;
-
-    case LexicalKind::SymbolShiftLeft:
-      return Operator::ShiftLeft;
-    case LexicalKind::SymbolShiftRight:
-      return Operator::ShiftRight;
-
-    default:
-      throw std::exception();
+  auto it = binary_op_map.find(kind);
+  if (it == binary_op_map.end()) {
+    throw std::exception();
   }
+  return it->second;
 }
 
-auto get_precedence(Operator op) -> Precedence {
-  switch (op) {
-    case Operator::Access:
-      return Precedence::Access;
-
-    case Operator::BitOr:
-      return Precedence::BitOr;
-    case Operator::BitXor:
-      return Precedence::BitXor;
-    case Operator::BitAnd:
-      return Precedence::BitAnd;
-
-    case Operator::Equals:
-    case Operator::NotEquals:
-      return Precedence::Equality;
-
-    case Operator::LessThan:
-    case Operator::GreaterThan:
-    case Operator::LessThanEquals:
-    case Operator::GreaterThanEquals:
-      return Precedence::Relation;
-
-    case Operator::ShiftLeft:
-    case Operator::ShiftRight:
-      return Precedence::Shift;
-
-    case Operator::Add:
-    case Operator::Subtract:
-      return Precedence::AddSub;
-
-    case Operator::Multiply:
-    case Operator::Divide:
-      return Precedence::MulDiv;
-
-    case Operator::BoolNot:
-    case Operator::BitNot:
-    case Operator::Positive:
-    case Operator::Negative:
-    case Operator::PreInc:
-    case Operator::PreDec:
-      return Precedence::Prefix;
-
-    case Operator::PostInc:
-    case Operator::PostDec:
-      return Precedence::Postfix;
-
-    default:
-      throw std::exception();
-  }
-}
+// auto get_precedence(Operator op) -> Precedence {
+//   auto it = operator_precedence_map.find(op);
+//   if (it == operator_precedence_map.end()) {
+//     throw std::exception();
+//   }
+//   return it->second;
+// }
 
 #ifdef TRACE
 

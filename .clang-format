@@ -11,6 +11,8 @@ DerivePointerAlignment: false
 PointerAlignment: Left
 ReferenceAlignment: Pointer
 
+AllowShortEnumsOnASingleLine: false
+
 BinPackParameters: false
 BinPackArguments: false
 

@@ -13,34 +13,77 @@
 
 #include "../xml/serialization.hpp"
 
-enum class SyntaxKind {
-  Unknown,
+/*
+ * Syntax Kind
+ */
 
-  Source,
-
-  ExprNumber,
-  ExprString,
-  ExprIdentifier,
-
-  ExprUnary,
-  ExprBinary,
-  ExprTernary,
-
-  StmExpr,
-  StmReturn,
-  StmIf,
-  StmElif,
-  StmElse,
-
-  Block,
-
-  DefVar,
-  DefFunc,
-  DefParam,
-  DefStruct,
-  DefClass,
-  DefInterface,
+enum class SyntaxType {
+  Misc,
+  Expression,
+  Statement,
+  Definition
 };
+
+using syntax_kind_t                     = uint32_t;
+constexpr auto syntax_kind_type_offset  = 24;
+constexpr auto syntax_kind_type_bitmask = 0xff;
+constexpr auto syntax_kind_type_mask    = syntax_kind_type_bitmask << syntax_kind_type_offset;
+
+constexpr auto make_syntax_kind(SyntaxType type, syntax_kind_t value) -> syntax_kind_t {
+  return (static_cast<std::underlying_type_t<SyntaxType>>(type) << syntax_kind_type_offset) | value;
+}
+
+enum class SyntaxKind : syntax_kind_t {
+  Unknown = 0,
+
+  Source = make_syntax_kind(SyntaxType::Misc, 1),
+  Block  = make_syntax_kind(SyntaxType::Misc, 2),
+
+  ExprUnary   = make_syntax_kind(SyntaxType::Expression, 1),
+  ExprBinary  = make_syntax_kind(SyntaxType::Expression, 2),
+  ExprTernary = make_syntax_kind(SyntaxType::Expression, 3),
+
+  ExprNumber     = make_syntax_kind(SyntaxType::Expression, 4),
+  ExprString     = make_syntax_kind(SyntaxType::Expression, 5),
+  ExprIdentifier = make_syntax_kind(SyntaxType::Expression, 6),
+
+  StmExpr   = make_syntax_kind(SyntaxType::Statement, 1),
+  StmReturn = make_syntax_kind(SyntaxType::Statement, 2),
+  StmIf     = make_syntax_kind(SyntaxType::Statement, 3),
+  StmElif   = make_syntax_kind(SyntaxType::Statement, 4),
+  StmElse   = make_syntax_kind(SyntaxType::Statement, 5),
+
+  DefVar       = make_syntax_kind(SyntaxType::Definition, 1),
+  DefFunc      = make_syntax_kind(SyntaxType::Definition, 2),
+  DefParam     = make_syntax_kind(SyntaxType::Definition, 3),
+  DefStruct    = make_syntax_kind(SyntaxType::Definition, 4),
+  DefClass     = make_syntax_kind(SyntaxType::Definition, 5),
+  DefInterface = make_syntax_kind(SyntaxType::Definition, 6),
+};
+
+auto to_string(SyntaxKind kind) -> const std::string_view&;
+
+constexpr auto get_syntax_type(SyntaxKind kind) -> SyntaxType {
+  return static_cast<SyntaxType>(
+      (static_cast<std::underlying_type_t<SyntaxKind>>(kind) & syntax_kind_type_mask) >>
+      syntax_kind_type_offset);
+}
+
+constexpr auto is_expression(SyntaxKind kind) -> bool {
+  return get_syntax_type(kind) == SyntaxType::Expression;
+}
+
+constexpr auto is_statement(SyntaxKind kind) -> bool {
+  return get_syntax_type(kind) == SyntaxType::Statement;
+}
+
+constexpr auto is_definition(SyntaxKind kind) -> bool {
+  return get_syntax_type(kind) == SyntaxType::Definition;
+}
+
+/*
+ * Operator
+ */
 
 enum class Precedence {
   Assignment,
@@ -59,72 +102,86 @@ enum class Precedence {
   Postfix,
 };
 
-enum class OperatorType { Unary = 1, Binary = 2, Ternary = 3 };
-
-constexpr auto operator_type_offset = 30;
-constexpr auto operator_prec_offset = 24;
-
-consteval auto operator_value(OperatorType type, Precedence precedence, uint32_t base_value = 0)
-    -> uint32_t {
-  return (static_cast<uint32_t>(type) << operator_type_offset) |
-         (static_cast<uint32_t>(precedence) << operator_prec_offset) | base_value;
-}
-
-enum class Operator : uint32_t {
-  // Binary
-  Access = operator_value(OperatorType::Binary, Precedence::Access, 0),
-
-  Add      = operator_value(OperatorType::Binary, Precedence::AddSub, 0),
-  Subtract = operator_value(OperatorType::Binary, Precedence::AddSub, 1),
-  Multiply = operator_value(OperatorType::Binary, Precedence::MulDiv, 0),
-  Divide   = operator_value(OperatorType::Binary, Precedence::MulDiv, 1),
-
-  Equals    = operator_value(OperatorType::Binary, Precedence::Equality, 0),
-  NotEquals = operator_value(OperatorType::Binary, Precedence::Equality, 1),
-  Or        = operator_value(OperatorType::Binary, Precedence::BoolOr, 0),
-  And       = operator_value(OperatorType::Binary, Precedence::BoolAnd, 0),
-
-  LessThan          = operator_value(OperatorType::Binary, Precedence::Relation, 0),
-  GreaterThan       = operator_value(OperatorType::Binary, Precedence::Relation, 1),
-  LessThanEquals    = operator_value(OperatorType::Binary, Precedence::Relation, 2),
-  GreaterThanEquals = operator_value(OperatorType::Binary, Precedence::Relation, 3),
-
-  BitOr  = operator_value(OperatorType::Binary, Precedence::BitOr, 0),
-  BitXor = operator_value(OperatorType::Binary, Precedence::BitXor, 0),
-  BitAnd = operator_value(OperatorType::Binary, Precedence::BitAnd, 0),
-
-  ShiftLeft  = operator_value(OperatorType::Binary, Precedence::Shift, 0),
-  ShiftRight = operator_value(OperatorType::Binary, Precedence::Shift, 1),
-
-  // Unary
-  BoolNot = operator_value(OperatorType::Unary, Precedence::Prefix, 0),
-  BitNot  = operator_value(OperatorType::Unary, Precedence::Prefix, 1),
-
-  Positive = operator_value(OperatorType::Unary, Precedence::Prefix, 2),
-  Negative = operator_value(OperatorType::Unary, Precedence::Prefix, 3),
-
-  PreInc = operator_value(OperatorType::Unary, Precedence::Prefix, 4),
-  PreDec = operator_value(OperatorType::Unary, Precedence::Prefix, 5),
-
-  PostInc = operator_value(OperatorType::Unary, Precedence::Postfix, 0),
-  PostDec = operator_value(OperatorType::Unary, Precedence::Postfix, 1),
+enum class OperatorType {
+  Unary   = 1,
+  Binary  = 2,
+  Ternary = 3
 };
 
-auto to_string(SyntaxKind kind) -> const std::string_view&;
+using operator_t = uint32_t;
+
+constexpr auto operator_type_offset  = 30;
+constexpr auto operator_type_bitmask = 0b11;
+constexpr auto operator_type_mask    = operator_type_bitmask << operator_type_offset;
+
+constexpr auto operator_prec_offset  = 24;
+constexpr auto operator_prec_bitmask = 0b111111;
+constexpr auto operator_prec_mask    = operator_prec_bitmask << operator_prec_offset;
+
+consteval auto make_operator_value(OperatorType type,
+                                   Precedence precedence,
+                                   operator_t base_value = 0) -> operator_t {
+  return (static_cast<operator_t>(type) << operator_type_offset) |
+         (static_cast<operator_t>(precedence) << operator_prec_offset) | base_value;
+}
+
+enum class Operator : operator_t {
+  // Binary
+  Access = make_operator_value(OperatorType::Binary, Precedence::Access, 0),
+
+  Add      = make_operator_value(OperatorType::Binary, Precedence::AddSub, 0),
+  Subtract = make_operator_value(OperatorType::Binary, Precedence::AddSub, 1),
+  Multiply = make_operator_value(OperatorType::Binary, Precedence::MulDiv, 0),
+  Divide   = make_operator_value(OperatorType::Binary, Precedence::MulDiv, 1),
+
+  Equals    = make_operator_value(OperatorType::Binary, Precedence::Equality, 0),
+  NotEquals = make_operator_value(OperatorType::Binary, Precedence::Equality, 1),
+  Or        = make_operator_value(OperatorType::Binary, Precedence::BoolOr, 0),
+  And       = make_operator_value(OperatorType::Binary, Precedence::BoolAnd, 0),
+
+  LessThan          = make_operator_value(OperatorType::Binary, Precedence::Relation, 0),
+  GreaterThan       = make_operator_value(OperatorType::Binary, Precedence::Relation, 1),
+  LessThanEquals    = make_operator_value(OperatorType::Binary, Precedence::Relation, 2),
+  GreaterThanEquals = make_operator_value(OperatorType::Binary, Precedence::Relation, 3),
+
+  BitOr  = make_operator_value(OperatorType::Binary, Precedence::BitOr, 0),
+  BitXor = make_operator_value(OperatorType::Binary, Precedence::BitXor, 0),
+  BitAnd = make_operator_value(OperatorType::Binary, Precedence::BitAnd, 0),
+
+  ShiftLeft  = make_operator_value(OperatorType::Binary, Precedence::Shift, 0),
+  ShiftRight = make_operator_value(OperatorType::Binary, Precedence::Shift, 1),
+
+  // Unary
+  BoolNot = make_operator_value(OperatorType::Unary, Precedence::Prefix, 0),
+  BitNot  = make_operator_value(OperatorType::Unary, Precedence::Prefix, 1),
+
+  Positive = make_operator_value(OperatorType::Unary, Precedence::Prefix, 2),
+  Negative = make_operator_value(OperatorType::Unary, Precedence::Prefix, 3),
+
+  PreInc = make_operator_value(OperatorType::Unary, Precedence::Prefix, 4),
+  PreDec = make_operator_value(OperatorType::Unary, Precedence::Prefix, 5),
+
+  PostInc = make_operator_value(OperatorType::Unary, Precedence::Postfix, 0),
+  PostDec = make_operator_value(OperatorType::Unary, Precedence::Postfix, 1),
+};
 
 auto to_string(Operator op) -> const std::string_view&;
 
-auto is_expression(SyntaxKind kind) -> bool;
+constexpr auto get_operator_type(Operator op) -> OperatorType {
+  return static_cast<OperatorType>(
+      (static_cast<std::underlying_type_t<Operator>>(op) & operator_type_mask) >>
+      operator_type_offset);
+};
 
-auto is_statement(SyntaxKind kind) -> bool;
-
-auto is_definition(SyntaxKind kind) -> bool;
+constexpr auto get_precedence(Operator op) -> Precedence {
+  return static_cast<Precedence>(
+      (static_cast<std::underlying_type_t<Operator>>(op) & operator_prec_mask) >>
+      operator_prec_offset);
+}
 
 auto get_unary_pre_op(LexicalKind kind) -> Operator;
 
 auto get_binary_op(LexicalKind kind) -> Operator;
-
-auto get_precedence(Operator op) -> Precedence;
 
 /*
  * Syntax Tree
