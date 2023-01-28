@@ -29,11 +29,11 @@ down your throat.
     - ```i64``` : 64-bit signed int
     - ```iword``` : native signed int
 - Characters
-    - ```char8``` - UTF-8 character
+    - ```char``` - UTF-8 character
     - ```char16``` - UTF-16 character
     - ```char32``` - UTF-32 character
 - Strings
-    - ```string8``` - UTF-8 string
+    - ```string``` - UTF-8 string
     - ```string16``` - UTF-16 string
     - ```string32``` - UTF-32 string
 
@@ -47,7 +47,7 @@ down your throat.
 
 ### Variable Definition
 
-Declared by keyword ```var``` followed by an identifer.
+Declared by keyword ```var``` followed by an identifier.
 
 ```
 var uninitialized : i32;
@@ -57,7 +57,7 @@ var explicit_type_and_assignment : i32 = 0;
 
 ### Function Definition
 
-Declared by keyword ```func``` followed by an identifer.
+Declared by keyword ```func``` followed by an identifier.
 
 ```
 func static_function(x : i32) {
@@ -71,7 +71,7 @@ func member_function(self : &type_name) -> return_type {
 
 ### Struct Definition
 
-Declared by keyword ```struct``` followed by an identifer.
+Declared by keyword ```struct``` followed by an identifier.
 A struct is a stack allocated structure equivalent to a struct in c++ or c#.
 
 ```
@@ -88,7 +88,7 @@ struct Vector3 : public Vector2 {
 
 ### Object Definition
 
-Declared by keyword ```object``` followed by an identifer.
+Declared by keyword ```object``` followed by an identifier.
 An object is a heap allocated structure equivalent to a class in java or c#.
 
 ```
@@ -101,9 +101,20 @@ func show(self : &Window) -> void {
 }
 ```
 
+### Concept Definition
+
+Declared by keyword ```concept``` followed by an identifier.
+
+```
+concept Iterable {
+  func begin(self : mut Self&) -> ForwardIterator;
+  func end(self : mut Self&) -> ForwardIterator;
+}
+```
+
 ### Interface Definition
 
-Declared by keyword ```interface``` followed by an identifer.
+Declared by keyword ```interface``` followed by an identifier.
 
 ```
 interface IRunnable {
@@ -123,7 +134,7 @@ func run(self : mut Application&) {
 
 ### Aliased Definition
 
-Declared by keyword ```alias``` followed by an identifer.
+Declared by keyword ```alias``` followed by an identifier.
 
 ```
 alias ByteArray = u8[];
