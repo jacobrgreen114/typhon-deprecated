@@ -17,9 +17,12 @@ const auto syntax_kind_names = std::unordered_map<SyntaxKind, std::string_view>{
     ENUM_NAME(SyntaxKind, ExprUnary),      ENUM_NAME(SyntaxKind, ExprBinary),
     ENUM_NAME(SyntaxKind, ExprTernary),
 
-    ENUM_NAME(SyntaxKind, StmExpr),        ENUM_NAME(SyntaxKind, StmDef),
-    ENUM_NAME(SyntaxKind, StmReturn),      ENUM_NAME(SyntaxKind, StmIf),
-    ENUM_NAME(SyntaxKind, StmElif),        ENUM_NAME(SyntaxKind, StmElse),
+    ENUM_NAME(SyntaxKind, StmtExpr),       ENUM_NAME(SyntaxKind, StmtDef),
+    ENUM_NAME(SyntaxKind, StmtRet),        ENUM_NAME(SyntaxKind, StmtIf),
+    ENUM_NAME(SyntaxKind, StmtElif),       ENUM_NAME(SyntaxKind, StmtElse),
+
+    ENUM_NAME(SyntaxKind, StmtLoop),       ENUM_NAME(SyntaxKind, StmtWhile),
+    ENUM_NAME(SyntaxKind, StmtFor),        ENUM_NAME(SyntaxKind, StmtForeach),
 
     ENUM_NAME(SyntaxKind, Block),
 
@@ -27,7 +30,7 @@ const auto syntax_kind_names = std::unordered_map<SyntaxKind, std::string_view>{
     ENUM_NAME(SyntaxKind, DefParam),       ENUM_NAME(SyntaxKind, DefStruct),
     ENUM_NAME(SyntaxKind, DefClass),       ENUM_NAME(SyntaxKind, DefInterface)};
 
-auto to_string(SyntaxKind kind) -> const std::string_view& {
+auto to_string(SyntaxKind kind) -> std::string_view {
   if (auto it = syntax_kind_names.find(kind); it != syntax_kind_names.end()) {
     return it->second;
   }
@@ -75,7 +78,7 @@ const auto operator_names =
                                                    ENUM_NAME(Operator, PostInc),
                                                    ENUM_NAME(Operator, PostDec)};
 
-auto to_string(Operator op) -> const std::string_view& {
+auto to_string(Operator op) -> std::string_view {
   if (auto it = operator_names.find(op); it != operator_names.end()) {
     return it->second;
   }
@@ -86,12 +89,12 @@ const auto expressions =
     std::unordered_set<SyntaxKind>{SyntaxKind::ExprNumber, SyntaxKind::ExprBinary};
 
 const auto statements = std::unordered_set<SyntaxKind>{
-    SyntaxKind::StmDef,
-    SyntaxKind::StmExpr,
-    SyntaxKind::StmReturn,
-    SyntaxKind::StmIf,
-    SyntaxKind::StmElif,
-    SyntaxKind::StmElse,
+    SyntaxKind::StmtDef,
+    SyntaxKind::StmtExpr,
+    SyntaxKind::StmtRet,
+    SyntaxKind::StmtIf,
+    SyntaxKind::StmtElif,
+    SyntaxKind::StmtElse,
 };
 
 const auto definitions = std::unordered_set<SyntaxKind>{
@@ -104,14 +107,14 @@ const auto definitions = std::unordered_set<SyntaxKind>{
 };
 
 const auto unary_pre_op_map = std::unordered_map<LexicalKind, Operator>{
-    {LexicalKind::SymbolPlus, Operator::Positive},
-    {LexicalKind::SymbolMinus, Operator::Negative},
+    {LexicalKind::SymbolPlus,    Operator::Positive},
+    {LexicalKind::SymbolMinus,   Operator::Negative},
 
-    {LexicalKind::SymbolInc, Operator::PreInc},
-    {LexicalKind::SymbolDec, Operator::PreDec},
+    {LexicalKind::SymbolInc,     Operator::PreInc  },
+    {LexicalKind::SymbolDec,     Operator::PreDec  },
 
-    {LexicalKind::SymbolBoolNot, Operator::BoolNot},
-    {LexicalKind::SymbolBitNot, Operator::BitNot},
+    {LexicalKind::SymbolBoolNot, Operator::BoolNot },
+    {LexicalKind::SymbolBitNot,  Operator::BitNot  },
 };
 
 const auto unary_post_op_map = std::unordered_map<LexicalKind, Operator>{
@@ -120,64 +123,64 @@ const auto unary_post_op_map = std::unordered_map<LexicalKind, Operator>{
 };
 
 const auto binary_op_map = std::unordered_map<LexicalKind, Operator>{
-    {LexicalKind::SymbolPeriod, Operator::Access},
+    {LexicalKind::SymbolPeriod,           Operator::Access           },
 
-    {LexicalKind::SymbolPlus, Operator::Add},
-    {LexicalKind::SymbolMinus, Operator::Subtract},
-    {LexicalKind::SymbolStar, Operator::Multiply},
-    {LexicalKind::SymbolSlash, Operator::Divide},
+    {LexicalKind::SymbolPlus,             Operator::Add              },
+    {LexicalKind::SymbolMinus,            Operator::Subtract         },
+    {LexicalKind::SymbolStar,             Operator::Multiply         },
+    {LexicalKind::SymbolSlash,            Operator::Divide           },
 
-    {LexicalKind::SymbolBoolEquals, Operator::Equals},
-    {LexicalKind::SymbolBoolNotEquals, Operator::NotEquals},
-    {LexicalKind::SymbolBoolOr, Operator::Or},
-    {LexicalKind::SymbolBoolAnd, Operator::And},
+    {LexicalKind::SymbolBoolEquals,       Operator::Equals           },
+    {LexicalKind::SymbolBoolNotEquals,    Operator::NotEquals        },
+    {LexicalKind::SymbolBoolOr,           Operator::Or               },
+    {LexicalKind::SymbolBoolAnd,          Operator::And              },
 
-    {LexicalKind::SymbolAngleOpen, Operator::LessThan},
-    {LexicalKind::SymbolAngleClose, Operator::GreaterThan},
-    {LexicalKind::SymbolLessThanEqual, Operator::LessThanEquals},
+    {LexicalKind::SymbolAngleOpen,        Operator::LessThan         },
+    {LexicalKind::SymbolAngleClose,       Operator::GreaterThan      },
+    {LexicalKind::SymbolLessThanEqual,    Operator::LessThanEquals   },
     {LexicalKind::SymbolGreaterThanEqual, Operator::GreaterThanEquals},
 
-    {LexicalKind::SymbolBitOr, Operator::BitOr},
-    {LexicalKind::SymbolBitAnd, Operator::BitAnd},
-    {LexicalKind::SymbolBitXor, Operator::BitXor},
+    {LexicalKind::SymbolBitOr,            Operator::BitOr            },
+    {LexicalKind::SymbolBitAnd,           Operator::BitAnd           },
+    {LexicalKind::SymbolBitXor,           Operator::BitXor           },
 
-    {LexicalKind::SymbolShiftLeft, Operator::ShiftLeft},
-    {LexicalKind::SymbolShiftRight, Operator::ShiftRight},
+    {LexicalKind::SymbolShiftLeft,        Operator::ShiftLeft        },
+    {LexicalKind::SymbolShiftRight,       Operator::ShiftRight       },
 };
 
 const auto operator_precedence_map = std::unordered_map<Operator, Precedence>{
-    {Operator::Access, Precedence::Access},
+    {Operator::Access,            Precedence::Access  },
 
-    {Operator::BitOr, Precedence::BitOr},
-    {Operator::BitXor, Precedence::BitXor},
-    {Operator::BitAnd, Precedence::BitAnd},
+    {Operator::BitOr,             Precedence::BitOr   },
+    {Operator::BitXor,            Precedence::BitXor  },
+    {Operator::BitAnd,            Precedence::BitAnd  },
 
-    {Operator::Equals, Precedence::Equality},
-    {Operator::NotEquals, Precedence::Equality},
+    {Operator::Equals,            Precedence::Equality},
+    {Operator::NotEquals,         Precedence::Equality},
 
-    {Operator::LessThan, Precedence::Relation},
-    {Operator::GreaterThan, Precedence::Relation},
-    {Operator::LessThanEquals, Precedence::Relation},
+    {Operator::LessThan,          Precedence::Relation},
+    {Operator::GreaterThan,       Precedence::Relation},
+    {Operator::LessThanEquals,    Precedence::Relation},
     {Operator::GreaterThanEquals, Precedence::Relation},
 
-    {Operator::ShiftLeft, Precedence::Shift},
-    {Operator::ShiftRight, Precedence::Shift},
+    {Operator::ShiftLeft,         Precedence::Shift   },
+    {Operator::ShiftRight,        Precedence::Shift   },
 
-    {Operator::Add, Precedence::AddSub},
-    {Operator::Subtract, Precedence::AddSub},
+    {Operator::Add,               Precedence::AddSub  },
+    {Operator::Subtract,          Precedence::AddSub  },
 
-    {Operator::Multiply, Precedence::MulDiv},
-    {Operator::Divide, Precedence::MulDiv},
+    {Operator::Multiply,          Precedence::MulDiv  },
+    {Operator::Divide,            Precedence::MulDiv  },
 
-    {Operator::BoolNot, Precedence::Prefix},
-    {Operator::BitNot, Precedence::Prefix},
-    {Operator::Positive, Precedence::Prefix},
-    {Operator::Negative, Precedence::Prefix},
-    {Operator::PreInc, Precedence::Prefix},
-    {Operator::PreDec, Precedence::Prefix},
+    {Operator::BoolNot,           Precedence::Prefix  },
+    {Operator::BitNot,            Precedence::Prefix  },
+    {Operator::Positive,          Precedence::Prefix  },
+    {Operator::Negative,          Precedence::Prefix  },
+    {Operator::PreInc,            Precedence::Prefix  },
+    {Operator::PreDec,            Precedence::Prefix  },
 
-    {Operator::PostInc, Precedence::Postfix},
-    {Operator::PostDec, Precedence::Postfix},
+    {Operator::PostInc,           Precedence::Postfix },
+    {Operator::PostDec,           Precedence::Postfix },
 };
 
 // bool is_expression(SyntaxKind kind) { return expressions.contains(kind); }
@@ -217,6 +220,22 @@ auto get_binary_op(LexicalKind kind) -> Operator {
 //   }
 //   return it->second;
 // }
+
+const auto access_modifier_names = std::unordered_map<AccessModifier, std::string_view>{
+    ENUM_NAME(AccessModifier, Private),
+    ENUM_NAME(AccessModifier, Module),
+    ENUM_NAME(AccessModifier, Internal),
+    ENUM_NAME(AccessModifier, Protected),
+    ENUM_NAME(AccessModifier, Public),
+};
+
+auto to_string(AccessModifier modifier) -> std::string_view {
+  auto name = access_modifier_names.find(modifier);
+  if (name == access_modifier_names.end()) {
+    throw std::exception();
+  }
+  return name->second;
+}
 
 #ifdef TRACE
 
@@ -291,8 +310,18 @@ void IfStatement::on_serialize(xml::SerializationContext& context) const {
   }
 }
 
-void StatementBlock::on_serialize(xml::SerializationContext& context) const {
+auto WhileStatement::on_serialize(xml::SerializationContext& context) const -> void {
   SyntaxNode::on_serialize(context);
+  if (expr_) {
+    context.add_element("pred", *expr_);
+  }
+  if (body()) {
+    context.add_element("body", *body());
+  }
+}
+
+void StatementBlock::on_serialize(xml::SerializationContext& context) const {
+  //SyntaxNode::on_serialize(context);
   for (auto& statement : statements_) {
     context.add_element("statement", *statement);
   }
@@ -303,6 +332,7 @@ void Definition::on_serialize(xml::SerializationContext& context) const {
   if (name_) {
     context.add_attribute("name", name_->c_str());
   }
+  context.add_attribute("access", to_string(modifier_));
 }
 
 void VarDefinition::on_serialize(xml::SerializationContext& context) const {

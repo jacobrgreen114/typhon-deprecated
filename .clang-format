@@ -11,17 +11,34 @@ DerivePointerAlignment: false
 PointerAlignment: Left
 ReferenceAlignment: Pointer
 
+Cpp11BracedListStyle: true
+
 AllowShortEnumsOnASingleLine: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
 
 BinPackParameters: false
 BinPackArguments: false
+PackConstructorInitializers: Never
+
+
+AlignConsecutiveBitFields:
+  Enabled: true
+  AcrossComments: true
+  AcrossEmptyLines: true
+  AlignCompound: true
+  PadOperators: true
 
 AlignConsecutiveAssignments:
   Enabled: true
   AcrossComments: true
-  AcrossEmptyLines: false
-  AlignCompound: false
-  PadOperators: false
+  AcrossEmptyLines: true
+  AlignCompound: true
+  PadOperators: true
+
+AlignArrayOfStructures: Left
+
+FixNamespaceComments: true
+
 
 # AlignConsecutiveDeclarations:
 #   Enabled: true

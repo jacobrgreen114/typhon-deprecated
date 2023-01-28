@@ -178,12 +178,29 @@ constexpr LexicalTokenPredicate is_equals = [](auto& token) {
 constexpr LexicalTokenPredicate is_keyword_if = [](auto& token) {
   return is_token_kind(token, LexicalKind::KeywordIf);
 };
+
 constexpr LexicalTokenPredicate is_keyword_elif = [](auto& token) {
   return is_token_kind(token, LexicalKind::KeywordElif);
 };
 
 constexpr LexicalTokenPredicate is_keyword_else = [](auto& token) {
   return is_token_kind(token, LexicalKind::KeywordElse);
+};
+
+constexpr LexicalTokenPredicate is_keyword_loop = [](auto& token) {
+  return is_token_kind(token, LexicalKind::KeywordLoop);
+};
+
+constexpr LexicalTokenPredicate is_keyword_while = [](auto& token) {
+  return is_token_kind(token, LexicalKind::KeywordWhile);
+};
+
+constexpr LexicalTokenPredicate is_keyword_for = [](auto& token) {
+  return is_token_kind(token, LexicalKind::KeywordFor);
+};
+
+constexpr LexicalTokenPredicate is_keyword_foreach = [](auto& token) {
+  return is_token_kind(token, LexicalKind::KeywordForeach);
 };
 
 constexpr LexicalTokenPredicate is_keyword_var = [](auto& token) {
@@ -202,3 +219,6 @@ auto is_unary_pre_operator(const LexicalToken& token) -> bool;
 auto is_unary_post_operator(const LexicalToken& token) -> bool;
 
 auto is_binary_operator(const LexicalToken& token) -> bool;
+
+extern const ParserState error_state;
+extern const ParserState unexpected_token_error_state;

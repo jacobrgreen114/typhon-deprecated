@@ -34,35 +34,39 @@ constexpr auto make_syntax_kind(SyntaxType type, syntax_kind_t value) -> syntax_
 }
 
 enum class SyntaxKind : syntax_kind_t {
-  Unknown = 0,
+  Unknown        = 0,
 
-  Source = make_syntax_kind(SyntaxType::Misc, 1),
-  Block  = make_syntax_kind(SyntaxType::Misc, 2),
+  Source         = make_syntax_kind(SyntaxType::Misc, 1),
+  Block          = make_syntax_kind(SyntaxType::Misc, 2),
 
-  ExprUnary   = make_syntax_kind(SyntaxType::Expression, 1),
-  ExprBinary  = make_syntax_kind(SyntaxType::Expression, 2),
-  ExprTernary = make_syntax_kind(SyntaxType::Expression, 3),
+  ExprUnary      = make_syntax_kind(SyntaxType::Expression, 1),
+  ExprBinary     = make_syntax_kind(SyntaxType::Expression, 2),
+  ExprTernary    = make_syntax_kind(SyntaxType::Expression, 3),
 
   ExprNumber     = make_syntax_kind(SyntaxType::Expression, 4),
   ExprString     = make_syntax_kind(SyntaxType::Expression, 5),
   ExprIdentifier = make_syntax_kind(SyntaxType::Expression, 6),
 
-  StmDef    = make_syntax_kind(SyntaxType::Statement, 1),
-  StmExpr   = make_syntax_kind(SyntaxType::Statement, 2),
-  StmReturn = make_syntax_kind(SyntaxType::Statement, 3),
-  StmIf     = make_syntax_kind(SyntaxType::Statement, 4),
-  StmElif   = make_syntax_kind(SyntaxType::Statement, 5),
-  StmElse   = make_syntax_kind(SyntaxType::Statement, 6),
+  StmtDef        = make_syntax_kind(SyntaxType::Statement, 0x01),
+  StmtExpr       = make_syntax_kind(SyntaxType::Statement, 0x02),
+  StmtRet        = make_syntax_kind(SyntaxType::Statement, 0x03),
+  StmtIf         = make_syntax_kind(SyntaxType::Statement, 0x11),
+  StmtElif       = make_syntax_kind(SyntaxType::Statement, 0x12),
+  StmtElse       = make_syntax_kind(SyntaxType::Statement, 0x13),
+  StmtLoop       = make_syntax_kind(SyntaxType::Statement, 0x21),
+  StmtWhile      = make_syntax_kind(SyntaxType::Statement, 0x22),
+  StmtFor        = make_syntax_kind(SyntaxType::Statement, 0x23),
+  StmtForeach    = make_syntax_kind(SyntaxType::Statement, 0x24),
 
-  DefVar       = make_syntax_kind(SyntaxType::Definition, 1),
-  DefFunc      = make_syntax_kind(SyntaxType::Definition, 2),
-  DefParam     = make_syntax_kind(SyntaxType::Definition, 3),
-  DefStruct    = make_syntax_kind(SyntaxType::Definition, 4),
-  DefClass     = make_syntax_kind(SyntaxType::Definition, 5),
-  DefInterface = make_syntax_kind(SyntaxType::Definition, 6),
+  DefVar         = make_syntax_kind(SyntaxType::Definition, 0x01),
+  DefFunc        = make_syntax_kind(SyntaxType::Definition, 0x02),
+  DefParam       = make_syntax_kind(SyntaxType::Definition, 0x03),
+  DefStruct      = make_syntax_kind(SyntaxType::Definition, 0x04),
+  DefClass       = make_syntax_kind(SyntaxType::Definition, 0x05),
+  DefInterface   = make_syntax_kind(SyntaxType::Definition, 0x06),
 };
 
-auto to_string(SyntaxKind kind) -> const std::string_view&;
+auto to_string(SyntaxKind kind) -> std::string_view;
 
 constexpr auto get_syntax_type(SyntaxKind kind) -> SyntaxType {
   return static_cast<SyntaxType>(
@@ -109,7 +113,7 @@ enum class OperatorType {
   Ternary = 3
 };
 
-using operator_t = uint32_t;
+using operator_t                     = uint32_t;
 
 constexpr auto operator_type_offset  = 30;
 constexpr auto operator_type_bitmask = 0b11;
@@ -128,45 +132,45 @@ consteval auto make_operator_value(OperatorType type,
 
 enum class Operator : operator_t {
   // Binary
-  Access = make_operator_value(OperatorType::Binary, Precedence::Access, 0),
+  Access            = make_operator_value(OperatorType::Binary, Precedence::Access, 0),
 
-  Add      = make_operator_value(OperatorType::Binary, Precedence::AddSub, 0),
-  Subtract = make_operator_value(OperatorType::Binary, Precedence::AddSub, 1),
-  Multiply = make_operator_value(OperatorType::Binary, Precedence::MulDiv, 0),
-  Divide   = make_operator_value(OperatorType::Binary, Precedence::MulDiv, 1),
+  Add               = make_operator_value(OperatorType::Binary, Precedence::AddSub, 0),
+  Subtract          = make_operator_value(OperatorType::Binary, Precedence::AddSub, 1),
+  Multiply          = make_operator_value(OperatorType::Binary, Precedence::MulDiv, 0),
+  Divide            = make_operator_value(OperatorType::Binary, Precedence::MulDiv, 1),
 
-  Equals    = make_operator_value(OperatorType::Binary, Precedence::Equality, 0),
-  NotEquals = make_operator_value(OperatorType::Binary, Precedence::Equality, 1),
-  Or        = make_operator_value(OperatorType::Binary, Precedence::BoolOr, 0),
-  And       = make_operator_value(OperatorType::Binary, Precedence::BoolAnd, 0),
+  Equals            = make_operator_value(OperatorType::Binary, Precedence::Equality, 0),
+  NotEquals         = make_operator_value(OperatorType::Binary, Precedence::Equality, 1),
+  Or                = make_operator_value(OperatorType::Binary, Precedence::BoolOr, 0),
+  And               = make_operator_value(OperatorType::Binary, Precedence::BoolAnd, 0),
 
   LessThan          = make_operator_value(OperatorType::Binary, Precedence::Relation, 0),
   GreaterThan       = make_operator_value(OperatorType::Binary, Precedence::Relation, 1),
   LessThanEquals    = make_operator_value(OperatorType::Binary, Precedence::Relation, 2),
   GreaterThanEquals = make_operator_value(OperatorType::Binary, Precedence::Relation, 3),
 
-  BitOr  = make_operator_value(OperatorType::Binary, Precedence::BitOr, 0),
-  BitXor = make_operator_value(OperatorType::Binary, Precedence::BitXor, 0),
-  BitAnd = make_operator_value(OperatorType::Binary, Precedence::BitAnd, 0),
+  BitOr             = make_operator_value(OperatorType::Binary, Precedence::BitOr, 0),
+  BitXor            = make_operator_value(OperatorType::Binary, Precedence::BitXor, 0),
+  BitAnd            = make_operator_value(OperatorType::Binary, Precedence::BitAnd, 0),
 
-  ShiftLeft  = make_operator_value(OperatorType::Binary, Precedence::Shift, 0),
-  ShiftRight = make_operator_value(OperatorType::Binary, Precedence::Shift, 1),
+  ShiftLeft         = make_operator_value(OperatorType::Binary, Precedence::Shift, 0),
+  ShiftRight        = make_operator_value(OperatorType::Binary, Precedence::Shift, 1),
 
   // Unary
-  BoolNot = make_operator_value(OperatorType::Unary, Precedence::Prefix, 0),
-  BitNot  = make_operator_value(OperatorType::Unary, Precedence::Prefix, 1),
+  BoolNot           = make_operator_value(OperatorType::Unary, Precedence::Prefix, 0),
+  BitNot            = make_operator_value(OperatorType::Unary, Precedence::Prefix, 1),
 
-  Positive = make_operator_value(OperatorType::Unary, Precedence::Prefix, 2),
-  Negative = make_operator_value(OperatorType::Unary, Precedence::Prefix, 3),
+  Positive          = make_operator_value(OperatorType::Unary, Precedence::Prefix, 2),
+  Negative          = make_operator_value(OperatorType::Unary, Precedence::Prefix, 3),
 
-  PreInc = make_operator_value(OperatorType::Unary, Precedence::Prefix, 4),
-  PreDec = make_operator_value(OperatorType::Unary, Precedence::Prefix, 5),
+  PreInc            = make_operator_value(OperatorType::Unary, Precedence::Prefix, 4),
+  PreDec            = make_operator_value(OperatorType::Unary, Precedence::Prefix, 5),
 
-  PostInc = make_operator_value(OperatorType::Unary, Precedence::Postfix, 0),
-  PostDec = make_operator_value(OperatorType::Unary, Precedence::Postfix, 1),
+  PostInc           = make_operator_value(OperatorType::Unary, Precedence::Postfix, 0),
+  PostDec           = make_operator_value(OperatorType::Unary, Precedence::Postfix, 1),
 };
 
-auto to_string(Operator op) -> const std::string_view&;
+auto to_string(Operator op) -> std::string_view;
 
 constexpr auto get_operator_type(Operator op) -> OperatorType {
   return static_cast<OperatorType>(
@@ -185,6 +189,20 @@ auto get_unary_pre_op(LexicalKind kind) -> Operator;
 auto get_binary_op(LexicalKind kind) -> Operator;
 
 /*
+ * Modifiers
+ */
+
+enum class AccessModifier : uint8_t {
+  Private,
+  Module,
+  Internal,
+  Protected,
+  Public
+};
+
+auto to_string(AccessModifier modifier) -> std::string_view;
+
+/*
  * Syntax Tree
  */
 
@@ -197,7 +215,8 @@ class SyntaxNode
   const SyntaxKind kind_;
 
  protected:
-  explicit constexpr SyntaxNode(const SyntaxKind kind) : kind_{kind} {}
+  explicit constexpr SyntaxNode(const SyntaxKind kind)
+      : kind_{kind} {}
 
  public:
   virtual ~SyntaxNode() = default;
@@ -210,16 +229,14 @@ class SyntaxNode
 #endif
 };
 
-template <typename T>
-concept IsSyntaxNode = requires(T) { std::is_base_of_v<SyntaxNode, T>; };
-
 /*
  * Expressions
  */
 
 class ExpressionNode : public SyntaxNode {
  protected:
-  explicit constexpr ExpressionNode(const SyntaxKind kind) : SyntaxNode{kind} {}
+  explicit constexpr ExpressionNode(const SyntaxKind kind)
+      : SyntaxNode{kind} {}
 };
 
 class ConstantExpression : public ExpressionNode {
@@ -228,7 +245,8 @@ class ConstantExpression : public ExpressionNode {
 
  protected:
   explicit ConstantExpression(const SyntaxKind kind, const String& value)
-      : ExpressionNode{kind}, value_{value} {}
+      : ExpressionNode{kind},
+        value_{value} {}
 
 #ifdef TRACE
  protected:
@@ -247,7 +265,8 @@ class IdentifierExpression final : public ExpressionNode {
 
  public:
   explicit IdentifierExpression(const String& identifier)
-      : ExpressionNode{SyntaxKind::ExprIdentifier}, identifier_{identifier} {}
+      : ExpressionNode{SyntaxKind::ExprIdentifier},
+        identifier_{identifier} {}
 
 #ifdef TRACE
  protected:
@@ -266,7 +285,9 @@ class Operation : public ExpressionNode {
   Operator op_;
 
  public:
-  constexpr Operation(SyntaxKind kind, Operator op) : ExpressionNode{kind}, op_{op} {}
+  constexpr Operation(SyntaxKind kind, Operator op)
+      : ExpressionNode{kind},
+        op_{op} {}
 
   auto op() const { return op_; }
 
@@ -280,7 +301,8 @@ class UnaryExpression final : public Operation {
   Expression expr_;
 
  public:
-  constexpr UnaryExpression(Operator op) : Operation{SyntaxKind::ExprUnary, op} {}
+  constexpr UnaryExpression(Operator op)
+      : Operation{SyntaxKind::ExprUnary, op} {}
 
   auto set_expr(const Expression& expr) -> void { expr_ = expr; }
 
@@ -296,7 +318,8 @@ class BinaryExpression final : public Operation {
   Expression rhs_;
 
  public:
-  constexpr BinaryExpression(Operator op) : Operation{SyntaxKind::ExprBinary, op} {}
+  constexpr BinaryExpression(Operator op)
+      : Operation{SyntaxKind::ExprBinary, op} {}
 
   auto set_lhs(const Expression& lhs) -> void { lhs_ = lhs; }
 
@@ -314,7 +337,8 @@ class BinaryExpression final : public Operation {
 
 class Statement : public SyntaxNode {
  protected:
-  constexpr explicit Statement(SyntaxKind kind) : SyntaxNode{kind} {}
+  constexpr explicit Statement(SyntaxKind kind)
+      : SyntaxNode{kind} {}
 };
 
 class StatementBlock final : public SyntaxNode {
@@ -326,7 +350,8 @@ class StatementBlock final : public SyntaxNode {
   StatementCollection statements_;
 
  public:
-  explicit StatementBlock() : SyntaxNode(SyntaxKind::Block) {}
+  explicit StatementBlock()
+      : SyntaxNode(SyntaxKind::Block) {}
 
   auto push_statement(const Statement& statement) -> void { statements_.emplace_back(statement); }
 
@@ -340,7 +365,8 @@ class ExprStatement final : public Statement {
   std::shared_ptr<ExpressionNode> expr_;
 
  public:
-  constexpr ExprStatement() : Statement{SyntaxKind::StmExpr} {}
+  constexpr ExprStatement()
+      : Statement{SyntaxKind::StmtExpr} {}
 
   auto set_expr(const std::shared_ptr<ExpressionNode>& expr) { expr_ = expr; }
 
@@ -354,7 +380,8 @@ class ReturnStatement final : public Statement {
   std::shared_ptr<ExpressionNode> expr_;
 
  public:
-  constexpr ReturnStatement() : Statement{SyntaxKind::StmReturn} {}
+  constexpr ReturnStatement()
+      : Statement{SyntaxKind::StmtRet} {}
 
   auto set_expr(const std::shared_ptr<ExpressionNode>& expr) { expr_ = expr; }
 
@@ -372,7 +399,8 @@ class BodyStatement : public Statement {
   std::shared_ptr<StatementBlock> block_;
 
  protected:
-  constexpr explicit BodyStatement(SyntaxKind kind) : Statement{kind} {}
+  constexpr explicit BodyStatement(SyntaxKind kind)
+      : Statement{kind} {}
 
  public:
   const auto& body() const { return block_; }
@@ -384,10 +412,12 @@ class IfStatement : public BodyStatement {
   std::shared_ptr<ExpressionNode> expr_;
 
  protected:
-  constexpr explicit IfStatement(SyntaxKind kind) : BodyStatement{kind} {}
+  constexpr explicit IfStatement(SyntaxKind kind)
+      : BodyStatement{kind} {}
 
  public:
-  constexpr IfStatement() : BodyStatement{SyntaxKind::StmIf} {}
+  constexpr IfStatement()
+      : BodyStatement{SyntaxKind::StmtIf} {}
 
   auto set_expr(const std::shared_ptr<ExpressionNode>& expr) -> void { expr_ = expr; }
 
@@ -399,19 +429,54 @@ class IfStatement : public BodyStatement {
 
 class ElifStatement final : public IfStatement {
  public:
-  constexpr ElifStatement() : IfStatement{SyntaxKind::StmElif} {}
+  constexpr ElifStatement()
+      : IfStatement{SyntaxKind::StmtElif} {}
 };
 
 class ElseStatement final : public BodyStatement {
  public:
-  constexpr ElseStatement() : BodyStatement{SyntaxKind::StmElse} {}
+  constexpr ElseStatement()
+      : BodyStatement{SyntaxKind::StmtElse} {}
 };
 
-class LoopStatement final : public BodyStatement {};
+class LoopStatement final : public BodyStatement {
+ public:
+  constexpr LoopStatement()
+      : BodyStatement{SyntaxKind::StmtLoop} {}
+};
 
-class WhileStatement final : public BodyStatement {};
+class WhileStatement final : public BodyStatement {
+  std::shared_ptr<ExpressionNode> expr_;
 
-class ForStatement final : public BodyStatement {};
+ public:
+  constexpr WhileStatement()
+      : BodyStatement{SyntaxKind::StmtWhile} {}
+
+  auto set_expr(const std::shared_ptr<ExpressionNode>& expr) -> void { expr_ = expr; }
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
+};
+
+class ForStatement final : public BodyStatement {
+  using Prefix    = std::shared_ptr<Statement>;
+  using Condition = std::shared_ptr<ExpressionNode>;
+  using Postfix   = std::shared_ptr<ExpressionNode>;
+
+  Prefix prefix_;
+  Condition cond_;
+  Postfix postfix_;
+
+ public:
+  constexpr ForStatement()
+      : BodyStatement{SyntaxKind::StmtFor} {}
+
+  auto set_prefix(const Prefix& prefix) { prefix_ = prefix; }
+  auto set_cond(const Condition& cond) { cond_ = cond; }
+  auto set_postfix(const Postfix& postfix) { postfix_ = postfix; }
+};
 
 class ForeachStatement final : public BodyStatement {};
 
@@ -420,11 +485,14 @@ class ForeachStatement final : public BodyStatement {};
  */
 
 class Definition : public SyntaxNode {
+  AccessModifier modifier_;
   String name_;
 
  protected:
   explicit Definition(SyntaxKind kind, const String& name = nullptr)
-      : SyntaxNode(kind), name_{name} {}
+      : SyntaxNode(kind),
+        modifier_{AccessModifier::Public},
+        name_{name} {}
 
  public:
   auto& name() const { return name_; }
@@ -449,7 +517,9 @@ class VarDefinition : public Definition {
   explicit VarDefinition(const String& name       = nullptr,
                          const String& type_name  = nullptr,
                          const Assignment& assign = nullptr)
-      : Definition(SyntaxKind::DefVar, name), type_name_{type_name}, assignment_{assign} {}
+      : Definition(SyntaxKind::DefVar, name),
+        type_name_{type_name},
+        assignment_{assign} {}
 
  public:
   auto set_type_name(const String& type_name) noexcept -> void { type_name_ = type_name; }
@@ -467,7 +537,8 @@ class FuncParameter final : public Definition {
   String type_name_;
 
  public:
-  explicit FuncParameter(const String& name = nullptr) : Definition(SyntaxKind::DefParam, name) {}
+  explicit FuncParameter(const String& name = nullptr)
+      : Definition(SyntaxKind::DefParam, name) {}
 
   auto set_type_name(const String& type_name) noexcept -> void { type_name_ = type_name; }
 };
@@ -484,7 +555,8 @@ class FuncDefinition final : public Definition {
   Body body_;
 
  public:
-  explicit FuncDefinition() : Definition(SyntaxKind::DefFunc) {}
+  explicit FuncDefinition()
+      : Definition(SyntaxKind::DefFunc) {}
 
   void set_return_type(const String& ret_type) { return_ = ret_type; }
 
@@ -506,7 +578,8 @@ class DefStatement final : public Statement {
   std::shared_ptr<Definition> def_;
 
  public:
-  constexpr DefStatement() : Statement{SyntaxKind::StmDef} {}
+  constexpr DefStatement()
+      : Statement{SyntaxKind::StmtDef} {}
 
   auto set_def(const std::shared_ptr<Definition>& def) { def_ = def; }
 
@@ -527,7 +600,8 @@ class SourceNode final : public SyntaxNode {
   NodeArray nodes_;
 
  public:
-  constexpr SourceNode() : SyntaxNode(SyntaxKind::Source) {}
+  constexpr SourceNode()
+      : SyntaxNode(SyntaxKind::Source) {}
 
   auto push_node(const Node& node) { nodes_.emplace_back(node); }
 
@@ -536,3 +610,19 @@ class SourceNode final : public SyntaxNode {
   auto on_serialize(xml::SerializationContext& context) const -> void override;
 #endif
 };
+
+/*
+ * Concepts
+ */
+
+template <typename T>
+concept IsSyntaxNode = requires(T) { std::is_base_of_v<SyntaxNode, T>; };
+
+template <typename T>
+concept IsDefinition = requires(T) { std::is_base_of_v<Definition, T>; };
+
+template <typename T>
+concept IsStatement = requires(T) { std::is_base_of_v<Statement, T>; };
+
+template <typename T>
+concept IsBodyStatement = requires(T) { std::is_base_of_v<BodyStatement, T>; };

@@ -1,4 +1,4 @@
-// Copyright (c) 2023. Jacob R. Green
+// Copyright (c) 2023 Jacob R. Green
 // All Rights Reserved.
 
 #include "parser_statemachine.hpp"
@@ -71,24 +71,28 @@ auto is_binary_operator(const LexicalToken& token) -> bool {
 
 #pragma region Global Parser States
 
-auto error_handler_(ParserContext& ctx) -> ParserState {
-  throw_not_implemented();
-}
+auto error_handler_(ParserContext& ctx) -> ParserState;
+auto unexpected_token_error_handler_(ParserContext& ctx) -> ParserState;
+auto end_handler_(ParserContext& ctx) -> ParserState;
 
-constexpr auto error_state = ParserState{error_handler_};
+constexpr ParserState error_state                  = ParserState{error_handler_};
+constexpr ParserState unexpected_token_error_state = ParserState{unexpected_token_error_handler_};
+constexpr ParserState exit_state                   = ParserState{nullptr};
+constexpr ParserState end_state                    = ParserState{end_handler_};
+
+auto error_handler_(ParserContext& ctx) -> ParserState {
+  std::cerr << "Error at token " << ctx.current() << std::endl;
+  assert(false);
+  exit(-1);
+}
 
 auto unexpected_token_error_handler_(ParserContext& ctx) -> ParserState {
-  throw_not_implemented();
+  std::cerr << "Unexpected token " << ctx.current() << std::endl;
+  assert(false);
+  exit(-1);
 }
 
-constexpr auto unexpected_token_error_state =
-    ParserState{unexpected_token_error_handler_};
-
-constexpr auto exit_state = ParserState{nullptr};
-
 auto end_handler_(ParserContext& ctx) -> ParserState { return exit_state; }
-
-constexpr auto end_state = ParserState{end_handler_};
 
 extern const ParserState unknown_state;
 
@@ -99,17 +103,15 @@ auto append_source_node(ParserContext& ctx) -> void {
   assert(ctx.syntax_stack.empty());
 }
 
-constexpr auto source_node_end_exit_state =
-    ParserState{[](ParserContext& ctx) -> ParserState {
-      append_source_node(ctx);
-      return end_state;
-    }};
+constexpr auto source_node_end_exit_state = ParserState{[](ParserContext& ctx) -> ParserState {
+  append_source_node(ctx);
+  return end_state;
+}};
 
-constexpr auto source_node_end_state =
-    ParserState{[](ParserContext& ctx) -> ParserState {
-      append_source_node(ctx);
-      return unknown_state;
-    }};
+constexpr auto source_node_end_state      = ParserState{[](ParserContext& ctx) -> ParserState {
+  append_source_node(ctx);
+  return unknown_state;
+}};
 
 auto unknown_handler(ParserContext& ctx) -> ParserState {
   auto kind = ctx.current().kind();
@@ -164,6 +166,7 @@ auto ParserContext::move_next() -> bool {
 
 #pragma region Parser
 
-Parser::Parser() : StateMachine<ParserContext>(start_state) {}
+Parser::Parser()
+    : StateMachine<ParserContext>(start_state) {}
 
 #pragma endregion
