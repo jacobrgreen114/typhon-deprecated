@@ -27,6 +27,10 @@ static constexpr ParserState statement_expected_semicolon_error_state =
     ParserState{statement_expected_semicolon_error_handler_};
 
 /*
+ * If Statement
+ */
+
+/*
  * Return Statement
  */
 
@@ -36,7 +40,7 @@ auto statement_return_end_handler_(ParserContext& ctx) -> ParserState {
   }
 
   auto expr = ctx.pop_expr_node();
-  auto ret = ctx.get_statement_return_node();
+  auto ret  = ctx.get_statement_return_node();
   ret->set_expr(expr);
   return ctx.move_next_stack();
 }
@@ -66,7 +70,7 @@ auto statement_expr_end_handler_(ParserContext& ctx) -> ParserState {
   }
 
   auto expr = ctx.pop_expr_node();
-  auto ret = ctx.get_statement_expr_node();
+  auto ret  = ctx.get_statement_expr_node();
   ret->set_expr(expr);
   return ctx.move_next_stack();
 }
@@ -90,7 +94,7 @@ static constexpr ParserState statement_expr_state =
 
 auto statement_unknown_handler_(ParserContext& ctx) -> ParserState {
   auto& current = ctx.current();
-  auto kind = current.kind();
+  auto kind     = current.kind();
 
   // ctx.push_states(statement_end_state, statement_end_exit_state);
   switch (kind) {
@@ -168,7 +172,7 @@ extern const ParserState statement_block_possible_end_state;
 
 auto statement_block_statement_end_handler_(ParserContext& ctx) -> ParserState {
   auto statement = ctx.pop_statement_node();
-  auto* block = ctx.get_statement_block();
+  auto* block    = ctx.get_statement_block();
   block->push_statement(statement);
   return statement_block_possible_end_state;
 }
