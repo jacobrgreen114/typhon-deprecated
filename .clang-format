@@ -4,12 +4,15 @@ BasedOnStyle: Google
 SortIncludes: Never
 ReflowComments: false
 
-ColumnLimit: 80
+ColumnLimit: 100
 IndentWidth: 2
 
 DerivePointerAlignment: false
 PointerAlignment: Left
 ReferenceAlignment: Pointer
+
+BinPackParameters: false
+BinPackArguments: false
 
 AlignConsecutiveAssignments:
   Enabled: true

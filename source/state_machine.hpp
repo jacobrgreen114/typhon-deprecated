@@ -121,6 +121,14 @@ class EnumeratingContext : public Enumerator<TEnumType> {
     return pred(this->current()) ? match : fail;
   }
 
+  template <typename Pred>
+  auto move_next_state(Pred pred, State match, State fail, State end) -> State {
+    if (!this->move_next()) {
+      return end;
+    }
+    return pred(this->current()) ? match : fail;
+  }
+
   template <typename TEnumerable>
   auto move_next_state(State fail, State end, const TEnumerable &enumerable) {
     if (!this->move_next()) {

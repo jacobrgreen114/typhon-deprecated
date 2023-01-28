@@ -1,115 +1,92 @@
 
-// Copyright (c) 2023. Jacob R. Green
+// Copyright (c) 2023 Jacob R. Green
 // All Rights Reserved.
 
 #include "syntax.hpp"
 
-auto to_string(SyntaxKind kind) -> const char* {
-  switch (kind) {
-    case SyntaxKind::Source:
-      return "Source";
+/*
+ * Syntax Kind
+ */
 
-    case SyntaxKind::ExprNumber:
-      return "ExprNumber";
-    case SyntaxKind::ExprIdentifier:
-      return "ExprIdentifier";
-    case SyntaxKind::ExprUnary:
-      return "ExprUnary";
-    case SyntaxKind::ExprBinary:
-      return "ExprBinary";
+const auto syntax_kind_names =
+    std::unordered_map<SyntaxKind, std::string_view>{ENUM_NAME(SyntaxKind, Source),
 
-    case SyntaxKind::Block:
-      return "Block";
-    case SyntaxKind::StmExpr:
-      return "StmExpr";
-    case SyntaxKind::StmReturn:
-      return "StmReturn";
+                                                     ENUM_NAME(SyntaxKind, ExprNumber),
+                                                     ENUM_NAME(SyntaxKind, ExprString),
+                                                     ENUM_NAME(SyntaxKind, ExprIdentifier),
 
-    case SyntaxKind::DefVar:
-      return "DefVar";
-    case SyntaxKind::DefFunc:
-      return "DefFunc";
-    case SyntaxKind::DefParam:
-      return "DefParam";
-    case SyntaxKind::DefStruct:
-      return "DefStruct";
-    case SyntaxKind::DefClass:
-      return "DefClass";
-    case SyntaxKind::DefInterface:
-      return "DefInterface";
+                                                     ENUM_NAME(SyntaxKind, ExprUnary),
+                                                     ENUM_NAME(SyntaxKind, ExprBinary),
+                                                     ENUM_NAME(SyntaxKind, ExprTernary),
 
-    default:
-      throw_not_implemented();
+                                                     ENUM_NAME(SyntaxKind, StmExpr),
+                                                     ENUM_NAME(SyntaxKind, StmReturn),
+                                                     ENUM_NAME(SyntaxKind, StmIf),
+                                                     ENUM_NAME(SyntaxKind, StmElif),
+                                                     ENUM_NAME(SyntaxKind, StmElse),
+
+                                                     ENUM_NAME(SyntaxKind, Block),
+
+                                                     ENUM_NAME(SyntaxKind, DefVar),
+                                                     ENUM_NAME(SyntaxKind, DefFunc),
+                                                     ENUM_NAME(SyntaxKind, DefParam),
+                                                     ENUM_NAME(SyntaxKind, DefStruct),
+                                                     ENUM_NAME(SyntaxKind, DefClass),
+                                                     ENUM_NAME(SyntaxKind, DefInterface)};
+
+auto to_string(SyntaxKind kind) -> const std::string_view& {
+  if (auto it = syntax_kind_names.find(kind); it != syntax_kind_names.end()) {
+    return it->second;
   }
+  throw std::exception();
 }
 
-auto to_string(Operator op) -> const char* {
-  switch (op) {
-    case Operator::Access:
-      return "Access";
+/*
+ * Operator
+ */
 
-    case Operator::Add:
-      return "Add";
-    case Operator::Subtract:
-      return "Subtract";
-    case Operator::Multiply:
-      return "Multiply";
-    case Operator::Divide:
-      return "Divide";
+const auto operator_names =
+    std::unordered_map<Operator, std::string_view>{ENUM_NAME(Operator, Access),
 
-    case Operator::Equals:
-      return "Equals";
-    case Operator::NotEquals:
-      return "NotEquals";
-    case Operator::Or:
-      return "Or";
-    case Operator::And:
-      return "And";
+                                                   ENUM_NAME(Operator, Add),
+                                                   ENUM_NAME(Operator, Subtract),
+                                                   ENUM_NAME(Operator, Multiply),
+                                                   ENUM_NAME(Operator, Divide),
 
-    case Operator::LessThan:
-      return "LessThan";
-    case Operator::GreaterThan:
-      return "GreaterThan";
-    case Operator::LessThanEquals:
-      return "LessThanEquals";
-    case Operator::GreaterThanEquals:
-      return "GreaterThanEquals";
+                                                   ENUM_NAME(Operator, Equals),
+                                                   ENUM_NAME(Operator, NotEquals),
+                                                   ENUM_NAME(Operator, Or),
+                                                   ENUM_NAME(Operator, And),
 
-    case Operator::BitOr:
-      return "BitOr";
-    case Operator::BitAnd:
-      return "BitAnd";
-    case Operator::BitXor:
-      return "BitXor";
+                                                   ENUM_NAME(Operator, LessThan),
+                                                   ENUM_NAME(Operator, GreaterThan),
+                                                   ENUM_NAME(Operator, LessThanEquals),
+                                                   ENUM_NAME(Operator, GreaterThanEquals),
 
-    case Operator::ShiftLeft:
-      return "ShiftLeft";
-    case Operator::ShiftRight:
-      return "ShiftRight";
+                                                   ENUM_NAME(Operator, BitOr),
+                                                   ENUM_NAME(Operator, BitXor),
+                                                   ENUM_NAME(Operator, BitAnd),
 
-    case Operator::BoolNot:
-      return "BoolNot";
-    case Operator::BitNot:
-      return "BitNot";
+                                                   ENUM_NAME(Operator, ShiftLeft),
+                                                   ENUM_NAME(Operator, ShiftRight),
 
-    case Operator::Positive:
-      return "Positive";
-    case Operator::Negative:
-      return "Negative";
+                                                   ENUM_NAME(Operator, BoolNot),
+                                                   ENUM_NAME(Operator, BitNot),
 
-    case Operator::PreInc:
-      return "PreInc";
-    case Operator::PreDec:
-      return "PreDec";
+                                                   ENUM_NAME(Operator, Positive),
+                                                   ENUM_NAME(Operator, Negative),
 
-    case Operator::PostInc:
-      return "PostInc";
-    case Operator::PostDec:
-      return "PostDec";
+                                                   ENUM_NAME(Operator, PreInc),
+                                                   ENUM_NAME(Operator, PreDec),
 
-    default:
-      throw_not_implemented();
+                                                   ENUM_NAME(Operator, PostInc),
+                                                   ENUM_NAME(Operator, PostDec)};
+
+auto to_string(Operator op) -> const std::string_view& {
+  if (auto it = operator_names.find(op); it != operator_names.end()) {
+    return it->second;
   }
+  throw std::exception();
 }
 
 bool is_expression(SyntaxKind kind) {
@@ -281,21 +258,18 @@ auto get_precedence(Operator op) -> Precedence {
 
 #ifdef TRACE
 
-auto SyntaxNode::on_serialize(xml::SerializationContext& context) const
-    -> void {
+auto SyntaxNode::on_serialize(xml::SerializationContext& context) const -> void {
   context.add_attribute("kind", to_string(kind()));
 }
 
-void ConstantExpression::on_serialize(
-    xml::SerializationContext& context) const {
+void ConstantExpression::on_serialize(xml::SerializationContext& context) const {
   SyntaxNode::on_serialize(context);
   if (value_) {
     context.add_attribute("value", *value_);
   }
 }
 
-void IdentifierExpression::on_serialize(
-    xml::SerializationContext& context) const {
+void IdentifierExpression::on_serialize(xml::SerializationContext& context) const {
   ExpressionNode::on_serialize(context);
   if (identifier_) {
     context.add_attribute("name", *identifier_);
@@ -338,6 +312,16 @@ void ReturnStatement::on_serialize(xml::SerializationContext& context) const {
   }
 }
 
+void IfStatement::on_serialize(xml::SerializationContext& context) const {
+  SyntaxNode::on_serialize(context);
+  if (expr_) {
+    context.add_element("pred", *expr_);
+  }
+  if (body()) {
+    context.add_element("body", *body());
+  }
+}
+
 void StatementBlock::on_serialize(xml::SerializationContext& context) const {
   SyntaxNode::on_serialize(context);
   for (auto& statement : statements_) {
@@ -373,8 +357,7 @@ void FuncDefinition::on_serialize(xml::SerializationContext& context) const {
   }
 }
 
-auto SourceNode::on_serialize(xml::SerializationContext& context) const
-    -> void {
+auto SourceNode::on_serialize(xml::SerializationContext& context) const -> void {
   SyntaxNode::on_serialize(context);
   for (auto& node : nodes_) {
     context.add_element("node", *node);

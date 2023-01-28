@@ -1,4 +1,4 @@
-// Copyright (c) 2023. Jacob R. Green
+// Copyright (c) 2023 Jacob R. Green
 // All Rights Reserved.
 
 #pragma once
@@ -20,12 +20,11 @@ struct ReturnState {
   ParserState end;
 };
 
-class ParserContext final
-    : public EnumeratingContext<ParserContext, LexicalToken> {
+class ParserContext final : public EnumeratingContext<ParserContext, LexicalToken> {
  public:
-  using Source = std::shared_ptr<SourceNode>;
-  using StateStack = std::stack<ReturnState>;
-  using SyntaxStack = std::stack<std::shared_ptr<SyntaxNode>>;
+  using Source          = std::shared_ptr<SourceNode>;
+  using StateStack      = std::stack<ReturnState>;
+  using SyntaxStack     = std::stack<std::shared_ptr<SyntaxNode>>;
   using PrecedenceStack = std::stack<Precedence>;
 
  private:
@@ -97,12 +96,14 @@ class ParserContext final
 
   auto get_statement_expr_node() { return get_syntax_node<ExprStatement>(); }
 
-  auto get_statement_return_node() {
-    return get_syntax_node<ReturnStatement>();
-  }
+  auto get_statement_return_node() { return get_syntax_node<ReturnStatement>(); }
 
   auto get_statement_block() { return get_syntax_node<StatementBlock>(); }
   auto pop_statement_block() { return pop_syntax_node<StatementBlock>(); }
+
+  auto get_statement_if_node() { return get_syntax_node<IfStatement>(); }
+  auto get_statement_elif_node() { return get_syntax_node<ElifStatement>(); }
+  auto get_statement_else_node() { return get_syntax_node<ElseStatement>(); }
 
   auto pop_expr_node() { return pop_syntax_node<ExpressionNode>(); }
 
@@ -120,8 +121,7 @@ class Parser final : public StateMachine<ParserContext> {
 
 using LexicalTokenPredicate = Predicate<const LexicalToken&>;
 
-constexpr auto is_token_kind(const LexicalToken& token, const LexicalKind kind)
-    -> bool {
+constexpr auto is_token_kind(const LexicalToken& token, const LexicalKind kind) -> bool {
   return token.kind() == kind;
 };
 
@@ -171,6 +171,17 @@ constexpr LexicalTokenPredicate is_arrow = [](auto& token) {
 
 constexpr LexicalTokenPredicate is_equals = [](auto& token) {
   return is_token_kind(token, LexicalKind::SymbolEquals);
+};
+
+constexpr LexicalTokenPredicate is_keyword_if = [](auto& token) {
+  return is_token_kind(token, LexicalKind::KeywordIf);
+};
+constexpr LexicalTokenPredicate is_keyword_elif = [](auto& token) {
+  return is_token_kind(token, LexicalKind::KeywordElif);
+};
+
+constexpr LexicalTokenPredicate is_keyword_else = [](auto& token) {
+  return is_token_kind(token, LexicalKind::KeywordElse);
 };
 
 constexpr LexicalTokenPredicate is_keyword_var = [](auto& token) {

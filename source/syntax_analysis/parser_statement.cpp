@@ -1,4 +1,4 @@
-// Copyright (c) 2023. Jacob R. Green
+// Copyright (c) 2023 Jacob R. Green
 // All Rights Reserved.
 
 #include "parser_statement.hpp"
@@ -6,16 +6,29 @@
 #include "parser_expression.hpp"
 #include "parser_def_func.hpp"
 
-auto statement_unexpected_end_error_handler_(ParserContext& ctx)
-    -> ParserState {
+/*
+ * Exit
+ */
+
+auto statement_error_handler_(ParserContext& ctx) -> ParserState;
+auto statement_unexpected_end_error_handler_(ParserContext& ctx) -> ParserState;
+auto statement_expected_semicolon_error_handler_(ParserContext& ctx) -> ParserState;
+
+constexpr auto statement_error_state = ParserState{statement_error_handler_};
+
+constexpr auto statement_unexpected_end_error_state =
+    ParserState{statement_unexpected_end_error_handler_};
+
+constexpr auto statement_expected_semicolon_error_state =
+    ParserState{statement_expected_semicolon_error_handler_};
+
+auto statement_error_handler_(ParserContext& ctx) -> ParserState { throw_not_implemented(); }
+
+auto statement_unexpected_end_error_handler_(ParserContext& ctx) -> ParserState {
   throw_not_implemented();
 }
 
-static constexpr ParserState statement_unexpected_end_error_state =
-    ParserState{statement_unexpected_end_error_handler_};
-
-auto statement_expected_semicolon_error_handler_(ParserContext& ctx)
-    -> ParserState {
+auto statement_expected_semicolon_error_handler_(ParserContext& ctx) -> ParserState {
   // todo : redo error message
   const auto& current = ctx.current();
   std::cerr << "Error : Expected semicolon " << current.pos() << std::endl;
@@ -23,16 +36,126 @@ auto statement_expected_semicolon_error_handler_(ParserContext& ctx)
   exit(-1);
 }
 
-static constexpr ParserState statement_expected_semicolon_error_state =
-    ParserState{statement_expected_semicolon_error_handler_};
-
 /*
  * If Statement
  */
 
+auto statement_if_error_handler_(ParserContext& ctx) -> ParserState;
+auto statement_if_body_end_handler_(ParserContext& ctx) -> ParserState;
+auto statement_if_body_start_handler_(ParserContext& ctx) -> ParserState;
+auto statement_if_expr_end_handler_(ParserContext& ctx) -> ParserState;
+auto statement_if_expr_start_handler_(ParserContext& ctx) -> ParserState;
+auto statement_if_handler_(ParserContext& ctx) -> ParserState;
+
+constexpr auto statement_if_error_state      = ParserState{statement_if_error_handler_};
+constexpr auto statement_if_body_end_state   = ParserState{statement_if_body_end_handler_};
+constexpr auto statement_if_body_start_state = ParserState{statement_if_body_start_handler_};
+constexpr auto statement_if_expr_end_state   = ParserState{statement_if_expr_end_handler_};
+constexpr auto statement_if_expr_start_state = ParserState{statement_if_expr_start_handler_};
+constexpr auto statement_if_state            = ParserState{statement_if_handler_};
+
+auto statement_if_error_handler_(ParserContext& ctx) -> ParserState { throw_not_implemented(); }
+
+auto statement_if_body_end_handler_(ParserContext& ctx) -> ParserState {
+  auto block = ctx.pop_statement_block();
+  auto node  = ctx.get_statement_if_node();
+  node->set_body(block);
+  return ctx.pop_ret_state();
+}
+
+auto statement_if_body_start_handler_(ParserContext& ctx) -> ParserState {
+  assert(is_bracket_open(ctx.current()));
+  ctx.push_states(statement_if_body_end_state, statement_unexpected_end_error_state);
+  return statement_block_start_state;
+}
+
+auto statement_if_expr_end_handler_(ParserContext& ctx) -> ParserState {
+  assert(is_paren_close(ctx.current()));
+  auto expr = ctx.pop_expr_node();
+  auto node = ctx.get_statement_if_node();
+  node->set_expr(expr);
+
+  return ctx.move_next_state(is_bracket_open,
+                             statement_if_body_start_state,
+                             statement_if_error_state,
+                             statement_unexpected_end_error_state);
+}
+
+auto statement_if_expr_start_handler_(ParserContext& ctx) -> ParserState {
+  assert(is_paren_open(ctx.current()));
+  ctx.push_states(statement_if_expr_end_state, statement_unexpected_end_error_state);
+  return ctx.move_next_state(expr_start_state, statement_unexpected_end_error_state);
+}
+
+auto statement_if_handler_(ParserContext& ctx) -> ParserState {
+  assert(is_keyword_if(ctx.current()));
+  ctx.syntax_stack.emplace(std::make_shared<IfStatement>());
+  return ctx.move_next_state(is_paren_open,
+                             statement_if_expr_start_state,
+                             statement_if_error_state,
+                             statement_unexpected_end_error_state);
+}
+
+/*
+ * Elif Statement
+ */
+
+auto statement_elif_handler_(ParserContext& ctx) -> ParserState;
+
+constexpr auto statement_elif_state = ParserState{statement_elif_handler_};
+
+auto statement_elif_handler_(ParserContext& ctx) -> ParserState {
+  assert(is_keyword_elif(ctx.current()));
+  ctx.syntax_stack.emplace(std::make_shared<ElifStatement>());
+  return ctx.move_next_state(is_paren_open,
+                             statement_if_expr_start_state,
+                             statement_if_error_state,
+                             statement_unexpected_end_error_state);
+}
+
+/*
+ * Else Statement
+ */
+
+auto statement_else_body_end_handler_(ParserContext& ctx) -> ParserState;
+auto statement_else_body_start_handler_(ParserContext& ctx) -> ParserState;
+auto statement_else_handler_(ParserContext& ctx) -> ParserState;
+
+constexpr auto statement_else_body_end_state   = ParserState{statement_else_body_end_handler_};
+constexpr auto statement_else_body_start_state = ParserState{statement_else_body_start_handler_};
+constexpr auto statement_else_state            = ParserState{statement_else_handler_};
+
+auto statement_else_body_end_handler_(ParserContext& ctx) -> ParserState {
+  auto block = ctx.pop_statement_block();
+  auto node  = ctx.get_statement_else_node();
+  node->set_body(block);
+  return ctx.pop_ret_state();
+}
+
+auto statement_else_body_start_handler_(ParserContext& ctx) -> ParserState {
+  assert(is_bracket_open(ctx.current()));
+  ctx.push_states(statement_else_body_end_state, statement_unexpected_end_error_state);
+  return statement_block_start_state;
+}
+
+auto statement_else_handler_(ParserContext& ctx) -> ParserState {
+  assert(is_keyword_else(ctx.current()));
+  ctx.syntax_stack.emplace(std::make_shared<ElseStatement>());
+  return ctx.move_next_state(is_bracket_open,
+                             statement_else_body_start_state,
+                             statement_error_state,
+                             statement_unexpected_end_error_state);
+}
+
 /*
  * Return Statement
  */
+
+auto statement_return_end_handler_(ParserContext& ctx) -> ParserState;
+auto statement_return_handler_(ParserContext& ctx) -> ParserState;
+
+constexpr auto statement_return_end_state = ParserState{statement_return_end_handler_};
+constexpr auto statement_return_state     = ParserState{statement_return_handler_};
 
 auto statement_return_end_handler_(ParserContext& ctx) -> ParserState {
   if (!is_semicolon(ctx.current())) {
@@ -45,24 +168,22 @@ auto statement_return_end_handler_(ParserContext& ctx) -> ParserState {
   return ctx.move_next_stack();
 }
 
-static constexpr ParserState statement_return_end_state =
-    ParserState{statement_return_end_handler_};
-
 auto statement_return_handler_(ParserContext& ctx) -> ParserState {
   assert(is_keyword_return(ctx.current()));
   ctx.syntax_stack.emplace(std::make_shared<ReturnStatement>());
-  ctx.push_states(statement_return_end_state,
-                  statement_unexpected_end_error_state);
-  return ctx.move_next_state(expr_start_state,
-                             statement_unexpected_end_error_state);
+  ctx.push_states(statement_return_end_state, statement_unexpected_end_error_state);
+  return ctx.move_next_state(expr_start_state, statement_unexpected_end_error_state);
 }
-
-static constexpr ParserState statement_return_state =
-    ParserState{statement_return_handler_};
 
 /*
  * Expression Statement
  */
+
+auto statement_expr_end_handler_(ParserContext& ctx) -> ParserState;
+auto statement_expr_handler_(ParserContext& ctx) -> ParserState;
+
+constexpr auto statement_expr_end_state = ParserState{statement_expr_end_handler_};
+constexpr auto statement_expr_state     = ParserState{statement_expr_handler_};
 
 auto statement_expr_end_handler_(ParserContext& ctx) -> ParserState {
   if (!is_semicolon(ctx.current())) {
@@ -75,100 +196,81 @@ auto statement_expr_end_handler_(ParserContext& ctx) -> ParserState {
   return ctx.move_next_stack();
 }
 
-static constexpr ParserState statement_expr_end_state =
-    ParserState{statement_expr_end_handler_};
-
 auto statement_expr_handler_(ParserContext& ctx) -> ParserState {
   ctx.syntax_stack.push(std::make_shared<ExprStatement>());
-  ctx.push_states(statement_expr_end_state,
-                  statement_unexpected_end_error_state);
+  ctx.push_states(statement_expr_end_state, statement_unexpected_end_error_state);
   return expr_start_state;
 }
-
-static constexpr ParserState statement_expr_state =
-    ParserState{statement_expr_handler_};
 
 /*
  * Statement Start
  */
 
 auto statement_unknown_handler_(ParserContext& ctx) -> ParserState {
-  auto& current = ctx.current();
-  auto kind     = current.kind();
-
-  // ctx.push_states(statement_end_state, statement_end_exit_state);
-  switch (kind) {
-    case LexicalKind::KeywordVar: {
+  switch (ctx.current().kind()) {
+    case LexicalKind::KeywordVar:
       throw_not_implemented();
-    }
-    case LexicalKind::KeywordReturn: {
+    case LexicalKind::KeywordReturn:
       return statement_return_state;
-    }
-    case LexicalKind::KeywordIf: {
+    case LexicalKind::KeywordIf:
+      return statement_if_state;
+    case LexicalKind::KeywordElif:
+      return statement_elif_state;
+    case LexicalKind::KeywordElse:
+      return statement_else_state;
+    case LexicalKind::KeywordLoop:
       throw_not_implemented();
-    }
-    case LexicalKind::KeywordElif: {
+    case LexicalKind::KeywordWhile:
       throw_not_implemented();
-    }
-    case LexicalKind::KeywordElse: {
+    case LexicalKind::KeywordFor:
       throw_not_implemented();
-    }
-    case LexicalKind::KeywordLoop: {
+    case LexicalKind::KeywordForeach:
       throw_not_implemented();
-    }
-    case LexicalKind::KeywordWhile: {
+    case LexicalKind::SymbolSemicolon:
       throw_not_implemented();
-    }
-    case LexicalKind::KeywordFor: {
-      throw_not_implemented();
-    }
-    case LexicalKind::KeywordForeach: {
-      throw_not_implemented();
-    }
-    case LexicalKind::SymbolSemicolon: {
-      throw_not_implemented();
-    }
-    default: {
+    default:
       return statement_expr_state;
-    }
   }
 
   throw_not_implemented();
 }
 
-static constexpr ParserState statement_unknown_state =
-    ParserState{statement_unknown_handler_};
+static constexpr ParserState statement_unknown_state = ParserState{statement_unknown_handler_};
 
-static constexpr ParserState statement_start_state =
-    ParserState{statement_unknown_handler_};
+static constexpr ParserState statement_start_state = ParserState{statement_unknown_handler_};
 
 /*
  * Statement Block
  */
 
-auto statement_block_error_handler_(ParserContext& ctx) -> ParserState {
-  throw_not_implemented();
-}
+auto statement_block_error_handler_(ParserContext& ctx) -> ParserState;
+auto statement_block_unexpected_end_error_handler_(ParserContext& ctx) -> ParserState;
+auto statement_block_end_handler_(ParserContext& ctx) -> ParserState;
+auto statement_block_statement_end_handler_(ParserContext& ctx) -> ParserState;
+auto statement_block_possible_end_handler_(ParserContext& ctx) -> ParserState;
+auto statement_block_statement_handler_(ParserContext& ctx) -> ParserState;
+auto statement_block_start_handler_(ParserContext& ctx) -> ParserState;
 
-constexpr ParserState statement_block_error_state =
-    ParserState{statement_block_error_handler_};
-
-auto statement_block_unexpected_end_error_handler_(ParserContext& ctx)
-    -> ParserState {
-  throw_not_implemented();
-}
-
-constexpr ParserState statement_block_unexpected_end_error_state =
+constexpr auto statement_block_error_state = ParserState{statement_block_error_handler_};
+constexpr auto statement_block_unexpected_end_error_state =
     ParserState{statement_block_unexpected_end_error_handler_};
+constexpr auto statement_block_end_state = ParserState{statement_block_end_handler_};
+constexpr auto statement_block_statement_end_state =
+    ParserState{statement_block_statement_end_handler_};
+constexpr auto statement_block_statement_state = ParserState{statement_block_statement_handler_};
+constexpr ParserState statement_block_possible_end_state =
+    ParserState{statement_block_possible_end_handler_};
+constexpr ParserState statement_block_start_state = ParserState{statement_block_start_handler_};
+
+auto statement_block_error_handler_(ParserContext& ctx) -> ParserState { throw_not_implemented(); }
+
+auto statement_block_unexpected_end_error_handler_(ParserContext& ctx) -> ParserState {
+  throw_not_implemented();
+}
 
 auto statement_block_end_handler_(ParserContext& ctx) -> ParserState {
   return ctx.move_next_stack();
 }
-
-constexpr ParserState statement_block_end_state =
-    ParserState{statement_block_end_handler_};
-
-extern const ParserState statement_block_possible_end_state;
 
 auto statement_block_statement_end_handler_(ParserContext& ctx) -> ParserState {
   auto statement = ctx.pop_statement_node();
@@ -177,17 +279,10 @@ auto statement_block_statement_end_handler_(ParserContext& ctx) -> ParserState {
   return statement_block_possible_end_state;
 }
 
-constexpr ParserState statement_block_statement_end_state =
-    ParserState{statement_block_statement_end_handler_};
-
 auto statement_block_statement_handler_(ParserContext& ctx) -> ParserState {
-  ctx.push_states(statement_block_statement_end_state,
-                  statement_block_unexpected_end_error_state);
+  ctx.push_states(statement_block_statement_end_state, statement_block_unexpected_end_error_state);
   return statement_start_state;
 }
-
-constexpr ParserState statement_block_statement_state =
-    ParserState{statement_block_statement_handler_};
 
 auto statement_block_possible_end_handler_(ParserContext& ctx) -> ParserState {
   if (is_bracket_close(ctx.current())) {
@@ -195,14 +290,7 @@ auto statement_block_possible_end_handler_(ParserContext& ctx) -> ParserState {
   } else {
     return statement_block_statement_state;
   }
-
-  // return ctx.move_next_state(is_bracket_close, statement_block_end_state,
-  //                            statement_block_statement_state,
-  //                            statement_block_unexpected_end_error_state);
 }
-
-constexpr ParserState statement_block_possible_end_state =
-    ParserState{statement_block_possible_end_handler_};
 
 auto statement_block_start_handler_(ParserContext& ctx) -> ParserState {
   assert(is_bracket_open(ctx.current()));
@@ -210,8 +298,4 @@ auto statement_block_start_handler_(ParserContext& ctx) -> ParserState {
   ctx.syntax_stack.push(std::make_shared<StatementBlock>());
   return ctx.move_next_state(statement_block_possible_end_state,
                              statement_block_unexpected_end_error_state);
-  //return statement_block_possible_end_state;
 }
-
-constexpr ParserState statement_block_start_state =
-    ParserState{statement_block_start_handler_};

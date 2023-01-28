@@ -14,6 +14,9 @@ func main(argc : i32) -> i32 {
 
 	--32 * 64;
 	
+	if (32) { } 
+	elif (64) { }
+	else { }
 	
 	++hello.x.y;
 
