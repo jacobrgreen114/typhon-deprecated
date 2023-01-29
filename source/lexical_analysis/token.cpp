@@ -4,77 +4,81 @@
 #include "token.hpp"
 
 const auto lexical_kind_names_ = std::unordered_map<LexicalKind, std::string_view>{
-    {LexicalKind::Unknown, "Unknown"},
+    {LexicalKind::Unknown,                "Unknown"               },
 
-    {LexicalKind::Identifier, "Identifier"},
-    {LexicalKind::Number, "Number"},
+    {LexicalKind::Identifier,             "Identifier"            },
+    {LexicalKind::Number,                 "Number"                },
+    {LexicalKind::String,                 "String"                },
 
-    {LexicalKind::KeywordVar, "KeywordVar"},
-    {LexicalKind::KeywordFunc, "KeywordFunc"},
-    {LexicalKind::KeywordStruct, "KeywordStruct"},
-    {LexicalKind::KeywordObject, "KeywordObject"},
+    {LexicalKind::KeywordTrue,            "KeywordTrue"           },
+    {LexicalKind::KeywordFalse,           "KeywordFalse"          },
 
-    {LexicalKind::KeywordConcept, "KeywordConcept"},
-    {LexicalKind::KeywordInterface, "KeywordInterface"},
+    {LexicalKind::KeywordVar,             "KeywordVar"            },
+    {LexicalKind::KeywordFunc,            "KeywordFunc"           },
+    {LexicalKind::KeywordStruct,          "KeywordStruct"         },
+    {LexicalKind::KeywordObject,          "KeywordObject"         },
 
-    {LexicalKind::KeywordReturn, "KeywordReturn"},
+    {LexicalKind::KeywordConcept,         "KeywordConcept"        },
+    {LexicalKind::KeywordInterface,       "KeywordInterface"      },
 
-    {LexicalKind::KeywordIf, "KeywordIf"},
-    {LexicalKind::KeywordElif, "KeywordElif"},
-    {LexicalKind::KeywordElse, "KeywordElse"},
+    {LexicalKind::KeywordReturn,          "KeywordReturn"         },
 
-    {LexicalKind::KeywordSwitch, "KeywordSwitch"},
-    {LexicalKind::KeywordMatch, "KeywordMatch"},
+    {LexicalKind::KeywordIf,              "KeywordIf"             },
+    {LexicalKind::KeywordElif,            "KeywordElif"           },
+    {LexicalKind::KeywordElse,            "KeywordElse"           },
 
-    {LexicalKind::KeywordLoop, "KeywordLoop"},
-    {LexicalKind::KeywordWhile, "KeywordWhile"},
-    {LexicalKind::KeywordFor, "KeywordFor"},
-    {LexicalKind::KeywordForeach, "KeywordForeach"},
+    {LexicalKind::KeywordSwitch,          "KeywordSwitch"         },
+    {LexicalKind::KeywordMatch,           "KeywordMatch"          },
 
-    {LexicalKind::SymbolPeriod, "SymbolPeriod"},
-    {LexicalKind::SymbolSemicolon, "SymbolSemicolon"},
-    {LexicalKind::SymbolColon, "SymbolColon"},
-    {LexicalKind::SymbolComma, "SymbolComma"},
+    {LexicalKind::KeywordLoop,            "KeywordLoop"           },
+    {LexicalKind::KeywordWhile,           "KeywordWhile"          },
+    {LexicalKind::KeywordFor,             "KeywordFor"            },
+    {LexicalKind::KeywordForeach,         "KeywordForeach"        },
 
-    {LexicalKind::SymbolParenOpen, "SymbolParenOpen"},
-    {LexicalKind::SymbolParenClose, "SymbolParenClose"},
+    {LexicalKind::SymbolPeriod,           "SymbolPeriod"          },
+    {LexicalKind::SymbolSemicolon,        "SymbolSemicolon"       },
+    {LexicalKind::SymbolColon,            "SymbolColon"           },
+    {LexicalKind::SymbolComma,            "SymbolComma"           },
 
-    {LexicalKind::SymbolBraceOpen, "SymbolBraceOpen"},
-    {LexicalKind::SymbolBraceClose, "SymbolBraceClose"},
+    {LexicalKind::SymbolParenOpen,        "SymbolParenOpen"       },
+    {LexicalKind::SymbolParenClose,       "SymbolParenClose"      },
 
-    {LexicalKind::SymbolAngleOpen, "SymbolAngleOpen"},
-    {LexicalKind::SymbolAngleClose, "SymbolAngleClose"},
+    {LexicalKind::SymbolBraceOpen,        "SymbolBraceOpen"       },
+    {LexicalKind::SymbolBraceClose,       "SymbolBraceClose"      },
 
-    {LexicalKind::SymbolBracketOpen, "SymbolBracketOpen"},
-    {LexicalKind::SymbolBracketClose, "SymbolBracketClose"},
+    {LexicalKind::SymbolAngleOpen,        "SymbolAngleOpen"       },
+    {LexicalKind::SymbolAngleClose,       "SymbolAngleClose"      },
 
-    {LexicalKind::SymbolArrow, "SymbolArrow"},
+    {LexicalKind::SymbolBracketOpen,      "SymbolBracketOpen"     },
+    {LexicalKind::SymbolBracketClose,     "SymbolBracketClose"    },
 
-    {LexicalKind::SymbolEquals, "SymbolEquals"},
+    {LexicalKind::SymbolArrow,            "SymbolArrow"           },
 
-    {LexicalKind::SymbolBoolEquals, "SymbolBoolEquals"},
-    {LexicalKind::SymbolBoolNotEquals, "SymbolBoolNotEquals"},
-    {LexicalKind::SymbolBoolNot, "SymbolBoolNot"},
-    {LexicalKind::SymbolBoolOr, "SymbolBoolOr"},
-    {LexicalKind::SymbolBoolAnd, "SymbolBoolAnd"},
+    {LexicalKind::SymbolEquals,           "SymbolEquals"          },
 
-    {LexicalKind::SymbolBitNot, "SymbolBitNot"},
-    {LexicalKind::SymbolBitOr, "SymbolBitOr"},
-    {LexicalKind::SymbolBitAnd, "SymbolBitAnd"},
-    {LexicalKind::SymbolBitXor, "SymbolBitXor"},
+    {LexicalKind::SymbolBoolEquals,       "SymbolBoolEquals"      },
+    {LexicalKind::SymbolBoolNotEquals,    "SymbolBoolNotEquals"   },
+    {LexicalKind::SymbolBoolNot,          "SymbolBoolNot"         },
+    {LexicalKind::SymbolBoolOr,           "SymbolBoolOr"          },
+    {LexicalKind::SymbolBoolAnd,          "SymbolBoolAnd"         },
 
-    {LexicalKind::SymbolPlus, "SymbolPlus"},
-    {LexicalKind::SymbolMinus, "SymbolMinus"},
-    {LexicalKind::SymbolStar, "SymbolStar"},
-    {LexicalKind::SymbolSlash, "SymbolSlash"},
+    {LexicalKind::SymbolBitNot,           "SymbolBitNot"          },
+    {LexicalKind::SymbolBitOr,            "SymbolBitOr"           },
+    {LexicalKind::SymbolBitAnd,           "SymbolBitAnd"          },
+    {LexicalKind::SymbolBitXor,           "SymbolBitXor"          },
 
-    {LexicalKind::SymbolInc, "SymbolInc"},
-    {LexicalKind::SymbolDec, "SymbolDec"},
+    {LexicalKind::SymbolPlus,             "SymbolPlus"            },
+    {LexicalKind::SymbolMinus,            "SymbolMinus"           },
+    {LexicalKind::SymbolStar,             "SymbolStar"            },
+    {LexicalKind::SymbolSlash,            "SymbolSlash"           },
 
-    {LexicalKind::SymbolShiftLeft, "SymbolShiftLeft"},
-    {LexicalKind::SymbolShiftRight, "SymbolShiftRight"},
+    {LexicalKind::SymbolInc,              "SymbolInc"             },
+    {LexicalKind::SymbolDec,              "SymbolDec"             },
 
-    {LexicalKind::SymbolLessThanEqual, "SymbolLessThanEqual"},
+    {LexicalKind::SymbolShiftLeft,        "SymbolShiftLeft"       },
+    {LexicalKind::SymbolShiftRight,       "SymbolShiftRight"      },
+
+    {LexicalKind::SymbolLessThanEqual,    "SymbolLessThanEqual"   },
     {LexicalKind::SymbolGreaterThanEqual, "SymbolGreaterThanEqual"},
 };
 

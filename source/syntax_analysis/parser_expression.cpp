@@ -1,4 +1,4 @@
-// Copyright (c) 2023. Jacob R. Green
+// Copyright (c) 2023 Jacob R. Green
 // All Rights Reserved.
 
 #include "parser_expression.hpp"
@@ -10,9 +10,7 @@
  * Error
  */
 
-auto expr_error_handler_(ParserContext& ctx) -> ParserState {
-  throw_not_implemented();
-}
+auto expr_error_handler_(ParserContext& ctx) -> ParserState { throw_not_implemented(); }
 
 constexpr ParserState expression_error_state = ParserState{expr_error_handler_};
 
@@ -27,15 +25,11 @@ constexpr ParserState expr_unexpected_end_error_state =
  * Exit
  */
 
-auto expr_exit_end_handler_(ParserContext& ctx) -> ParserState {
-  return ctx.pop_end_state();
-}
+auto expr_exit_end_handler_(ParserContext& ctx) -> ParserState { return ctx.pop_end_state(); }
 
 constexpr ParserState expr_exit_end_state = ParserState{expr_exit_end_handler_};
 
-auto expr_exit_handler_(ParserContext& ctx) -> ParserState {
-  return ctx.pop_ret_state();
-}
+auto expr_exit_handler_(ParserContext& ctx) -> ParserState { return ctx.pop_ret_state(); }
 constexpr ParserState expr_exit_state = ParserState{expr_exit_handler_};
 
 auto expr_end_handler_(ParserContext& ctx) -> ParserState {
@@ -50,42 +44,55 @@ extern const ParserState expr_binary_state;
 extern const ParserState expr_unknown_state;
 
 auto expr_possible_end_handler_(ParserContext& ctx) -> ParserState {
-  return ctx.move_next_state(is_binary_operator, expr_binary_state,
-                             expr_exit_state, expr_exit_end_state);
+  return ctx.move_next_state(
+      is_binary_operator, expr_binary_state, expr_exit_state, expr_exit_end_state);
 }
 
-constexpr ParserState expr_possible_end_state =
-    ParserState{expr_possible_end_handler_};
+constexpr ParserState expr_possible_end_state = ParserState{expr_possible_end_handler_};
+
+/*
+ * Bool
+ */
+
+auto expr_bool_handler_(ParserContext& ctx) -> ParserState;
+
+constexpr auto expr_bool_state = ParserState{expr_bool_handler_};
+
+auto expr_bool_handler_(ParserContext& ctx) -> ParserState {
+  auto kind = ctx.current().kind();
+  assert(kind == LexicalKind::KeywordTrue || kind == LexicalKind::KeywordFalse);
+  const auto value = kind == LexicalKind::KeywordTrue;
+  ctx.syntax_stack.push(std::make_shared<BoolExpression>(value));
+  return expr_possible_end_state;
+}
 
 /*
  * Number
  */
+
+auto expr_number_handler_(ParserContext& ctx) -> ParserState;
+
+constexpr auto expr_number_state = ParserState{expr_number_handler_};
 
 auto expr_number_handler_(ParserContext& ctx) -> ParserState {
   const auto& value = ctx.current().value();
   ctx.syntax_stack.push(std::make_shared<NumberExpression>(value));
   return expr_possible_end_state;
 }
-constexpr ParserState expr_number_state = ParserState{expr_number_handler_};
 
 /*
  * Identifier
  */
 
-// auto expr_ident_possible_end_handler_(ParserContext& ctx) -> ParserState {
-//   throw_not_implemented();
-// }
-//
-// constexpr ParserState expr_ident_possible_end_state =
-//     ParserState{expr_ident_possible_end_handler_};
+auto expr_ident_handler_(ParserContext& ctx) -> ParserState;
+
+constexpr ParserState expr_ident_state = ParserState{expr_ident_handler_};
 
 auto expr_ident_handler_(ParserContext& ctx) -> ParserState {
   const auto& value = ctx.current().value();
   ctx.syntax_stack.push(std::make_shared<IdentifierExpression>(value));
   return expr_possible_end_state;
 }
-
-constexpr ParserState expr_ident_state = ParserState{expr_ident_handler_};
 
 /*
  * Binary
@@ -109,8 +116,7 @@ auto expr_binary_end_exit_handler_(ParserContext& ctx) -> ParserState {
   return ctx.pop_end_state();
 }
 
-constexpr ParserState expr_binary_end_exit_state =
-    ParserState{expr_binary_end_exit_handler_};
+constexpr ParserState expr_binary_end_exit_state = ParserState{expr_binary_end_exit_handler_};
 
 auto expr_binary_end_handler_(ParserContext& ctx) -> ParserState {
   do_expr_binary_end(ctx);
@@ -121,8 +127,7 @@ auto expr_binary_end_handler_(ParserContext& ctx) -> ParserState {
   return ctx.pop_ret_state();
 }
 
-constexpr ParserState expr_binary_end_state =
-    ParserState{expr_binary_end_handler_};
+constexpr ParserState expr_binary_end_state = ParserState{expr_binary_end_handler_};
 
 auto expr_binary_handler_(ParserContext& ctx) -> ParserState {
   const auto& current = ctx.current();
@@ -131,8 +136,7 @@ auto expr_binary_handler_(ParserContext& ctx) -> ParserState {
   const auto op         = get_binary_op(current.kind());
   const auto precedence = get_precedence(op);
 
-  if (!ctx.precedence_stack.empty() &&
-      ctx.precedence_stack.top() > precedence) {
+  if (!ctx.precedence_stack.empty() && ctx.precedence_stack.top() > precedence) {
     return ctx.pop_ret_state();
   }
 
@@ -140,8 +144,7 @@ auto expr_binary_handler_(ParserContext& ctx) -> ParserState {
   ctx.syntax_stack.emplace(std::make_shared<BinaryExpression>(op));
 
   ctx.push_states(expr_binary_end_state, expr_binary_end_exit_state);
-  return ctx.move_next_state(expr_unknown_state,
-                             expr_unexpected_end_error_state);
+  return ctx.move_next_state(expr_unknown_state, expr_unexpected_end_error_state);
 }
 constexpr ParserState expr_binary_state = ParserState{expr_binary_handler_};
 
@@ -161,8 +164,7 @@ ParserState expr_unary_end_exit_handler_(ParserContext& ctx) {
   return ctx.pop_end_state();
 }
 
-constexpr auto expr_unary_end_exit_state =
-    ParserState{expr_unary_end_exit_handler_};
+constexpr auto expr_unary_end_exit_state = ParserState{expr_unary_end_exit_handler_};
 
 ParserState expr_unary_end_handler_(ParserContext& ctx) {
   do_expr_unary_end(ctx);
@@ -179,13 +181,12 @@ ParserState expr_unary_handler_(ParserContext& ctx) {
   const auto& current = ctx.current();
   const auto op       = get_unary_pre_op(current.kind());
 
-  const auto prec = get_precedence(op);
+  const auto prec     = get_precedence(op);
   ctx.precedence_stack.push(prec);
 
   ctx.syntax_stack.push(std::make_shared<UnaryExpression>(op));
   ctx.push_states(expr_unary_end_state, expr_unary_end_exit_state);
-  return ctx.move_next_state(expr_unknown_state,
-                             expr_unexpected_end_error_state);
+  return ctx.move_next_state(expr_unknown_state, expr_unexpected_end_error_state);
 }
 
 constexpr auto expr_unary_state = ParserState{expr_unary_handler_};
@@ -194,6 +195,12 @@ constexpr auto expr_unary_state = ParserState{expr_unary_handler_};
  * Start
  */
 
+auto expr_unknown_handler_(ParserContext& ctx) -> ParserState;
+auto expr_start_handler_(ParserContext& ctx) -> ParserState;
+
+constexpr ParserState expr_unknown_state = ParserState{expr_unknown_handler_};
+constexpr ParserState expr_start_state   = ParserState{expr_start_handler_};
+
 auto expr_unknown_handler_(ParserContext& ctx) -> ParserState {
   auto kind = ctx.current().kind();
   if (is_unary_pre_operator(ctx.current())) {
@@ -201,6 +208,9 @@ auto expr_unknown_handler_(ParserContext& ctx) -> ParserState {
   }
 
   switch (kind) {
+    case LexicalKind::KeywordTrue:
+    case LexicalKind::KeywordFalse:
+      return expr_bool_state;
     case LexicalKind::Number:
       return expr_number_state;
     case LexicalKind::Identifier:
@@ -209,10 +219,5 @@ auto expr_unknown_handler_(ParserContext& ctx) -> ParserState {
       throw_not_implemented();
   }
 }
-constexpr ParserState expr_unknown_state = ParserState{expr_unknown_handler_};
 
-auto expr_start_handler_(ParserContext& ctx) -> ParserState {
-  return expr_unknown_state;
-}
-
-constexpr ParserState expr_start_state = ParserState{expr_start_handler_};
+auto expr_start_handler_(ParserContext& ctx) -> ParserState { return expr_unknown_state; }

@@ -1,9 +1,12 @@
-// Copyright (c) 2023. Jacob R. Green
+// Copyright (c) 2023 Jacob R. Green
 // All Rights Reserved.
 
 #include "lexer_identifier.hpp"
 
 const auto keywords = std::unordered_map<std::string_view, LexicalKind>{
+    {"true", LexicalKind::KeywordTrue},
+    {"false", LexicalKind::KeywordFalse},
+
     {"var", LexicalKind::KeywordVar},
     {"func", LexicalKind::KeywordFunc},
     {"struct", LexicalKind::KeywordStruct},

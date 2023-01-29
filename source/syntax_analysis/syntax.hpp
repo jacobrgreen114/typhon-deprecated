@@ -39,13 +39,14 @@ enum class SyntaxKind : syntax_kind_t {
   Source         = make_syntax_kind(SyntaxType::Misc, 1),
   Block          = make_syntax_kind(SyntaxType::Misc, 2),
 
-  ExprUnary      = make_syntax_kind(SyntaxType::Expression, 1),
-  ExprBinary     = make_syntax_kind(SyntaxType::Expression, 2),
-  ExprTernary    = make_syntax_kind(SyntaxType::Expression, 3),
+  ExprBool       = make_syntax_kind(SyntaxType::Expression, 0x01),
+  ExprNumber     = make_syntax_kind(SyntaxType::Expression, 0x02),
+  ExprString     = make_syntax_kind(SyntaxType::Expression, 0x03),
+  ExprIdentifier = make_syntax_kind(SyntaxType::Expression, 0x04),
 
-  ExprNumber     = make_syntax_kind(SyntaxType::Expression, 4),
-  ExprString     = make_syntax_kind(SyntaxType::Expression, 5),
-  ExprIdentifier = make_syntax_kind(SyntaxType::Expression, 6),
+  ExprUnary      = make_syntax_kind(SyntaxType::Expression, 0x11),
+  ExprBinary     = make_syntax_kind(SyntaxType::Expression, 0x12),
+  ExprTernary    = make_syntax_kind(SyntaxType::Expression, 0x13),
 
   StmtDef        = make_syntax_kind(SyntaxType::Statement, 0x01),
   StmtExpr       = make_syntax_kind(SyntaxType::Statement, 0x02),
@@ -130,8 +131,10 @@ consteval auto make_operator_value(OperatorType type,
          (static_cast<operator_t>(precedence) << operator_prec_offset) | base_value;
 }
 
+// todo : bake symbol into operator
 enum class Operator : operator_t {
   // Binary
+
   Access            = make_operator_value(OperatorType::Binary, Precedence::Access, 0),
 
   Add               = make_operator_value(OperatorType::Binary, Precedence::AddSub, 0),
@@ -240,12 +243,17 @@ class ExpressionNode : public SyntaxNode {
 };
 
 class ConstantExpression : public ExpressionNode {
- private:
-  String value_;
-
  protected:
-  explicit ConstantExpression(const SyntaxKind kind, const String& value)
-      : ExpressionNode{kind},
+  constexpr explicit ConstantExpression(SyntaxKind kind)
+      : ExpressionNode{kind} {}
+};
+
+class BoolExpression final : public ConstantExpression {
+  bool value_;
+
+ public:
+  constexpr explicit BoolExpression(bool value)
+      : ConstantExpression{SyntaxKind::ExprBool},
         value_{value} {}
 
 #ifdef TRACE
@@ -254,10 +262,25 @@ class ConstantExpression : public ExpressionNode {
 #endif
 };
 
-class NumberExpression final : public ConstantExpression {
+class ConstantStringExpression : public ConstantExpression {
+ private:
+  String value_;
+
+ protected:
+  explicit ConstantStringExpression(const SyntaxKind kind, const String& value)
+      : ConstantExpression{kind},
+        value_{value} {}
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
+};
+
+class NumberExpression final : public ConstantStringExpression {
  public:
   explicit NumberExpression(const String& value)
-      : ConstantExpression{SyntaxKind::ExprNumber, value} {}
+      : ConstantStringExpression{SyntaxKind::ExprNumber, value} {}
 };
 
 class IdentifierExpression final : public ExpressionNode {
@@ -476,7 +499,6 @@ class ForStatement final : public BodyStatement {
   auto set_prefix(const Prefix& prefix) { prefix_ = prefix; }
   auto set_cond(const Condition& cond) { cond_ = cond; }
   auto set_postfix(const Postfix& postfix) { postfix_ = postfix; }
-
 
 #ifdef TRACE
  protected:

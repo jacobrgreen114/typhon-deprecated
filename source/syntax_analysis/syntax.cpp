@@ -11,24 +11,24 @@
 const auto syntax_kind_names = std::unordered_map<SyntaxKind, std::string_view>{
     ENUM_NAME(SyntaxKind, Source),
 
-    ENUM_NAME(SyntaxKind, ExprNumber),     ENUM_NAME(SyntaxKind, ExprString),
-    ENUM_NAME(SyntaxKind, ExprIdentifier),
+    ENUM_NAME(SyntaxKind, ExprBool),    ENUM_NAME(SyntaxKind, ExprNumber),
+    ENUM_NAME(SyntaxKind, ExprString),  ENUM_NAME(SyntaxKind, ExprIdentifier),
 
-    ENUM_NAME(SyntaxKind, ExprUnary),      ENUM_NAME(SyntaxKind, ExprBinary),
+    ENUM_NAME(SyntaxKind, ExprUnary),   ENUM_NAME(SyntaxKind, ExprBinary),
     ENUM_NAME(SyntaxKind, ExprTernary),
 
-    ENUM_NAME(SyntaxKind, StmtExpr),       ENUM_NAME(SyntaxKind, StmtDef),
-    ENUM_NAME(SyntaxKind, StmtRet),        ENUM_NAME(SyntaxKind, StmtIf),
-    ENUM_NAME(SyntaxKind, StmtElif),       ENUM_NAME(SyntaxKind, StmtElse),
+    ENUM_NAME(SyntaxKind, StmtExpr),    ENUM_NAME(SyntaxKind, StmtDef),
+    ENUM_NAME(SyntaxKind, StmtRet),     ENUM_NAME(SyntaxKind, StmtIf),
+    ENUM_NAME(SyntaxKind, StmtElif),    ENUM_NAME(SyntaxKind, StmtElse),
 
-    ENUM_NAME(SyntaxKind, StmtLoop),       ENUM_NAME(SyntaxKind, StmtWhile),
-    ENUM_NAME(SyntaxKind, StmtFor),        ENUM_NAME(SyntaxKind, StmtForeach),
+    ENUM_NAME(SyntaxKind, StmtLoop),    ENUM_NAME(SyntaxKind, StmtWhile),
+    ENUM_NAME(SyntaxKind, StmtFor),     ENUM_NAME(SyntaxKind, StmtForeach),
 
     ENUM_NAME(SyntaxKind, Block),
 
-    ENUM_NAME(SyntaxKind, DefVar),         ENUM_NAME(SyntaxKind, DefFunc),
-    ENUM_NAME(SyntaxKind, DefParam),       ENUM_NAME(SyntaxKind, DefStruct),
-    ENUM_NAME(SyntaxKind, DefClass),       ENUM_NAME(SyntaxKind, DefInterface)};
+    ENUM_NAME(SyntaxKind, DefVar),      ENUM_NAME(SyntaxKind, DefFunc),
+    ENUM_NAME(SyntaxKind, DefParam),    ENUM_NAME(SyntaxKind, DefStruct),
+    ENUM_NAME(SyntaxKind, DefClass),    ENUM_NAME(SyntaxKind, DefInterface)};
 
 auto to_string(SyntaxKind kind) -> std::string_view {
   if (auto it = syntax_kind_names.find(kind); it != syntax_kind_names.end()) {
@@ -85,26 +85,9 @@ auto to_string(Operator op) -> std::string_view {
   throw std::exception();
 }
 
-const auto expressions =
-    std::unordered_set<SyntaxKind>{SyntaxKind::ExprNumber, SyntaxKind::ExprBinary};
-
-const auto statements = std::unordered_set<SyntaxKind>{
-    SyntaxKind::StmtDef,
-    SyntaxKind::StmtExpr,
-    SyntaxKind::StmtRet,
-    SyntaxKind::StmtIf,
-    SyntaxKind::StmtElif,
-    SyntaxKind::StmtElse,
-};
-
-const auto definitions = std::unordered_set<SyntaxKind>{
-    SyntaxKind::DefVar,
-    SyntaxKind::DefFunc,
-    SyntaxKind::DefParam,
-    SyntaxKind::DefStruct,
-    SyntaxKind::DefClass,
-    SyntaxKind::DefInterface,
-};
+/*
+ * Operator Maps
+ */
 
 const auto unary_pre_op_map = std::unordered_map<LexicalKind, Operator>{
     {LexicalKind::SymbolPlus,    Operator::Positive},
@@ -148,47 +131,6 @@ const auto binary_op_map = std::unordered_map<LexicalKind, Operator>{
     {LexicalKind::SymbolShiftRight,       Operator::ShiftRight       },
 };
 
-const auto operator_precedence_map = std::unordered_map<Operator, Precedence>{
-    {Operator::Access,            Precedence::Access  },
-
-    {Operator::BitOr,             Precedence::BitOr   },
-    {Operator::BitXor,            Precedence::BitXor  },
-    {Operator::BitAnd,            Precedence::BitAnd  },
-
-    {Operator::Equals,            Precedence::Equality},
-    {Operator::NotEquals,         Precedence::Equality},
-
-    {Operator::LessThan,          Precedence::Relation},
-    {Operator::GreaterThan,       Precedence::Relation},
-    {Operator::LessThanEquals,    Precedence::Relation},
-    {Operator::GreaterThanEquals, Precedence::Relation},
-
-    {Operator::ShiftLeft,         Precedence::Shift   },
-    {Operator::ShiftRight,        Precedence::Shift   },
-
-    {Operator::Add,               Precedence::AddSub  },
-    {Operator::Subtract,          Precedence::AddSub  },
-
-    {Operator::Multiply,          Precedence::MulDiv  },
-    {Operator::Divide,            Precedence::MulDiv  },
-
-    {Operator::BoolNot,           Precedence::Prefix  },
-    {Operator::BitNot,            Precedence::Prefix  },
-    {Operator::Positive,          Precedence::Prefix  },
-    {Operator::Negative,          Precedence::Prefix  },
-    {Operator::PreInc,            Precedence::Prefix  },
-    {Operator::PreDec,            Precedence::Prefix  },
-
-    {Operator::PostInc,           Precedence::Postfix },
-    {Operator::PostDec,           Precedence::Postfix },
-};
-
-// bool is_expression(SyntaxKind kind) { return expressions.contains(kind); }
-
-// auto is_statement(SyntaxKind kind) -> bool { return statements.contains(kind); }
-
-// auto is_definition(SyntaxKind kind) -> bool { return definitions.contains(kind); }
-
 auto get_unary_pre_op(LexicalKind kind) -> Operator {
   auto it = unary_pre_op_map.find(kind);
   if (it == unary_pre_op_map.end()) {
@@ -213,13 +155,9 @@ auto get_binary_op(LexicalKind kind) -> Operator {
   return it->second;
 }
 
-// auto get_precedence(Operator op) -> Precedence {
-//   auto it = operator_precedence_map.find(op);
-//   if (it == operator_precedence_map.end()) {
-//     throw std::exception();
-//   }
-//   return it->second;
-// }
+/*
+ * Access Modifiers
+ */
 
 const auto access_modifier_names = std::unordered_map<AccessModifier, std::string_view>{
     ENUM_NAME(AccessModifier, Private),
@@ -237,13 +175,22 @@ auto to_string(AccessModifier modifier) -> std::string_view {
   return name->second;
 }
 
+/*
+ * Xml Serialization Overrides
+ */
+
 #ifdef TRACE
 
 auto SyntaxNode::on_serialize(xml::SerializationContext& context) const -> void {
   context.add_attribute("kind", to_string(kind()));
 }
 
-void ConstantExpression::on_serialize(xml::SerializationContext& context) const {
+void BoolExpression::on_serialize(xml::SerializationContext& context) const {
+  SyntaxNode::on_serialize(context);
+  context.add_attribute("value", value_ ? "true" : "false");
+}
+
+void ConstantStringExpression::on_serialize(xml::SerializationContext& context) const {
   SyntaxNode::on_serialize(context);
   if (value_) {
     context.add_attribute("value", *value_);

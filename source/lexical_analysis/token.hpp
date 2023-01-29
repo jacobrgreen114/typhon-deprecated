@@ -28,8 +28,11 @@ class FilePosition final {
   int_type col_;
 
  public:
-  FilePosition(int_type line, int_type col) : line_{line}, col_{col} {}
-  FilePosition() : FilePosition{1, 0} {}
+  FilePosition(int_type line, int_type col)
+      : line_{line},
+        col_{col} {}
+  FilePosition()
+      : FilePosition{1, 0} {}
 
   NODISCARD constexpr auto line() const -> auto& { return line_; }
   NODISCARD constexpr auto col() const -> auto& { return col_; }
@@ -114,9 +117,14 @@ constexpr auto make_lexical_kind_operator(
 enum class LexicalKind : lexical_kind_t {
   Unknown,
 
-  Identifier = make_lexical_kind(LexicalType::Identifier, 0x01),
-  Number     = make_lexical_kind_constant(0x0001),
-  String     = make_lexical_kind_constant(0x0002),
+  Identifier       = make_lexical_kind(LexicalType::Identifier, 0x01),
+  Number           = make_lexical_kind_constant(0x0001),
+  String           = make_lexical_kind_constant(0x0002),
+
+  // true
+  KeywordTrue      = make_lexical_kind_keyword(0x0001),
+  // true
+  KeywordFalse     = make_lexical_kind_keyword(0x0002),
 
   // var
   KeywordVar       = make_lexical_kind_keyword(0x0011),
@@ -132,27 +140,27 @@ enum class LexicalKind : lexical_kind_t {
   KeywordInterface = make_lexical_kind_keyword(0x0016),
 
   // return
-  KeywordReturn = make_lexical_kind_keyword(0x0021),
+  KeywordReturn    = make_lexical_kind_keyword(0x0021),
   // if
-  KeywordIf     = make_lexical_kind_keyword(0x0022),
+  KeywordIf        = make_lexical_kind_keyword(0x0022),
   // elif
-  KeywordElif   = make_lexical_kind_keyword(0x0023),
+  KeywordElif      = make_lexical_kind_keyword(0x0023),
   // else
-  KeywordElse   = make_lexical_kind_keyword(0x0024),
+  KeywordElse      = make_lexical_kind_keyword(0x0024),
 
   // switch
-  KeywordSwitch = make_lexical_kind_keyword(0x0031),
+  KeywordSwitch    = make_lexical_kind_keyword(0x0031),
   // match
-  KeywordMatch  = make_lexical_kind_keyword(0x0032),
+  KeywordMatch     = make_lexical_kind_keyword(0x0032),
 
   // loop
-  KeywordLoop    = make_lexical_kind_keyword(0x0041),
+  KeywordLoop      = make_lexical_kind_keyword(0x0041),
   // while
-  KeywordWhile   = make_lexical_kind_keyword(0x0042),
+  KeywordWhile     = make_lexical_kind_keyword(0x0042),
   // for
-  KeywordFor     = make_lexical_kind_keyword(0x0043),
+  KeywordFor       = make_lexical_kind_keyword(0x0043),
   // foreach
-  KeywordForeach = make_lexical_kind_keyword(0x0044),
+  KeywordForeach   = make_lexical_kind_keyword(0x0044),
 
   // .
   SymbolPeriod,
@@ -271,9 +279,12 @@ class LexicalToken final
 
  public:
   LexicalToken(const FilePosition& pos, LexicalKind kind, ValueType value)
-      : pos_{pos}, kind_{kind}, value_{std::move(value)} {}
+      : pos_{pos},
+        kind_{kind},
+        value_{std::move(value)} {}
 
-  LexicalToken(const FilePosition& pos, LexicalKind kind) : LexicalToken{pos, kind, nullptr} {}
+  LexicalToken(const FilePosition& pos, LexicalKind kind)
+      : LexicalToken{pos, kind, nullptr} {}
 
   NODISCARD constexpr auto pos() const -> auto& { return pos_; }
   NODISCARD constexpr auto kind() const -> auto& { return kind_; }

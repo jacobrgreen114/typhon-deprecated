@@ -10,22 +10,27 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 add_executable(tyc
     source/main.cpp
-    source/lexical_analysis/token.cpp
-    source/lexical_analysis/lexer.cpp
-    source/lexical_analysis/lexer_source.cpp
-    source/lexical_analysis/lexer_comment.cpp
-    source/lexical_analysis/lexer_number.cpp
-    source/lexical_analysis/lexer_source.cpp
-    source/lexical_analysis/lexer_symbol.cpp
-    source/lexical_analysis/lexer_identifier.cpp
-    source/syntax_analysis/syntax.cpp
-    source/syntax_analysis/parser.cpp
-    source/syntax_analysis/parser_def_var.cpp
-    source/syntax_analysis/parser_def_func.cpp
-    source/syntax_analysis/parser_statement.cpp
-    source/syntax_analysis/parser_expression.cpp
-    source/syntax_analysis/parser_statemachine.cpp
-    source/xml/serialization.cpp source/xml/serialization.hpp)
+
+    source/lexical_analysis/token.cpp               source/lexical_analysis/token.hpp
+    source/lexical_analysis/lexer.cpp               source/lexical_analysis/lexer.hpp
+    source/lexical_analysis/lexer_source.cpp        source/lexical_analysis/lexer_source.hpp
+    source/lexical_analysis/lexer_comment.cpp       source/lexical_analysis/lexer_comment.hpp
+    source/lexical_analysis/lexer_number.cpp        source/lexical_analysis/lexer_number.hpp
+    source/lexical_analysis/lexer_source.cpp        source/lexical_analysis/lexer_source.hpp
+    source/lexical_analysis/lexer_symbol.cpp        source/lexical_analysis/lexer_symbol.hpp
+    source/lexical_analysis/lexer_identifier.cpp    source/lexical_analysis/lexer_identifier.hpp
+
+    source/syntax_analysis/syntax.cpp               source/syntax_analysis/syntax.hpp
+    source/syntax_analysis/parser.cpp               source/syntax_analysis/parser.hpp
+    source/syntax_analysis/parser_def_var.cpp       source/syntax_analysis/parser_def_var.hpp
+    source/syntax_analysis/parser_def_func.cpp      source/syntax_analysis/parser_def_func.hpp
+    source/syntax_analysis/parser_statement.cpp     source/syntax_analysis/parser_statement.hpp
+    source/syntax_analysis/parser_expression.cpp    source/syntax_analysis/parser_expression.hpp
+    source/syntax_analysis/parser_statemachine.cpp  source/syntax_analysis/parser_statemachine.hpp
+
+    source/timer.hpp
+    source/xml/serialization.cpp                    source/xml/serialization.hpp
+)
 
 target_precompile_headers(tyc
 PRIVATE
