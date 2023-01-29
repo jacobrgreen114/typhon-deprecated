@@ -28,7 +28,7 @@ const auto syntax_kind_names = std::unordered_map<SyntaxKind, std::string_view>{
 
     ENUM_NAME(SyntaxKind, DefVar),      ENUM_NAME(SyntaxKind, DefFunc),
     ENUM_NAME(SyntaxKind, DefParam),    ENUM_NAME(SyntaxKind, DefStruct),
-    ENUM_NAME(SyntaxKind, DefClass),    ENUM_NAME(SyntaxKind, DefInterface)};
+    ENUM_NAME(SyntaxKind, DefObject),   ENUM_NAME(SyntaxKind, DefInterface)};
 
 auto to_string(SyntaxKind kind) -> std::string_view {
   if (auto it = syntax_kind_names.find(kind); it != syntax_kind_names.end()) {
@@ -43,6 +43,7 @@ auto to_string(SyntaxKind kind) -> std::string_view {
 
 const auto operator_names =
     std::unordered_map<Operator, std::string_view>{ENUM_NAME(Operator, Access),
+                                                   ENUM_NAME(Operator, Assign),
 
                                                    ENUM_NAME(Operator, Add),
                                                    ENUM_NAME(Operator, Subtract),
@@ -107,6 +108,7 @@ const auto unary_post_op_map = std::unordered_map<LexicalKind, Operator>{
 
 const auto binary_op_map = std::unordered_map<LexicalKind, Operator>{
     {LexicalKind::SymbolPeriod,           Operator::Access           },
+    {LexicalKind::SymbolEquals,           Operator::Assign           },
 
     {LexicalKind::SymbolPlus,             Operator::Add              },
     {LexicalKind::SymbolMinus,            Operator::Subtract         },
@@ -190,7 +192,7 @@ void BoolExpression::on_serialize(xml::SerializationContext& context) const {
   context.add_attribute("value", value_ ? "true" : "false");
 }
 
-void ConstantStringExpression::on_serialize(xml::SerializationContext& context) const {
+void StringExpression::on_serialize(xml::SerializationContext& context) const {
   SyntaxNode::on_serialize(context);
   if (value_) {
     context.add_attribute("value", *value_);
@@ -320,7 +322,7 @@ void FuncDefinition::on_serialize(xml::SerializationContext& context) const {
   }
 }
 
-auto SourceNode::on_serialize(xml::SerializationContext& context) const -> void {
+auto SyntaxTree::on_serialize(xml::SerializationContext& context) const -> void {
   SyntaxNode::on_serialize(context);
   for (auto& node : nodes_) {
     context.add_element("node", *node);

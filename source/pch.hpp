@@ -32,6 +32,18 @@ namespace chrono = std::chrono;
 #define NODISCARD [[nodiscard]]
 #endif
 
+#if _DEBUG
+template <typename To, typename From>
+constexpr auto ptr_cast(const std::shared_ptr<From>& from) -> std::shared_ptr<To> {
+  return std::dynamic_pointer_cast<To>(from);
+}
+#else
+template <typename To, typename From>
+constexpr auto ptr_cast(const std::shared_ptr<From>& from) -> std::shared_ptr<To> {
+  return std::reinterpret_pointer_cast<To>(from);
+}
+#endif
+
 #include "state_machine.hpp"
 #include "xml/serialization.hpp"
 #include "lexical_analysis/token.hpp"

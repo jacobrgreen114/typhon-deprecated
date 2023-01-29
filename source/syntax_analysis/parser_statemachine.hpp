@@ -22,7 +22,7 @@ struct ReturnState {
 
 class ParserContext final : public EnumeratingContext<ParserContext, LexicalToken> {
  public:
-  using Source          = std::shared_ptr<SourceNode>;
+  using Source          = std::shared_ptr<SyntaxTree>;
   using StateStack      = std::stack<ReturnState>;
   using SyntaxStack     = std::stack<std::shared_ptr<SyntaxNode>>;
   using PrecedenceStack = std::stack<Precedence>;

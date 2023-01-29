@@ -149,7 +149,7 @@ ParserContext::ParserContext(const std::vector<LexicalToken>& tokens)
     : tokens_{tokens},
       started_{false},
       current_{},
-      source{std::make_shared<SourceNode>()} {}
+      source{std::make_shared<SyntaxTree>()} {}
 
 auto ParserContext::current() -> const LexicalToken& { return *current_; }
 

@@ -6,7 +6,7 @@
 
 #include "parser_statemachine.hpp"
 
-auto parse(const TokenCollection& tokens) -> std::shared_ptr<SourceNode> {
+auto parse(const TokenCollection& tokens) -> std::shared_ptr<SyntaxTree> {
   auto parser  = Parser{};
   auto context = ParserContext{tokens};
 

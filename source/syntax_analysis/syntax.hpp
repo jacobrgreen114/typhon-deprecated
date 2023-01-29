@@ -63,7 +63,7 @@ enum class SyntaxKind : syntax_kind_t {
   DefFunc        = make_syntax_kind(SyntaxType::Definition, 0x02),
   DefParam       = make_syntax_kind(SyntaxType::Definition, 0x03),
   DefStruct      = make_syntax_kind(SyntaxType::Definition, 0x04),
-  DefClass       = make_syntax_kind(SyntaxType::Definition, 0x05),
+  DefObject      = make_syntax_kind(SyntaxType::Definition, 0x05),
   DefInterface   = make_syntax_kind(SyntaxType::Definition, 0x06),
 };
 
@@ -92,7 +92,7 @@ constexpr auto is_definition(SyntaxKind kind) -> bool {
  */
 
 enum class Precedence {
-  Assignment,
+  Assignment = 1,
   BoolOr,
   BoolAnd,
   BitOr,
@@ -135,7 +135,18 @@ consteval auto make_operator_value(OperatorType type,
 enum class Operator : operator_t {
   // Binary
 
-  Access            = make_operator_value(OperatorType::Binary, Precedence::Access, 0),
+  Access            = make_operator_value(OperatorType::Binary, Precedence::Access, 0x01),
+
+  Assign            = make_operator_value(OperatorType::Binary, Precedence::Assignment, 0x01),
+
+  SelfAdd           = make_operator_value(OperatorType::Binary, Precedence::Assignment, 0x11),
+  SelfSub           = make_operator_value(OperatorType::Binary, Precedence::Assignment, 0x12),
+  SelfMul           = make_operator_value(OperatorType::Binary, Precedence::Assignment, 0x13),
+  SelfDiv           = make_operator_value(OperatorType::Binary, Precedence::Assignment, 0x14),
+
+  SelfBitOr         = make_operator_value(OperatorType::Binary, Precedence::Assignment, 0x21),
+  SelfBitXor        = make_operator_value(OperatorType::Binary, Precedence::Assignment, 0x22),
+  SelfBitAnd        = make_operator_value(OperatorType::Binary, Precedence::Assignment, 0x23),
 
   Add               = make_operator_value(OperatorType::Binary, Precedence::AddSub, 0),
   Subtract          = make_operator_value(OperatorType::Binary, Precedence::AddSub, 1),
@@ -256,20 +267,25 @@ class BoolExpression final : public ConstantExpression {
       : ConstantExpression{SyntaxKind::ExprBool},
         value_{value} {}
 
+  auto value() const { return value_; }
+
 #ifdef TRACE
  protected:
   auto on_serialize(xml::SerializationContext& context) const -> void override;
 #endif
 };
 
-class ConstantStringExpression : public ConstantExpression {
+class StringExpression : public ConstantExpression {
  private:
   String value_;
 
  protected:
-  explicit ConstantStringExpression(const SyntaxKind kind, const String& value)
+  explicit StringExpression(const SyntaxKind kind, const String& value)
       : ConstantExpression{kind},
         value_{value} {}
+
+ public:
+  auto& value() const { return value_; }
 
 #ifdef TRACE
  protected:
@@ -277,10 +293,10 @@ class ConstantStringExpression : public ConstantExpression {
 #endif
 };
 
-class NumberExpression final : public ConstantStringExpression {
+class NumberExpression final : public StringExpression {
  public:
   explicit NumberExpression(const String& value)
-      : ConstantStringExpression{SyntaxKind::ExprNumber, value} {}
+      : StringExpression{SyntaxKind::ExprNumber, value} {}
 };
 
 class IdentifierExpression final : public ExpressionNode {
@@ -290,6 +306,8 @@ class IdentifierExpression final : public ExpressionNode {
   explicit IdentifierExpression(const String& identifier)
       : ExpressionNode{SyntaxKind::ExprIdentifier},
         identifier_{identifier} {}
+
+  auto& identifier() const { return identifier_; }
 
 #ifdef TRACE
  protected:
@@ -324,7 +342,7 @@ class UnaryExpression final : public Operation {
   Expression expr_;
 
  public:
-  constexpr UnaryExpression(Operator op)
+  constexpr explicit UnaryExpression(Operator op)
       : Operation{SyntaxKind::ExprUnary, op} {}
 
   auto set_expr(const Expression& expr) -> void { expr_ = expr; }
@@ -341,8 +359,11 @@ class BinaryExpression final : public Operation {
   Expression rhs_;
 
  public:
-  constexpr BinaryExpression(Operator op)
+  constexpr explicit BinaryExpression(Operator op)
       : Operation{SyntaxKind::ExprBinary, op} {}
+
+  auto& lhs() const { return lhs_; }
+  auto& rhs() const { return rhs_; }
 
   auto set_lhs(const Expression& lhs) -> void { lhs_ = lhs; }
 
@@ -376,6 +397,8 @@ class StatementBlock final : public SyntaxNode {
   explicit StatementBlock()
       : SyntaxNode(SyntaxKind::Block) {}
 
+  auto& statements() const { return statements_; }
+
   auto push_statement(const Statement& statement) -> void { statements_.emplace_back(statement); }
 
 #ifdef TRACE
@@ -391,6 +414,8 @@ class ExprStatement final : public Statement {
   constexpr ExprStatement()
       : Statement{SyntaxKind::StmtExpr} {}
 
+  auto& expr() const { return expr_; }
+
   auto set_expr(const std::shared_ptr<ExpressionNode>& expr) { expr_ = expr; }
 
 #ifdef TRACE
@@ -405,6 +430,8 @@ class ReturnStatement final : public Statement {
  public:
   constexpr ReturnStatement()
       : Statement{SyntaxKind::StmtRet} {}
+
+  auto& expr() const { return expr_; }
 
   auto set_expr(const std::shared_ptr<ExpressionNode>& expr) { expr_ = expr; }
 
@@ -426,7 +453,7 @@ class BodyStatement : public Statement {
       : Statement{kind} {}
 
  public:
-  const auto& body() const { return block_; }
+  auto& body() const { return block_; }
 
   auto set_body(const std::shared_ptr<StatementBlock>& block) { block_ = block; }
 };
@@ -441,6 +468,8 @@ class IfStatement : public BodyStatement {
  public:
   constexpr IfStatement()
       : BodyStatement{SyntaxKind::StmtIf} {}
+
+  auto& expr() const { return expr_; }
 
   auto set_expr(const std::shared_ptr<ExpressionNode>& expr) -> void { expr_ = expr; }
 
@@ -475,6 +504,8 @@ class WhileStatement final : public BodyStatement {
   constexpr WhileStatement()
       : BodyStatement{SyntaxKind::StmtWhile} {}
 
+  auto& expr() const { return expr_; }
+
   auto set_expr(const std::shared_ptr<ExpressionNode>& expr) -> void { expr_ = expr; }
 
 #ifdef TRACE
@@ -495,6 +526,10 @@ class ForStatement final : public BodyStatement {
  public:
   constexpr ForStatement()
       : BodyStatement{SyntaxKind::StmtFor} {}
+
+  auto& prefix() const { return prefix_; }
+  auto& cond() const { return cond_; }
+  auto& postfix() const { return postfix_; }
 
   auto set_prefix(const Prefix& prefix) { prefix_ = prefix; }
   auto set_cond(const Condition& cond) { cond_ = cond; }
@@ -550,6 +585,9 @@ class VarDefinition : public Definition {
         assignment_{assign} {}
 
  public:
+  auto& type_name() const { return type_name_; }
+  auto& assignment() const { return assignment_; }
+
   auto set_type_name(const String& type_name) noexcept -> void { type_name_ = type_name; }
 
   auto set_assignment(const Assignment& assignment) noexcept -> void { assignment_ = assignment; }
@@ -568,6 +606,8 @@ class FuncParameter final : public Definition {
   explicit FuncParameter(const String& name = nullptr)
       : Definition(SyntaxKind::DefParam, name) {}
 
+  auto& type_name() const { return type_name_; }
+
   auto set_type_name(const String& type_name) noexcept -> void { type_name_ = type_name; }
 };
 
@@ -585,6 +625,10 @@ class FuncDefinition final : public Definition {
  public:
   explicit FuncDefinition()
       : Definition(SyntaxKind::DefFunc) {}
+
+  auto& parameters() const { return parameters_; }
+  auto& return_type() const { return return_; }
+  auto& body() const { return body_; }
 
   void set_return_type(const String& ret_type) { return_ = ret_type; }
 
@@ -609,6 +653,8 @@ class DefStatement final : public Statement {
   constexpr DefStatement()
       : Statement{SyntaxKind::StmtDef} {}
 
+  auto& def() const { return def_; }
+
   auto set_def(const std::shared_ptr<Definition>& def) { def_ = def; }
 
 #ifdef TRACE
@@ -621,17 +667,21 @@ class DefStatement final : public Statement {
  * Root
  */
 
-class SourceNode final : public SyntaxNode {
+class SyntaxTree final : public SyntaxNode {
+ public:
   using Node      = std::shared_ptr<SyntaxNode>;
   using NodeArray = std::vector<Node>;
 
+ private:
   NodeArray nodes_;
 
  public:
-  constexpr SourceNode()
+  constexpr SyntaxTree()
       : SyntaxNode(SyntaxKind::Source) {}
 
   auto push_node(const Node& node) { nodes_.emplace_back(node); }
+
+  auto& nodes() const { return nodes_; }
 
 #ifdef TRACE
  protected:

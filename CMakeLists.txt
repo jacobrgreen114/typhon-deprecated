@@ -28,6 +28,10 @@ add_executable(tyc
     source/syntax_analysis/parser_expression.cpp    source/syntax_analysis/parser_expression.hpp
     source/syntax_analysis/parser_statemachine.cpp  source/syntax_analysis/parser_statemachine.hpp
 
+    source/generation/generator.cpp                 source/generation/generator.hpp
+
+    source/paths.cpp                                source/paths.hpp
+
     source/timer.hpp
     source/xml/serialization.cpp                    source/xml/serialization.hpp
 )
