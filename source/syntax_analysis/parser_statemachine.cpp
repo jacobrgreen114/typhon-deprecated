@@ -3,8 +3,9 @@
 
 #include "parser_statemachine.hpp"
 
-#include "parser_def_func.hpp"
 #include "parser_def_var.hpp"
+#include "parser_def_func.hpp"
+#include "parser_def_struct.hpp"
 
 auto is_unary_pre_operator(const LexicalToken& token) -> bool {
   switch (token.kind()) {
@@ -124,6 +125,9 @@ auto unknown_handler(ParserContext& ctx) -> ParserState {
     }
     case LexicalKind::KeywordFunc: {
       return func_def_start_state;
+    }
+    case LexicalKind::KeywordStruct: {
+      return def_struct_state;
     }
     case LexicalKind::KeywordObject:
       throw_not_implemented();

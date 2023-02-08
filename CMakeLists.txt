@@ -22,8 +22,11 @@ add_executable(tyc
 
     source/syntax_analysis/syntax.cpp               source/syntax_analysis/syntax.hpp
     source/syntax_analysis/parser.cpp               source/syntax_analysis/parser.hpp
+
     source/syntax_analysis/parser_def_var.cpp       source/syntax_analysis/parser_def_var.hpp
     source/syntax_analysis/parser_def_func.cpp      source/syntax_analysis/parser_def_func.hpp
+    source/syntax_analysis/parser_def_struct.cpp    source/syntax_analysis/parser_def_struct.hpp
+
     source/syntax_analysis/parser_statement.cpp     source/syntax_analysis/parser_statement.hpp
     source/syntax_analysis/parser_expression.cpp    source/syntax_analysis/parser_expression.hpp
     source/syntax_analysis/parser_statemachine.cpp  source/syntax_analysis/parser_statemachine.hpp

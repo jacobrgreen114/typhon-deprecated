@@ -24,11 +24,11 @@ class Timer final {
     auto secs     = static_cast<double>(duration.count()) * clock::period::num / clock::period::den;
 
     std::cout << "Timer " << name_ << " : " << std::fixed;
-    if (secs > 1) {
-      std::cout << secs << " secs" << std::endl;
-    } else {
-      std::cout << secs * 1000 << " ms" << std::endl;
-    }
+    //if (secs > 1) {
+    std::cout << secs << " secs" << std::endl;
+    //} else {
+    //  std::cout << secs * 1000 << " ms" << std::endl;
+    //}
   }
 };
 

@@ -642,6 +642,18 @@ class FuncDefinition final : public Definition {
 #endif
 };
 
+class StructDefinition final : public Definition {
+  std::vector<std::shared_ptr<Definition>> defs_;
+
+ public:
+  explicit StructDefinition()
+      : Definition(SyntaxKind::DefStruct) {}
+
+  auto push_definition(const std::shared_ptr<Definition>& def) { defs_.emplace_back(def); }
+
+  auto& definitions() const { return defs_; }
+};
+
 /*
  * Definition Statements
  */

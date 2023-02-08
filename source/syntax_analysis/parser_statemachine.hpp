@@ -211,6 +211,14 @@ constexpr LexicalTokenPredicate is_keyword_func = [](auto& token) {
   return is_token_kind(token, LexicalKind::KeywordFunc);
 };
 
+constexpr LexicalTokenPredicate is_keyword_struct = [](auto& token) {
+  return is_token_kind(token, LexicalKind::KeywordStruct);
+};
+
+constexpr LexicalTokenPredicate is_keyword_object = [](auto& token) {
+  return is_token_kind(token, LexicalKind::KeywordObject);
+};
+
 constexpr LexicalTokenPredicate is_keyword_return = [](auto& token) {
   return is_token_kind(token, LexicalKind::KeywordReturn);
 };
