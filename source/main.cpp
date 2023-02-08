@@ -34,6 +34,8 @@ auto compile(const fs::path& file_path) -> void {
 
   const auto rel_path = fs::relative(file_path, src_dir_path).stem();
 
+  TRACE_TIMER("total compilation")
+  
   auto tokens         = lex(file_path.string());
   write_tokens(rel_path, tokens);
 

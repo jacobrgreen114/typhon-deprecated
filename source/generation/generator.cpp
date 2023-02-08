@@ -21,6 +21,9 @@ const auto c_type_map       = std::unordered_map<std::string_view, std::string_v
     {"i16",    "int16_t" },
     {"i32",    "int32_t" },
     {"i64",    "int64_t" },
+
+    {"flt",    "float"   },
+    {"dbl",    "double"  }
 };
 
 auto mutate_type_name(std::string_view view) -> std::string_view {
@@ -139,10 +142,15 @@ auto write_decl(std::ostream& writer, const std::shared_ptr<FuncDefinition>& def
   writer << ';';
 }
 
+auto write_decl(std::ostream& writer, const std::shared_ptr<StructDefinition>& def) -> void {
+  writer << "struct " << *def->name() << ';';
+}
+
 auto forward_decl_structs(std::ostream& writer, const SyntaxTree::NodeArray& nodes) {
   for (auto& node : nodes) {
     if (node->kind() == SyntaxKind::DefStruct) {
-      // todo : implement
+      write_decl(writer, ptr_cast<StructDefinition>(node));
+      writer << std::endl;
     }
   }
 }
@@ -216,6 +224,7 @@ auto forward_declare(std::ostream& writer, const std::shared_ptr<SyntaxTree>& so
 
   auto& nodes = source->nodes();
   forward_decl_structs(writer, nodes);
+  writer << std::endl;
   forward_decl_objects(writer, nodes);
   forward_decl_aliases(writer, nodes);
   forward_declare_funcs(writer, nodes);
@@ -448,6 +457,25 @@ auto write_function_definition(std::ostream& writer, const std::shared_ptr<FuncD
   writer << std::endl;
 }
 
+auto write_struct_definition(std::ostream& writer, const std::shared_ptr<StructDefinition>& str)
+    -> void {
+  writer << "struct " << *str->name() << " {" << std::endl;
+
+  for (auto& def : str->definitions()) {
+    switch (def->kind()) {
+      case SyntaxKind::DefVar: {
+        write_def(writer, ptr_cast<VarDefinition>(def));
+        break;
+      }
+      default:
+        throw_not_implemented();
+    }
+    writer << std::endl;
+  }
+
+  writer << "};" << std::endl;
+}
+
 auto write_definitions(std::ostream& writer, const std::shared_ptr<SyntaxTree>& source) -> void {
   for (auto& node : source->nodes()) {
     switch (node->kind()) {
@@ -455,7 +483,12 @@ auto write_definitions(std::ostream& writer, const std::shared_ptr<SyntaxTree>& 
         write_function_definition(writer, ptr_cast<FuncDefinition>(node));
         break;
       }
+      case SyntaxKind::DefStruct: {
+        write_struct_definition(writer, ptr_cast<StructDefinition>(node));
+        break;
+      }
     }
+    writer << std::endl;
   }
 }
 
