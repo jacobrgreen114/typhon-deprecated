@@ -4,6 +4,7 @@
 #include "parser_def_struct.hpp"
 
 #include "parser_def_var.hpp"
+#include "parser_def_func.hpp"
 
 auto def_struct_error_handler_(ParserContext& ctx) -> ParserState;
 auto def_struct_unexpected_end_handler_(ParserContext& ctx) -> ParserState;
@@ -54,8 +55,10 @@ auto def_struct_body_handler_(ParserContext& ctx) -> ParserState {
   switch (current.kind()) {
     case LexicalKind::KeywordVar:
       return var_def_start_state;
+    case LexicalKind::KeywordFunc:
+      return func_def_start_state;
     case LexicalKind::KeywordStruct:
-      throw_not_implemented();
+      return def_struct_state;
     default:
       return def_struct_error_state;
   }

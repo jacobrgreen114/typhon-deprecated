@@ -26,6 +26,7 @@ class ParserContext final : public EnumeratingContext<ParserContext, LexicalToke
   using StateStack      = std::stack<ReturnState>;
   using SyntaxStack     = std::stack<std::shared_ptr<SyntaxNode>>;
   using PrecedenceStack = std::stack<Precedence>;
+  using TokenStack      = std::stack<LexicalToken>;
 
  private:
   const TokenCollection tokens_;
@@ -41,6 +42,7 @@ class ParserContext final : public EnumeratingContext<ParserContext, LexicalToke
 
   SyntaxStack syntax_stack;
   PrecedenceStack precedence_stack;
+  TokenStack token_stack;
 
   explicit ParserContext(const TokenCollection& tokens);
   virtual ~ParserContext() = default;
@@ -60,6 +62,8 @@ class ParserContext final : public EnumeratingContext<ParserContext, LexicalToke
   }
 
  public:
+  auto push_current_token() -> void { token_stack.emplace(current()); }
+
   auto pop_ret_state() -> ParserState { return pop_states().ret; }
 
   auto pop_end_state() -> ParserState { return pop_states().end; }
@@ -114,6 +118,8 @@ class ParserContext final : public EnumeratingContext<ParserContext, LexicalToke
   auto pop_expr_binary_node() { return pop_syntax_node<BinaryExpression>(); }
 };
 
+using ParserMatchCondition = ParserContext::RefMatchCondition;
+
 #pragma endregion
 
 class Parser final : public StateMachine<ParserContext> {
@@ -137,6 +143,10 @@ constexpr LexicalTokenPredicate is_semicolon = [](auto& token) {
 
 constexpr LexicalTokenPredicate is_colon = [](auto& token) {
   return is_token_kind(token, LexicalKind::SymbolColon);
+};
+
+constexpr LexicalTokenPredicate is_doublecolon = [](auto& token) {
+  return is_token_kind(token, LexicalKind::SymbolDoubleColon);
 };
 
 constexpr LexicalTokenPredicate is_comma = [](auto& token) {

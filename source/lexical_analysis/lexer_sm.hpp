@@ -1,4 +1,4 @@
-// Copyright (c) 2023. Jacob R. Green
+// Copyright (c) 2023 Jacob R. Green
 // All Rights Reserved.
 
 #pragma once
@@ -14,6 +14,8 @@
 
 #include "../state_machine.hpp"
 #include "token.hpp"
+
+#define LEXER_LOOP_OPTIMIZATION true
 
 #pragma region Lexer
 
@@ -36,9 +38,7 @@ class LexerContext final : public EnumeratingContext<LexerContext, char> {
   auto current() -> const char& override { return current_; }
   auto move_next() -> bool override;
 
-  NODISCARD constexpr auto token_position() const -> auto& {
-    return token_pos_;
-  }
+  NODISCARD constexpr auto token_position() const -> auto& { return token_pos_; }
 
   auto buffer_current() -> void;
   auto mark_start_of_token() -> void;
@@ -46,7 +46,7 @@ class LexerContext final : public EnumeratingContext<LexerContext, char> {
   constexpr auto pop_buffer() { return std::move(buffer_); }
 };
 
-using LexerMatchCondition = LexerContext::MatchCondition;
+using LexerMatchCondition    = LexerContext::MatchCondition;
 using LexerRefMatchCondition = LexerContext::RefMatchCondition;
 
 class Lexer : public StateMachine<LexerContext> {
@@ -61,17 +61,13 @@ constexpr auto create_empty_token(LexerContext& ctx, LexicalKind kind) {
 }
 
 constexpr auto create_value_token(LexerContext& ctx, LexicalKind kind) {
-  ctx.tokens.emplace_back(ctx.token_position(), kind,
-                          std::make_shared<std::string>(ctx.pop_buffer()));
+  ctx.tokens.emplace_back(
+      ctx.token_position(), kind, std::make_shared<std::string>(ctx.pop_buffer()));
 }
 
-constexpr auto should_match_whitespace(const char c) -> bool {
-  return ('\0' < c and c <= ' ');
-}
+constexpr auto should_match_whitespace(const char c) -> bool { return ('\0' < c and c <= ' '); }
 
-constexpr auto matches_whitespace(const char c) -> bool {
-  return should_match_whitespace(c);
-}
+constexpr auto matches_whitespace(const char c) -> bool { return should_match_whitespace(c); }
 
 extern const LexerState error_state;
 extern const LexerState exit_state;

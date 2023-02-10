@@ -13,7 +13,7 @@
 auto expr_error_handler_(ParserContext& ctx) -> ParserState;
 auto expr_unexpected_end_error_handler_(ParserContext& ctx) -> ParserState;
 
-constexpr ParserState expression_error_state = ParserState{expr_error_handler_};
+constexpr ParserState expr_error_state = ParserState{expr_error_handler_};
 constexpr ParserState expr_unexpected_end_error_state =
     ParserState{expr_unexpected_end_error_handler_};
 
@@ -47,8 +47,10 @@ extern const ParserState expr_binary_state;
 extern const ParserState expr_unknown_state;
 
 auto expr_possible_end_handler_(ParserContext& ctx) -> ParserState {
-  return ctx.move_next_state(
-      is_binary_operator, expr_binary_state, expr_exit_state, expr_exit_end_state);
+  if (is_binary_operator(ctx.current())) {
+    return expr_binary_state;
+  }
+  return expr_exit_state;
 }
 
 /*
@@ -64,7 +66,7 @@ auto expr_bool_handler_(ParserContext& ctx) -> ParserState {
   assert(kind == LexicalKind::KeywordTrue || kind == LexicalKind::KeywordFalse);
   const auto value = kind == LexicalKind::KeywordTrue;
   ctx.syntax_stack.push(std::make_shared<BoolExpression>(value));
-  return expr_possible_end_state;
+  return ctx.move_next_state(expr_possible_end_state, expr_exit_end_state);
 }
 
 /*
@@ -78,21 +80,107 @@ constexpr auto expr_number_state = ParserState{expr_number_handler_};
 auto expr_number_handler_(ParserContext& ctx) -> ParserState {
   const auto& value = ctx.current().value();
   ctx.syntax_stack.push(std::make_shared<NumberExpression>(value));
-  return expr_possible_end_state;
+  return ctx.move_next_state(expr_possible_end_state, expr_exit_end_state);
+}
+
+/*
+ * String
+ */
+
+auto expr_string_handler_(ParserContext& ctx) -> ParserState;
+
+constexpr auto expr_string_state = ParserState{expr_string_handler_};
+
+auto expr_string_handler_(ParserContext& ctx) -> ParserState {
+  const auto& value = ctx.current().value();
+  ctx.syntax_stack.push(std::make_shared<StringExpression>(value));
+  return ctx.move_next_state(expr_possible_end_state, expr_exit_end_state);
 }
 
 /*
  * Identifier
  */
 
+auto expr_call_end_handler_(ParserContext& ctx) -> ParserState;
+auto expr_call_param_end_handler_(ParserContext& ctx) -> ParserState;
+auto expr_call_param_start_handler_(ParserContext& ctx) -> ParserState;
+auto expr_call_start_handler_(ParserContext& ctx) -> ParserState;
+
+auto expr_access_end_handler_(ParserContext& ctx) -> ParserState;
+auto expr_access_handler_(ParserContext& ctx) -> ParserState;
+
 auto expr_ident_handler_(ParserContext& ctx) -> ParserState;
 
-constexpr ParserState expr_ident_state = ParserState{expr_ident_handler_};
+constexpr ParserState expr_call_end_state         = ParserState{expr_call_end_handler_};
+constexpr ParserState expr_call_param_end_state   = ParserState{expr_call_param_end_handler_};
+constexpr ParserState expr_call_param_start_state = ParserState{expr_call_param_start_handler_};
+constexpr ParserState expr_call_start_state       = ParserState{expr_call_start_handler_};
 
-auto expr_ident_handler_(ParserContext& ctx) -> ParserState {
-  const auto& value = ctx.current().value();
+constexpr ParserState expr_access_end_state       = ParserState{expr_access_end_handler_};
+constexpr ParserState expr_access_state           = ParserState{expr_access_handler_};
+
+constexpr ParserState expr_ident_state            = ParserState{expr_ident_handler_};
+
+auto expr_call_end_handler_(ParserContext& ctx) -> ParserState {
+  assert(is_paren_close(ctx.current()));
+  return ctx.move_next_state(expr_possible_end_state, expr_exit_end_state);
+}
+
+auto expr_call_param_end_handler_(ParserContext& ctx) -> ParserState {
+  auto expr = ctx.pop_syntax_node<ExpressionNode>();
+  auto call = ctx.get_syntax_node<CallExpression>();
+  call->push_parameter(expr);
+
+  auto& current = ctx.current();
+  if (is_comma(current)) {
+    return ctx.move_next_state(expr_call_param_start_state, expr_unexpected_end_error_state);
+  }
+  else if (is_paren_close(current)) {
+    return expr_call_end_state;
+  }
+  else {
+    return expr_error_state;
+  }
+}
+
+auto expr_call_param_start_handler_(ParserContext& ctx) -> ParserState {
+  ctx.push_states(expr_call_param_end_state, expr_unexpected_end_error_state);
+  return expr_start_state;
+}
+
+auto expr_call_start_handler_(ParserContext& ctx) -> ParserState {
+  assert(is_paren_open(ctx.current()));
+  const auto& value = ctx.token_stack.top().value();
+  ctx.syntax_stack.push(std::make_shared<CallExpression>(value));
+  ctx.token_stack.pop();
+
+  return ctx.move_next_state(is_paren_close,
+                             expr_call_end_state,
+                             expr_call_param_start_state,
+                             expr_unexpected_end_error_state);
+}
+
+auto do_expr_access(ParserContext& ctx) {
+  const auto& value = ctx.token_stack.top().value();
   ctx.syntax_stack.push(std::make_shared<IdentifierExpression>(value));
+  ctx.token_stack.pop();
+}
+
+auto expr_access_end_handler_(ParserContext& ctx) -> ParserState {
+  do_expr_access(ctx);
+  return expr_exit_end_state;
+}
+
+auto expr_access_handler_(ParserContext& ctx) -> ParserState {
+  do_expr_access(ctx);
   return expr_possible_end_state;
+}
+
+// todo : implement function call
+auto expr_ident_handler_(ParserContext& ctx) -> ParserState {
+  ctx.push_current_token();
+  return ctx.move_next_state(
+      is_paren_open, expr_call_start_state, expr_access_state, expr_access_end_state);
 }
 
 /*
@@ -219,6 +307,8 @@ auto expr_unknown_handler_(ParserContext& ctx) -> ParserState {
       return expr_bool_state;
     case LexicalKind::Number:
       return expr_number_state;
+    case LexicalKind::String:
+      return expr_string_state;
     case LexicalKind::Identifier:
       return expr_ident_state;
     default:

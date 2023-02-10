@@ -6,6 +6,7 @@
 #include "parser_def_var.hpp"
 #include "parser_def_func.hpp"
 #include "parser_def_struct.hpp"
+#include "parser_import.hpp"
 
 auto is_unary_pre_operator(const LexicalToken& token) -> bool {
   switch (token.kind()) {
@@ -39,6 +40,7 @@ auto is_binary_operator(const LexicalToken& token) -> bool {
   auto kind = token.kind();
   switch (kind) {
     case LexicalKind::SymbolPeriod:
+    case LexicalKind::SymbolDoubleColon:
 
     case LexicalKind::SymbolPlus:
     case LexicalKind::SymbolMinus:
@@ -76,10 +78,22 @@ auto error_handler_(ParserContext& ctx) -> ParserState;
 auto unexpected_token_error_handler_(ParserContext& ctx) -> ParserState;
 auto end_handler_(ParserContext& ctx) -> ParserState;
 
+auto source_node_end_exit_handler_(ParserContext& ctx) -> ParserState;
+auto source_node_end_handler_(ParserContext& ctx) -> ParserState;
+auto unknown_handler(ParserContext& ctx) -> ParserState;
+
+auto start_handler_(ParserContext& ctx) -> ParserState;
+
 constexpr ParserState error_state                  = ParserState{error_handler_};
 constexpr ParserState unexpected_token_error_state = ParserState{unexpected_token_error_handler_};
-constexpr ParserState exit_state                   = ParserState{nullptr};
-constexpr ParserState end_state                    = ParserState{end_handler_};
+constexpr auto exit_state                          = ParserState{nullptr};
+constexpr auto end_state                           = ParserState{end_handler_};
+
+constexpr auto source_node_end_exit_state          = ParserState{source_node_end_exit_handler_};
+constexpr auto source_node_end_state               = ParserState{source_node_end_handler_};
+constexpr auto unknown_state                       = ParserState{unknown_handler};
+
+constexpr auto start_state                         = ParserState{start_handler_};
 
 auto error_handler_(ParserContext& ctx) -> ParserState {
   std::cerr << "Error at token " << ctx.current() << std::endl;
@@ -95,8 +109,6 @@ auto unexpected_token_error_handler_(ParserContext& ctx) -> ParserState {
 
 auto end_handler_(ParserContext& ctx) -> ParserState { return exit_state; }
 
-extern const ParserState unknown_state;
-
 auto append_source_node(ParserContext& ctx) -> void {
   auto node = std::move(ctx.syntax_stack.top());
   ctx.syntax_stack.pop();
@@ -104,15 +116,15 @@ auto append_source_node(ParserContext& ctx) -> void {
   assert(ctx.syntax_stack.empty());
 }
 
-constexpr auto source_node_end_exit_state = ParserState{[](ParserContext& ctx) -> ParserState {
+auto source_node_end_exit_handler_(ParserContext& ctx) -> ParserState {
   append_source_node(ctx);
   return end_state;
-}};
+}
 
-constexpr auto source_node_end_state      = ParserState{[](ParserContext& ctx) -> ParserState {
+auto source_node_end_handler_(ParserContext& ctx) -> ParserState {
   append_source_node(ctx);
   return unknown_state;
-}};
+}
 
 auto unknown_handler(ParserContext& ctx) -> ParserState {
   auto kind = ctx.current().kind();
@@ -129,21 +141,21 @@ auto unknown_handler(ParserContext& ctx) -> ParserState {
     case LexicalKind::KeywordStruct: {
       return def_struct_state;
     }
-    case LexicalKind::KeywordObject:
+    case LexicalKind::KeywordObject: {
       throw_not_implemented();
+    }
+    case LexicalKind::KeywordImport: {
+      return import_start_state;
+    }
     default: {
       return unexpected_token_error_state;
     }
   }
 }
 
-constexpr ParserState unknown_state = ParserState{unknown_handler};
-
 auto start_handler_(ParserContext& ctx) -> ParserState {
   return ctx.move_next_state(unknown_state, exit_state);
 }
-
-constexpr auto start_state = ParserState{start_handler_};
 
 #pragma endregion
 

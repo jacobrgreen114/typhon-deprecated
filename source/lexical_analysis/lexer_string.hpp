@@ -1,4 +1,3 @@
-
 // Copyright (c) 2023 Jacob R. Green
 // All Rights Reserved.
 
@@ -10,5 +9,6 @@
 
 #include "lexer_sm.hpp"
 
-extern const LexerState comment_singleline_start_state;
-extern const LexerState comment_multiline_start_state;
+constexpr auto should_match_string(char c) -> bool { return c == '"'; }
+
+extern const LexerState string_start_state;

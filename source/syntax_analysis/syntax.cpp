@@ -9,26 +9,40 @@
  */
 
 const auto syntax_kind_names = std::unordered_map<SyntaxKind, std::string_view>{
-    ENUM_NAME(SyntaxKind, Source),
+    {SyntaxKind::Source,         "Source"        },
+    {SyntaxKind::Import,         "Import"        },
 
-    ENUM_NAME(SyntaxKind, ExprBool),    ENUM_NAME(SyntaxKind, ExprNumber),
-    ENUM_NAME(SyntaxKind, ExprString),  ENUM_NAME(SyntaxKind, ExprIdentifier),
+    {SyntaxKind::ExprBool,       "ExprBool"      },
+    {SyntaxKind::ExprNumber,     "ExprNumber"    },
+    {SyntaxKind::ExprString,     "ExprString"    },
+    {SyntaxKind::ExprIdentifier, "ExprIdentifier"},
+    {SyntaxKind::ExprCall,       "ExprCall"      },
 
-    ENUM_NAME(SyntaxKind, ExprUnary),   ENUM_NAME(SyntaxKind, ExprBinary),
-    ENUM_NAME(SyntaxKind, ExprTernary),
+    {SyntaxKind::ExprUnary,      "ExprUnary"     },
+    {SyntaxKind::ExprBinary,     "ExprBinary"    },
+    {SyntaxKind::ExprTernary,    "ExprTernary"   },
 
-    ENUM_NAME(SyntaxKind, StmtExpr),    ENUM_NAME(SyntaxKind, StmtDef),
-    ENUM_NAME(SyntaxKind, StmtRet),     ENUM_NAME(SyntaxKind, StmtIf),
-    ENUM_NAME(SyntaxKind, StmtElif),    ENUM_NAME(SyntaxKind, StmtElse),
+    {SyntaxKind::StmtExpr,       "StmtExpr"      },
+    {SyntaxKind::StmtDef,        "StmtDef"       },
+    {SyntaxKind::StmtRet,        "StmtRet"       },
+    {SyntaxKind::StmtIf,         "StmtIf"        },
+    {SyntaxKind::StmtElif,       "StmtElif"      },
+    {SyntaxKind::StmtElse,       "StmtElse"      },
 
-    ENUM_NAME(SyntaxKind, StmtLoop),    ENUM_NAME(SyntaxKind, StmtWhile),
-    ENUM_NAME(SyntaxKind, StmtFor),     ENUM_NAME(SyntaxKind, StmtForeach),
+    {SyntaxKind::StmtLoop,       "StmtLoop"      },
+    {SyntaxKind::StmtWhile,      "StmtWhile"     },
+    {SyntaxKind::StmtFor,        "StmtFor"       },
+    {SyntaxKind::StmtForeach,    "StmtForeach"   },
 
-    ENUM_NAME(SyntaxKind, Block),
+    {SyntaxKind::Block,          "Block"         },
 
-    ENUM_NAME(SyntaxKind, DefVar),      ENUM_NAME(SyntaxKind, DefFunc),
-    ENUM_NAME(SyntaxKind, DefParam),    ENUM_NAME(SyntaxKind, DefStruct),
-    ENUM_NAME(SyntaxKind, DefObject),   ENUM_NAME(SyntaxKind, DefInterface)};
+    {SyntaxKind::DefVar,         "DefVar"        },
+    {SyntaxKind::DefFunc,        "DefFunc"       },
+    {SyntaxKind::DefParam,       "DefParam"      },
+    {SyntaxKind::DefStruct,      "DefStruct"     },
+    {SyntaxKind::DefObject,      "DefObject"     },
+    {SyntaxKind::DefInterface,   "DefInterface"  },
+};
 
 auto to_string(SyntaxKind kind) -> std::string_view {
   if (auto it = syntax_kind_names.find(kind); it != syntax_kind_names.end()) {
@@ -41,43 +55,45 @@ auto to_string(SyntaxKind kind) -> std::string_view {
  * Operator
  */
 
-const auto operator_names =
-    std::unordered_map<Operator, std::string_view>{ENUM_NAME(Operator, Access),
-                                                   ENUM_NAME(Operator, Assign),
+const auto operator_names = std::unordered_map<Operator, std::string_view>{
+    {Operator::Static,            "StaticAccess"     },
+    {Operator::Access,            "Access"           },
+    {Operator::Assign,            "Assign"           },
 
-                                                   ENUM_NAME(Operator, Add),
-                                                   ENUM_NAME(Operator, Subtract),
-                                                   ENUM_NAME(Operator, Multiply),
-                                                   ENUM_NAME(Operator, Divide),
+    {Operator::Add,               "Add"              },
+    {Operator::Subtract,          "Subtract"         },
+    {Operator::Multiply,          "Multiply"         },
+    {Operator::Divide,            "Divide"           },
 
-                                                   ENUM_NAME(Operator, Equals),
-                                                   ENUM_NAME(Operator, NotEquals),
-                                                   ENUM_NAME(Operator, Or),
-                                                   ENUM_NAME(Operator, And),
+    {Operator::Equals,            "Equals"           },
+    {Operator::NotEquals,         "NotEquals"        },
+    {Operator::Or,                "Or"               },
+    {Operator::And,               "And"              },
 
-                                                   ENUM_NAME(Operator, LessThan),
-                                                   ENUM_NAME(Operator, GreaterThan),
-                                                   ENUM_NAME(Operator, LessThanEquals),
-                                                   ENUM_NAME(Operator, GreaterThanEquals),
+    {Operator::LessThan,          "LessThan"         },
+    {Operator::GreaterThan,       "GreaterThan"      },
+    {Operator::LessThanEquals,    "LessThanEquals"   },
+    {Operator::GreaterThanEquals, "GreaterThanEquals"},
 
-                                                   ENUM_NAME(Operator, BitOr),
-                                                   ENUM_NAME(Operator, BitXor),
-                                                   ENUM_NAME(Operator, BitAnd),
+    {Operator::BitOr,             "BitOr"            },
+    {Operator::BitXor,            "BitXor"           },
+    {Operator::BitAnd,            "BitAnd"           },
 
-                                                   ENUM_NAME(Operator, ShiftLeft),
-                                                   ENUM_NAME(Operator, ShiftRight),
+    {Operator::ShiftLeft,         "ShiftLeft"        },
+    {Operator::ShiftRight,        "ShiftRight"       },
 
-                                                   ENUM_NAME(Operator, BoolNot),
-                                                   ENUM_NAME(Operator, BitNot),
+    {Operator::BoolNot,           "BoolNot"          },
+    {Operator::BitNot,            "BitNot"           },
 
-                                                   ENUM_NAME(Operator, Positive),
-                                                   ENUM_NAME(Operator, Negative),
+    {Operator::Positive,          "Positive"         },
+    {Operator::Negative,          "Negative"         },
 
-                                                   ENUM_NAME(Operator, PreInc),
-                                                   ENUM_NAME(Operator, PreDec),
+    {Operator::PreInc,            "PreInc"           },
+    {Operator::PreDec,            "PreDec"           },
 
-                                                   ENUM_NAME(Operator, PostInc),
-                                                   ENUM_NAME(Operator, PostDec)};
+    {Operator::PostInc,           "PostInc"          },
+    {Operator::PostDec,           "PostDec"          }
+};
 
 auto to_string(Operator op) -> std::string_view {
   if (auto it = operator_names.find(op); it != operator_names.end()) {
@@ -108,6 +124,7 @@ const auto unary_post_op_map = std::unordered_map<LexicalKind, Operator>{
 
 const auto binary_op_map = std::unordered_map<LexicalKind, Operator>{
     {LexicalKind::SymbolPeriod,           Operator::Access           },
+    {LexicalKind::SymbolDoubleColon,      Operator::Static           },
     {LexicalKind::SymbolEquals,           Operator::Assign           },
 
     {LexicalKind::SymbolPlus,             Operator::Add              },
@@ -162,11 +179,11 @@ auto get_binary_op(LexicalKind kind) -> Operator {
  */
 
 const auto access_modifier_names = std::unordered_map<AccessModifier, std::string_view>{
-    ENUM_NAME(AccessModifier, Private),
-    ENUM_NAME(AccessModifier, Module),
-    ENUM_NAME(AccessModifier, Internal),
-    ENUM_NAME(AccessModifier, Protected),
-    ENUM_NAME(AccessModifier, Public),
+    {AccessModifier::Private,   "Private"  },
+    {AccessModifier::Module,    "Module"   },
+    {AccessModifier::Internal,  "Internal" },
+    {AccessModifier::Protected, "Protected"},
+    {AccessModifier::Public,    "Public"   },
 };
 
 auto to_string(AccessModifier modifier) -> std::string_view {
@@ -192,7 +209,7 @@ void BoolExpression::on_serialize(xml::SerializationContext& context) const {
   context.add_attribute("value", value_ ? "true" : "false");
 }
 
-void StringExpression::on_serialize(xml::SerializationContext& context) const {
+void ValueExpression::on_serialize(xml::SerializationContext& context) const {
   SyntaxNode::on_serialize(context);
   if (value_) {
     context.add_attribute("value", *value_);
@@ -203,6 +220,17 @@ void IdentifierExpression::on_serialize(xml::SerializationContext& context) cons
   ExpressionNode::on_serialize(context);
   if (identifier_) {
     context.add_attribute("name", *identifier_);
+  }
+}
+
+auto CallExpression::on_serialize(xml::SerializationContext& context) const -> void {
+  SyntaxNode::on_serialize(context);
+  if (identifier_) {
+    context.add_attribute("name", *identifier_);
+  }
+
+  for (auto& param : parameters()) {
+    context.add_element("param", *param);
   }
 }
 
@@ -320,6 +348,17 @@ void FuncDefinition::on_serialize(xml::SerializationContext& context) const {
   if (body_) {
     context.add_element("body", *body_);
   }
+}
+
+auto Import::on_serialize(xml::SerializationContext& context) const -> void {
+  SyntaxNode::on_serialize(context);
+
+  auto str = std::string{};
+  for (auto& ns : namespaces_) {
+    str += "::";
+    str += *ns;
+  }
+  context.add_attribute("namespace", str);
 }
 
 auto SyntaxTree::on_serialize(xml::SerializationContext& context) const -> void {

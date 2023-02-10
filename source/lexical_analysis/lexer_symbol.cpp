@@ -69,14 +69,14 @@ constexpr auto create_symbol_token(LexerContext& ctx, LexicalKind kind) -> void 
   create_empty_token(ctx, kind);
 }
 
-constexpr auto symbol_error_state              = LexerState{[](LexerContext& ctx) -> LexerState {
+constexpr auto symbol_error_state  = LexerState{[](LexerContext& ctx) -> LexerState {
   std::cout << "Symbol error at " << ctx.token_position() << std::endl;
   throw_not_implemented();
 }};
 
-// Symbol Colon States
+// Symbol Period States
 
-constexpr auto symbol_period_state             = LexerState{[](LexerContext& ctx) -> LexerState {
+constexpr auto symbol_period_state = LexerState{[](LexerContext& ctx) -> LexerState {
   auto current = ctx.current();
   assert(is_period(current));
 
@@ -86,13 +86,38 @@ constexpr auto symbol_period_state             = LexerState{[](LexerContext& ctx
 
 // Symbol Colon States
 
-constexpr auto symbol_colon_state              = LexerState{[](LexerContext& ctx) -> LexerState {
-  auto current = ctx.current();
-  assert(is_colon(current));
+auto symbol_colon_end_handler_(LexerContext& ctx) -> LexerState;
+auto symbol_colon_handler_(LexerContext& ctx) -> LexerState;
+auto symbol_doublecolon_handler_(LexerContext& ctx) -> LexerState;
+auto symbol_colon_unknown_handler_(LexerContext& ctx) -> LexerState;
 
+constexpr auto symbol_colon_end_state     = LexerState{symbol_colon_end_handler_};
+constexpr auto symbol_colon_state         = LexerState{symbol_colon_handler_};
+constexpr auto symbol_doublecolon_state   = LexerState{symbol_doublecolon_handler_};
+constexpr auto symbol_colon_unknown_state = LexerState{symbol_colon_unknown_handler_};
+
+auto symbol_colon_end_handler_(LexerContext& ctx) -> LexerState {
   create_symbol_token(ctx, LexicalKind::SymbolColon);
+  return exit_state;
+}
+
+auto symbol_colon_handler_(LexerContext& ctx) -> LexerState {
+  create_symbol_token(ctx, LexicalKind::SymbolColon);
+  return unknown_state;
+}
+
+auto symbol_doublecolon_handler_(LexerContext& ctx) -> LexerState {
+  assert(is_colon(ctx.current()));
+  create_symbol_token(ctx, LexicalKind::SymbolDoubleColon);
   return ctx.move_next_state(unknown_state, exit_state);
-}};
+}
+
+auto symbol_colon_unknown_handler_(LexerContext& ctx) -> LexerState {
+  assert(is_colon(ctx.current()));
+
+  return ctx.move_next_state(
+      is_colon, symbol_doublecolon_state, symbol_colon_state, symbol_colon_end_state);
+}
 
 // Symbol Semicolon States
 
@@ -579,7 +604,7 @@ constexpr LexerState symbol_unknown_state       = LexerState{[](LexerContext& ct
       return symbol_period_state;
 
     case colon:
-      return symbol_colon_state;
+      return symbol_colon_unknown_state;
     case semicolon:
       return symbol_semicolon_state;
 

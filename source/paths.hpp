@@ -7,7 +7,12 @@
 #error
 #endif
 
+#include "common.hpp"
+
 constexpr auto source_file_ext  = std::string_view{".ty"};
+constexpr auto project_file_ext = std::string_view{".typ"};
+//constexpr auto solution_file_ext = std::string_view{".tys"};
+
 constexpr auto gen_src_file_ext = std::string_view{".cpp"};
 
 constexpr auto src_dir_name     = std::string_view{"source"};

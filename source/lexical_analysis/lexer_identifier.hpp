@@ -1,4 +1,4 @@
-// Copyright (c) 2023. Jacob R. Green
+// Copyright (c) 2023 Jacob R. Green
 // All Rights Reserved.
 
 #pragma once
@@ -7,7 +7,7 @@
 #error
 #endif
 
-#include "lexer_source.hpp"
+#include "lexer_sm.hpp"
 
 extern const LexerState identifier_start_state;
 

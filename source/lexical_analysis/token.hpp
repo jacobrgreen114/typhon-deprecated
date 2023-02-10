@@ -162,12 +162,33 @@ enum class LexicalKind : lexical_kind_t {
   // foreach
   KeywordForeach   = make_lexical_kind_keyword(0x0044),
 
+  // import
+  KeywordImport    = make_lexical_kind_keyword(0x0051),
+
+  // private
+  KeywordPrivate   = make_lexical_kind_keyword(0x0061),
+  // module
+  KeywordModule    = make_lexical_kind_keyword(0x0062),
+  // internal
+  KeywordInternal  = make_lexical_kind_keyword(0x0063),
+  // protected
+  KeywordProtected = make_lexical_kind_keyword(0x0064),
+  // public
+  KeywordPublic    = make_lexical_kind_keyword(0x0065),
+
+  // static
+  KeywordStatic    = make_lexical_kind_keyword(0x0071),
+  // mut
+  KeywordMutable   = make_lexical_kind_keyword(0x0072),
+
   // .
   SymbolPeriod,
   // ;
   SymbolSemicolon,
   // :
   SymbolColon,
+  // ::
+  SymbolDoubleColon,
   // ,
   SymbolComma,
 
@@ -260,6 +281,12 @@ enum class LexicalKind : lexical_kind_t {
 
 auto operator<<(std::ostream& stream, LexicalKind kind) -> std::ostream&;
 
+constexpr auto get_lexical_type(LexicalKind kind) -> LexicalType {
+  return static_cast<LexicalType>(
+      (static_cast<std::underlying_type_t<LexicalKind>>(kind) & lexical_kind_type_mask) >>
+      lexical_kind_type_offset);
+}
+
 /*
  * Lexical Token
  */
@@ -286,9 +313,9 @@ class LexicalToken final
   LexicalToken(const FilePosition& pos, LexicalKind kind)
       : LexicalToken{pos, kind, nullptr} {}
 
-  NODISCARD constexpr auto pos() const -> auto& { return pos_; }
-  NODISCARD constexpr auto kind() const -> auto& { return kind_; }
-  NODISCARD constexpr auto value() const -> auto& { return value_; }
+  NODISCARD constexpr auto& pos() const { return pos_; }
+  NODISCARD constexpr auto& kind() const { return kind_; }
+  NODISCARD constexpr auto& value() const { return value_; }
   NODISCARD auto has_value() const -> bool { return static_cast<bool>(value_); }
 
 #ifdef TRACE

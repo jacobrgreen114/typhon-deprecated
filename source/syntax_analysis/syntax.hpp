@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+#include "../lexical_analysis/token.hpp"
 #include "../xml/serialization.hpp"
 
 /*
@@ -38,11 +39,13 @@ enum class SyntaxKind : syntax_kind_t {
 
   Source         = make_syntax_kind(SyntaxType::Misc, 1),
   Block          = make_syntax_kind(SyntaxType::Misc, 2),
+  Import         = make_syntax_kind(SyntaxType::Misc, 3),
 
   ExprBool       = make_syntax_kind(SyntaxType::Expression, 0x01),
   ExprNumber     = make_syntax_kind(SyntaxType::Expression, 0x02),
   ExprString     = make_syntax_kind(SyntaxType::Expression, 0x03),
   ExprIdentifier = make_syntax_kind(SyntaxType::Expression, 0x04),
+  ExprCall       = make_syntax_kind(SyntaxType::Expression, 0x05),
 
   ExprUnary      = make_syntax_kind(SyntaxType::Expression, 0x11),
   ExprBinary     = make_syntax_kind(SyntaxType::Expression, 0x12),
@@ -135,7 +138,8 @@ consteval auto make_operator_value(OperatorType type,
 enum class Operator : operator_t {
   // Binary
 
-  Access            = make_operator_value(OperatorType::Binary, Precedence::Access, 0x01),
+  Static            = make_operator_value(OperatorType::Binary, Precedence::Access, 0x01),
+  Access            = make_operator_value(OperatorType::Binary, Precedence::Access, 0x02),
 
   Assign            = make_operator_value(OperatorType::Binary, Precedence::Assignment, 0x01),
 
@@ -275,12 +279,12 @@ class BoolExpression final : public ConstantExpression {
 #endif
 };
 
-class StringExpression : public ConstantExpression {
+class ValueExpression : public ConstantExpression {
  private:
   String value_;
 
  protected:
-  explicit StringExpression(const SyntaxKind kind, const String& value)
+  explicit ValueExpression(const SyntaxKind kind, const String& value)
       : ConstantExpression{kind},
         value_{value} {}
 
@@ -293,10 +297,16 @@ class StringExpression : public ConstantExpression {
 #endif
 };
 
-class NumberExpression final : public StringExpression {
+class NumberExpression final : public ValueExpression {
  public:
   explicit NumberExpression(const String& value)
-      : StringExpression{SyntaxKind::ExprNumber, value} {}
+      : ValueExpression{SyntaxKind::ExprNumber, value} {}
+};
+
+class StringExpression final : public ValueExpression {
+ public:
+  explicit StringExpression(const String& value)
+      : ValueExpression{SyntaxKind::ExprString, value} {}
 };
 
 class IdentifierExpression final : public ExpressionNode {
@@ -308,6 +318,30 @@ class IdentifierExpression final : public ExpressionNode {
         identifier_{identifier} {}
 
   auto& identifier() const { return identifier_; }
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
+};
+
+class CallExpression final : public ExpressionNode {
+  String identifier_;
+
+  std::vector<std::shared_ptr<ExpressionNode>> parameters_;
+
+ public:
+  explicit CallExpression(const String& identifier)
+      : ExpressionNode{SyntaxKind::ExprCall},
+        identifier_{identifier} {}
+
+  auto& identifier() const { return identifier_; }
+
+  auto& parameters() const { return parameters_; }
+
+  auto push_parameter(const std::shared_ptr<ExpressionNode>& parameter) -> void {
+    parameters_.emplace_back(parameter);
+  }
 
 #ifdef TRACE
  protected:
@@ -442,7 +476,7 @@ class ReturnStatement final : public Statement {
 };
 
 /*
- * Statements
+ * Branch Statements
  */
 
 class BodyStatement : public Statement {
@@ -542,6 +576,29 @@ class ForStatement final : public BodyStatement {
 };
 
 class ForeachStatement final : public BodyStatement {};
+
+/*
+ * Definition Statements
+ */
+
+class Definition;
+
+class DefStatement final : public Statement {
+  std::shared_ptr<Definition> def_;
+
+ public:
+  constexpr DefStatement()
+      : Statement{SyntaxKind::StmtDef} {}
+
+  auto& def() const { return def_; }
+
+  auto set_def(const std::shared_ptr<Definition>& def) { def_ = def; }
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
+};
 
 /*
  * Type Definitions
@@ -655,19 +712,19 @@ class StructDefinition final : public Definition {
 };
 
 /*
- * Definition Statements
+ * Import
  */
 
-class DefStatement final : public Statement {
-  std::shared_ptr<Definition> def_;
+class Import final : public SyntaxNode {
+  std::vector<String> namespaces_;
 
  public:
-  constexpr DefStatement()
-      : Statement{SyntaxKind::StmtDef} {}
+  explicit Import()
+      : SyntaxNode{SyntaxKind::Import} {}
 
-  auto& def() const { return def_; }
+  auto& namespaces() const { return namespaces_; }
 
-  auto set_def(const std::shared_ptr<Definition>& def) { def_ = def; }
+  auto push_namespace(const String& ns) { namespaces_.emplace_back(ns); }
 
 #ifdef TRACE
  protected:

@@ -35,9 +35,21 @@ const auto lexical_kind_names_ = std::unordered_map<LexicalKind, std::string_vie
     {LexicalKind::KeywordFor,             "KeywordFor"            },
     {LexicalKind::KeywordForeach,         "KeywordForeach"        },
 
+    {LexicalKind::KeywordImport,          "KeywordImport"         },
+
+    {LexicalKind::KeywordPrivate,         "KeywordPrivate"        },
+    {LexicalKind::KeywordModule,          "KeywordModule"         },
+    {LexicalKind::KeywordInternal,        "KeywordInternal"       },
+    {LexicalKind::KeywordProtected,       "KeywordProtected"      },
+    {LexicalKind::KeywordPublic,          "KeywordPublic"         },
+
+    {LexicalKind::KeywordStatic,          "KeywordStatic"         },
+    {LexicalKind::KeywordMutable,         "KeywordMutable"        },
+
     {LexicalKind::SymbolPeriod,           "SymbolPeriod"          },
     {LexicalKind::SymbolSemicolon,        "SymbolSemicolon"       },
     {LexicalKind::SymbolColon,            "SymbolColon"           },
+    {LexicalKind::SymbolDoubleColon,      "SymbolDoubleColon"     },
     {LexicalKind::SymbolComma,            "SymbolComma"           },
 
     {LexicalKind::SymbolParenOpen,        "SymbolParenOpen"       },

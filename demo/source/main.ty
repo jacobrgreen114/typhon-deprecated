@@ -1,23 +1,18 @@
-// Singleline comment
+// Copyright (c) 2023 Jacob R. Green
+// All Rights Reserved.
 
-/* Multiline comment
-*/
+import std::collections;
+import vulkan;
 
-// import std::list;
+// namespace Demo;
 
+var message = "Hello, World!";
 
-var explicit_assigned : i32 = 1;
-var uninitialized : i32;
-var auto_deduced_type = 0 * 1 + 3 * 6;
-
-struct Vec2 {
-	var x : flt;
-	var y : flt;
+func PrintMessage() -> void {
+	Console::WriteLine(message);
 }
 
-func main() -> i32 {
-	var pos : Vec2;
-	pos.x = 10;
-	
+func main(args : string) -> i32 {
+	PrintMessage(message);
 	return 0;
 }

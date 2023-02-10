@@ -1,4 +1,4 @@
-// Copyright (c) 2023. Jacob R. Green
+// Copyright (c) 2023 Jacob R. Green
 // All Rights Reserved.
 
 #pragma once
@@ -6,6 +6,8 @@
 #ifndef __cplusplus
 #error
 #endif
+
+#include "../common.hpp"
 
 namespace xml {
 
@@ -26,8 +28,7 @@ class SerializationContext final {
   auto is_empty() const -> bool;
 
  public:
-  explicit SerializationContext(std::ostream& writer, std::string_view name,
-                                size_t indent = 0);
+  explicit SerializationContext(std::ostream& writer, std::string_view name, size_t indent = 0);
 
   ~SerializationContext();
 
@@ -43,8 +44,7 @@ class SerializationContext final {
   auto add_content(std::string_view value) -> void;
   auto add_content(uintptr_t value) -> void;
   auto add_content(intptr_t value) -> void;
-  auto add_element(std::string_view name, const Serializable& serializable)
-      -> void;
+  auto add_element(std::string_view name, const Serializable& serializable) -> void;
 };
 
 class Serializable {
@@ -53,8 +53,7 @@ class Serializable {
  public:
   virtual ~Serializable() = default;
 
-  auto serialize(std::ostream& writer,
-                 std::string_view root_name = "root") const -> void;
+  auto serialize(std::ostream& writer, std::string_view root_name = "root") const -> void;
 
  protected:
   virtual auto on_serialize(SerializationContext& context) const -> void;

@@ -6,17 +6,17 @@ set(CMAKE_C_STANDARD 23)
 set(CMAKE_CXX_STANDARD 23)
 
 # Enable LTO
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 
 add_executable(tyc
     source/main.cpp
 
     source/lexical_analysis/token.cpp               source/lexical_analysis/token.hpp
     source/lexical_analysis/lexer.cpp               source/lexical_analysis/lexer.hpp
-    source/lexical_analysis/lexer_source.cpp        source/lexical_analysis/lexer_source.hpp
+        source/lexical_analysis/lexer_sm.cpp source/lexical_analysis/lexer_sm.hpp
     source/lexical_analysis/lexer_comment.cpp       source/lexical_analysis/lexer_comment.hpp
     source/lexical_analysis/lexer_number.cpp        source/lexical_analysis/lexer_number.hpp
-    source/lexical_analysis/lexer_source.cpp        source/lexical_analysis/lexer_source.hpp
+        source/lexical_analysis/lexer_sm.cpp source/lexical_analysis/lexer_sm.hpp
     source/lexical_analysis/lexer_symbol.cpp        source/lexical_analysis/lexer_symbol.hpp
     source/lexical_analysis/lexer_identifier.cpp    source/lexical_analysis/lexer_identifier.hpp
 
@@ -32,12 +32,13 @@ add_executable(tyc
     source/syntax_analysis/parser_statemachine.cpp  source/syntax_analysis/parser_statemachine.hpp
 
     source/generation/generator.cpp                 source/generation/generator.hpp
+    source/generation/gen_var.cpp                   source/generation/gen_var.hpp
 
     source/paths.cpp                                source/paths.hpp
 
     source/timer.hpp
     source/xml/serialization.cpp                    source/xml/serialization.hpp
-)
+    source/project_config.cpp                       source/project_config.hpp source/common.hpp source/generation/gen_common.cpp source/generation/gen_common.hpp source/generation/gen_expr.cpp source/generation/gen_expr.hpp source/generation/gen_stmt.cpp source/generation/gen_stmt.hpp source/generation/gen_func.cpp source/generation/gen_func.hpp source/generation/gen_struct.cpp source/generation/gen_struct.hpp source/lexical_analysis/lexer_string.cpp source/lexical_analysis/lexer_string.hpp source/syntax_analysis/parser_import.cpp source/syntax_analysis/parser_import.hpp)
 
 target_precompile_headers(tyc
 PRIVATE
@@ -46,5 +47,21 @@ PRIVATE
 
 target_compile_definitions(tyc
 PRIVATE
+    # Uncomment to enable compilation tracing
     TRACE
+    # Uncomment to make code generation human readable
+    GENERATE_READABLE
+)
+
+
+install(
+    TARGETS
+        tyc
+    CONFIGURATIONS
+        Release
+    RENAME
+        tyc
+    RUNTIME
+        DESTINATION
+            bin
 )

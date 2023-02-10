@@ -3,9 +3,11 @@
 
 #include "paths.hpp"
 
+#include "project_config.hpp"
 #include "lexical_analysis/lexer.hpp"
 #include "syntax_analysis/parser.hpp"
 #include "generation/generator.hpp"
+#include "timer.hpp"
 
 auto write_tokens(const fs::path& rel_path, const TokenCollection& tokens) -> void {
 #ifdef TRACE
@@ -29,13 +31,14 @@ auto write_syntax(const fs::path& rel_path, const SyntaxTree& source) -> void {
 #endif
 }
 
+// todo : implement already compiled optimization
 auto compile(const fs::path& file_path) -> void {
   std::cout << "Compiling : " << fs::absolute(file_path) << std::endl;
 
   const auto rel_path = fs::relative(file_path, src_dir_path).stem();
 
-  TRACE_TIMER("total compilation")
-  
+  // TRACE_TIMER("total compilation")
+
   auto tokens         = lex(file_path.string());
   write_tokens(rel_path, tokens);
 
@@ -46,12 +49,18 @@ auto compile(const fs::path& file_path) -> void {
 }
 
 auto main(int argc, const char* argv[]) -> int {
-  if (!fs::exists(src_dir_path)) {
+  auto config = ProjectConfig::load();
+  if (!config) {
+    throw std::exception("Failed to load project config");
+  }
+
+  if (!fs::exists(config->dir_source())) {
     std::cerr << "No source folder found" << std::endl;
     return -1;
   }
 
-  for (auto& entry : fs::recursive_directory_iterator(src_dir_path)) {
+  // todo : parallelize compilation
+  for (auto& entry : fs::recursive_directory_iterator(config->dir_source())) {
     if (entry.is_regular_file() && entry.path().extension() == source_file_ext) {
       compile(entry.path());
     }
