@@ -5,6 +5,17 @@ project(Typhon)
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_CXX_STANDARD 23)
 
+option(OUTPUT_ASSEMBLY_ON_BUILD "Outputs generated assembly on compile")
+
+if (${OUTPUT_ASSEMBLY_ON_BUILD})
+    if (MSVC)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /FA")
+    else()
+
+    endif()
+endif()
+
+
 # Enable LTO
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 
