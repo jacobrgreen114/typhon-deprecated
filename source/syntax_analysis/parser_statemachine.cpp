@@ -147,6 +147,9 @@ auto unknown_handler(ParserContext& ctx) -> ParserState {
     case LexicalKind::KeywordImport: {
       return import_start_state;
     }
+    case LexicalKind::KeywordNamespace: {
+      return namespace_start_state;
+    }
     default: {
       return unexpected_token_error_state;
     }

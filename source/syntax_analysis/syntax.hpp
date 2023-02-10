@@ -39,7 +39,8 @@ enum class SyntaxKind : syntax_kind_t {
 
   Source         = make_syntax_kind(SyntaxType::Misc, 1),
   Block          = make_syntax_kind(SyntaxType::Misc, 2),
-  Import         = make_syntax_kind(SyntaxType::Misc, 3),
+  Namespace      = make_syntax_kind(SyntaxType::Misc, 0x11),
+  Import         = make_syntax_kind(SyntaxType::Misc, 0x12),
 
   ExprBool       = make_syntax_kind(SyntaxType::Expression, 0x01),
   ExprNumber     = make_syntax_kind(SyntaxType::Expression, 0x02),
@@ -709,6 +710,27 @@ class StructDefinition final : public Definition {
   auto push_definition(const std::shared_ptr<Definition>& def) { defs_.emplace_back(def); }
 
   auto& definitions() const { return defs_; }
+};
+
+/*
+ * Import
+ */
+
+class Namespace final : public SyntaxNode {
+  std::vector<String> namespaces_;
+
+ public:
+  explicit Namespace()
+      : SyntaxNode{SyntaxKind::Namespace} {}
+
+  auto& namespaces() const { return namespaces_; }
+
+  auto push_namespace(const String& ns) { namespaces_.emplace_back(ns); }
+
+#ifdef TRACE
+ protected:
+  auto on_serialize(xml::SerializationContext& context) const -> void override;
+#endif
 };
 
 /*

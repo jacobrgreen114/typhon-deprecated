@@ -37,3 +37,4 @@ build/
 # Ide Files
 .vs/
 .idea/
+docs/.idea

@@ -4,7 +4,7 @@
 import std::collections;
 import vulkan;
 
-// namespace Demo;
+namespace Demo;
 
 var message = "Hello, World!";
 

@@ -31,6 +31,7 @@ const auto keywords = std::unordered_map<std::string_view, LexicalKind>{
     {"for",       LexicalKind::KeywordFor      },
     {"foreach",   LexicalKind::KeywordForeach  },
 
+    {"namespace", LexicalKind::KeywordNamespace},
     {"import",    LexicalKind::KeywordImport   },
 
     {"private",   LexicalKind::KeywordPrivate  },

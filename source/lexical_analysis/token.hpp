@@ -162,8 +162,10 @@ enum class LexicalKind : lexical_kind_t {
   // foreach
   KeywordForeach   = make_lexical_kind_keyword(0x0044),
 
+  // namespace
+  KeywordNamespace = make_lexical_kind_keyword(0x0051),
   // import
-  KeywordImport    = make_lexical_kind_keyword(0x0051),
+  KeywordImport    = make_lexical_kind_keyword(0x0052),
 
   // private
   KeywordPrivate   = make_lexical_kind_keyword(0x0061),

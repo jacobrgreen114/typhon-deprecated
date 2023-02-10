@@ -35,6 +35,7 @@ const auto lexical_kind_names_ = std::unordered_map<LexicalKind, std::string_vie
     {LexicalKind::KeywordFor,             "KeywordFor"            },
     {LexicalKind::KeywordForeach,         "KeywordForeach"        },
 
+    {LexicalKind::KeywordNamespace,       "KeywordNamespace"      },
     {LexicalKind::KeywordImport,          "KeywordImport"         },
 
     {LexicalKind::KeywordPrivate,         "KeywordPrivate"        },

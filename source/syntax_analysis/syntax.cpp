@@ -10,6 +10,8 @@
 
 const auto syntax_kind_names = std::unordered_map<SyntaxKind, std::string_view>{
     {SyntaxKind::Source,         "Source"        },
+
+    {SyntaxKind::Namespace,      "Namespace"     },
     {SyntaxKind::Import,         "Import"        },
 
     {SyntaxKind::ExprBool,       "ExprBool"      },
@@ -348,6 +350,17 @@ void FuncDefinition::on_serialize(xml::SerializationContext& context) const {
   if (body_) {
     context.add_element("body", *body_);
   }
+}
+
+auto Namespace::on_serialize(xml::SerializationContext& context) const -> void {
+  SyntaxNode::on_serialize(context);
+
+  auto str = std::string{};
+  for (auto& ns : namespaces_) {
+    str += "::";
+    str += *ns;
+  }
+  context.add_attribute("namespace", str);
 }
 
 auto Import::on_serialize(xml::SerializationContext& context) const -> void {
