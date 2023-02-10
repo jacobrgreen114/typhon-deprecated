@@ -37,6 +37,3 @@ build/
 # Ide Files
 .vs/
 .idea/
-
-# Documentation
-docs/
