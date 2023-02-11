@@ -53,7 +53,23 @@ add_executable(tyc
 
 target_precompile_headers(tyc
 PRIVATE
-  source/pch.hpp
+    <array>
+    <exception>
+    <fstream>
+    <map>
+    <memory>
+    <stack>
+    <string>
+    <string_view>
+    <unordered_map>
+    <utility>
+    <vector>
+    <filesystem>
+    <iostream>
+    <span>
+    <chrono>
+    <unordered_set>
+    <set>
 )
 
 target_compile_definitions(tyc
