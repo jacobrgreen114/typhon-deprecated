@@ -1,4 +1,4 @@
-// Copyright (c) 2023. Jacob R. Green
+// Copyright (c) 2023 Jacob R. Green
 // All Rights Reserved.
 
 #include "serialization.hpp"
@@ -6,7 +6,8 @@
 namespace xml {
 
 SerializationContext::SerializationContext(std::ostream& writer,
-                                           std::string_view name, size_t indent)
+                                           std::string_view name,
+                                           size_t indent)
     : writer_{writer},
       element_name_{name},
       indent_{indent},
@@ -19,13 +20,13 @@ SerializationContext::SerializationContext(std::ostream& writer,
 
 SerializationContext::~SerializationContext() {
   if (is_empty()) {
-    writer_ << "/>" << std::endl;
+    writer_ << "/>" << newline;
   } else {
     //terminate_open();
     if (element_count_ > 0) {
       write_indent();
     }
-    writer_ << '<' << '/' << element_name_ << '>' << std::endl;
+    writer_ << '<' << '/' << element_name_ << '>' << newline;
   }
 }
 
@@ -42,12 +43,9 @@ auto SerializationContext::terminate_open() -> void {
   }
 }
 
-auto SerializationContext::is_empty() const -> bool {
-  return element_count_ == 0 && !content_;
-}
+auto SerializationContext::is_empty() const -> bool { return element_count_ == 0 && !content_; }
 
-auto SerializationContext::add_attribute(std::string_view name,
-                                         std::string_view value) -> void {
+auto SerializationContext::add_attribute(std::string_view name, std::string_view value) -> void {
   if (attr_end_) {
     throw std::exception();
   }
@@ -80,12 +78,11 @@ auto SerializationContext::add_content(intptr_t value) -> void {
   writer_ << value;
 }
 
-auto SerializationContext::add_element(std::string_view name,
-                                       const Serializable& serializable)
+auto SerializationContext::add_element(std::string_view name, const Serializable& serializable)
     -> void {
   terminate_open();
   if (element_count_++ < 1) {
-    writer_ << std::endl;
+    writer_ << newline;
   }
   auto context = SerializationContext{writer_, name, indent_ + 1};
   serializable.on_serialize(context);
@@ -93,8 +90,7 @@ auto SerializationContext::add_element(std::string_view name,
 
 auto Serializable::on_serialize(SerializationContext& context) const -> void {}
 
-auto Serializable::serialize(std::ostream& writer,
-                             std::string_view root_name) const -> void {
+auto Serializable::serialize(std::ostream& writer, std::string_view root_name) const -> void {
   auto context = SerializationContext{writer, root_name};
   on_serialize(context);
   writer.flush();

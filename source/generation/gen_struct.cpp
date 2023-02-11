@@ -18,7 +18,7 @@ auto write_forward_decl(std::ostream& writer, const std::shared_ptr<StructDefini
 auto write_struct_definition(std::ostream& writer, const std::shared_ptr<StructDefinition>& str)
     -> void {
   write_declaration(writer, str);
-  writer << " {" << std::endl;
+  writer << " {" << newline;
 
   for (auto& def : str->definitions()) {
     switch (def->kind()) {
@@ -38,8 +38,8 @@ auto write_struct_definition(std::ostream& writer, const std::shared_ptr<StructD
       default:
         throw_not_implemented();
     }
-    writer << std::endl;
+    writer << newline;
   }
 
-  writer << "};" << std::endl;
+  writer << "};" << newline;
 }

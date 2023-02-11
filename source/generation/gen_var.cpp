@@ -9,7 +9,7 @@ auto forward_declare(std::ostream& writer, const std::shared_ptr<VarDefinition>&
   auto type_name = def->type_name() ? mutate_type_name(*def->type_name()) : keyword_auto;
   auto name      = *def->name();
 
-  writer << type_name << ' ' << name << ';' << std::endl;
+  writer << type_name << ' ' << name << ';' << newline;
 }
 
 auto write_def(std::ostream& writer, const std::shared_ptr<VarDefinition>& def) -> void {

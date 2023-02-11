@@ -47,6 +47,18 @@ constexpr auto ptr_cast(const std::shared_ptr<From>& from) -> std::shared_ptr<To
 }
 #endif
 
+inline std::ostream& newline(std::ostream& os) {
+  os.put(os.widen('\n'));
+  return os;
+}
+
+inline std::ostream& newline(std::ostream& os, uint64_t count) {
+  for (auto i = 0; i < count; ++i) {
+    os.put(os.widen('\n'));
+  }
+  return os;
+}
+
 // #ifdef _DEBUG
 // #define assert(expr)                           \
 //   if (!(expr)) {                               \

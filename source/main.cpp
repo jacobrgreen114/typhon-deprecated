@@ -49,6 +49,8 @@ auto compile(const fs::path& file_path) -> void {
 }
 
 auto main(int argc, const char* argv[]) -> int {
+  std::ios_base::sync_with_stdio(false);
+
   auto config = ProjectConfig::load();
   if (!config) {
     throw std::exception("Failed to load project config");

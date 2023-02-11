@@ -16,13 +16,9 @@ auto write_expr_number(std::ostream& writer, const std::shared_ptr<NumberExpress
   writer << *expr->value();
 }
 
-auto write_expr_string(std::ostream& writer, const std::shared_ptr<NumberExpression>& expr)
+auto write_expr_string(std::ostream& writer, const std::shared_ptr<StringExpression>& expr)
     -> void {
-  writer << *expr->value();
-}
-
-auto write_expr_string(std::ostream& writer, const std::shared_ptr<ValueExpression>& expr) -> void {
-  writer << *expr->value();
+  writer << '"' << *expr->value() << '"';
 }
 
 auto write_expr_ident(std::ostream& writer, const std::shared_ptr<IdentifierExpression>& expr)
@@ -78,7 +74,7 @@ auto write_expression(std::ostream& writer, const std::shared_ptr<ExpressionNode
       break;
     }
     case SyntaxKind::ExprString: {
-      write_expr_string(writer, ptr_cast<ValueExpression>(expr));
+      write_expr_string(writer, ptr_cast<StringExpression>(expr));
       break;
     }
     case SyntaxKind::ExprIdentifier: {

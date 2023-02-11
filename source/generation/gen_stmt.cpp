@@ -121,10 +121,10 @@ auto write_block(std::ostream& writer, const std::shared_ptr<StatementBlock>& bo
     writer << " }";
     return;
   }
-  writer << std::endl;
+  writer << newline;
   for (auto& statement : body->statements()) {
     write_statement(writer, statement);
-    writer << std::endl;
+    writer << newline;
   }
 
   writer << '}';
