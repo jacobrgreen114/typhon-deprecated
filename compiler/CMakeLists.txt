@@ -70,6 +70,8 @@ PRIVATE
     <chrono>
     <unordered_set>
     <set>
+    <future>
+    <cassert>
 )
 
 target_compile_definitions(tyc

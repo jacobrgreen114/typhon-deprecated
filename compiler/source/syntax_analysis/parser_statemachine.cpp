@@ -176,7 +176,7 @@ auto ParserContext::move_next() -> bool {
   if (!started_) {
     current_ = tokens_.begin();
     started_ = true;
-    return true;
+    return !(current_ == tokens_.end());
   }
   return ++current_ < tokens_.end();
 }

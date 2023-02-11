@@ -59,29 +59,22 @@ inline std::ostream& newline(std::ostream& os, uint64_t count) {
   return os;
 }
 
-// #ifdef _DEBUG
-// #define assert(expr)                           \
-//   if (!(expr)) {                               \
-//     throw std::exception("assertion failed!"); \
-//   }
-// #endif
+class SourceContext final {
+  fs::path path_;
 
-//#define __DEFINE_ENUM_CLASS(type_name, ...) enum class type_name { hello##__VA_ARGS__ }
+ public:
+  explicit SourceContext(const fs::path& path)
+      : path_{path} {}
 
-// #define ENUM_NAME(enum_type, enum_name) \
-//   { enum_type::enum_name, #enum_name }
+  NODISCARD auto& path() const { return path_; }
 
-// #define __ENUM_NAMES(enum_type, enum_name, ...) \
-//   __ENUM_NAME(enum_type, enum_name)             \
-//   __VA_OPT__(__ENUM_NAMES(enum_type, ##__VA_ARGS__))
-//
-// #define __DEFINE_ENUM_NAMES(type_name, ...)                                         \
-//   const auto type_name##_names_ = std::unordered_map<type_name, std::string_view> { \
-//     __ENUM_NAMES(type_name, ##__VA_ARGS__)                                          \
-//   }
-//
-// #define DEFINE_ENUM(type_name, ...)              \
-//   __DEFINE_ENUM_CLASS(type_name, ##__VA_ARGS__); \
-//   __DEFINE_ENUM_NAMES(type_name, ##__VA_ARGS__);
-//
-// DEFINE_ENUM(TestKind, Source, Hello, World);
+  NODISCARD auto filename() const { return path_.filename(); }
+};
+
+using SourceCollection = std::vector<SourceContext>;
+
+#ifdef TRACE
+#define TRACE_PRINT(str) std::cout << "[TRACE] " << str
+#else
+#define TRACE_PRINT(str) ((void)0)
+#endif

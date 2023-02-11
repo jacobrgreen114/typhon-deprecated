@@ -780,6 +780,8 @@ class SyntaxTree final : public SyntaxNode {
 #endif
 };
 
+using SyntaxTreeCollection = std::vector<std::shared_ptr<SyntaxTree>>;
+
 /*
  * Concepts
  */

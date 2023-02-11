@@ -1,0 +1,149 @@
+
+/*
+    Concepts
+*/
+
+concept Boolean<T> {
+    static FALSE : T;
+    static TRUE : T;
+}
+
+concept Integer<T> {
+    static BIT_WIDTH : uword;
+    static MIN_VALUE : T;
+    static MAX_VALUE : T;
+}
+
+concept UnsignedInteger<T> : Integer<T> {}
+concept SignedInteger<T> : Integer<T> {}
+
+concept FloatingInteger<T> : Integer<T> {
+    static EPSILON : T;
+}
+
+concept Character<T> {
+    static NULL : T;
+}
+
+/*
+    Booleans
+*/
+
+struct bool : Boolean<bool> {
+    public const FALSE : bool = 0x00;
+    public const TRUE : bool = 0x01;
+}
+
+// 32-bit boolean value for when interfacing with c apis
+struct bool32 : Boolean<bool32> {
+    public const FALSE : bool32 = 0x00;
+    public const TRUE : bool32 = 0x01;
+}
+
+assert bool32 implements Boolean;
+
+/*
+    Unsigned Integers
+*/
+
+struct u8 : UnsignedInteger<u8> {
+    public const BIT_WIDTH : uword = 8;
+
+    public const MIN_VALUE : u8 = 0x00;
+    public const MAX_VALUE : u8 = 0xff;
+
+}
+
+struct u16 : UnsignedInteger<u16> {
+    public const BIT_WIDTH : uword = 16;
+
+    public const MIN_VALUE : u16 = 0x00;
+    public const MAX_VALUE : u16 = 0xff,ff;
+}
+
+struct u32 : UnsignedInteger<u32> {
+    public const BIT_WIDTH : uword = 32;
+
+
+    public const MIN_VALUE : u32 = 0x00;
+    public const MAX_VALUE : u32 = 0xff,ff,ff,ff;
+}
+
+struct u64 : UnsignedInteger<u64> {
+    public const BIT_WIDTH : uword = 64;
+
+    public const MIN_VALUE : u64 = 0x00;
+    public const MAX_VALUE : u64 = 0xff,ff,ff,ff,ff,ff,ff,ff;
+}
+
+alias uword : u64;
+
+/*
+    Signed Integers
+*/
+
+struct i8 : SignedInteger<i8> {
+    public const BIT_WIDTH : uword = 8;
+
+    public const MIN_VALUE : i8 = 0xff;
+    public const MAX_VALUE : i8 = 0x7f;
+}
+
+struct i16 : SignedInteger<i16> {
+    public const BIT_WIDTH : uword = 16;
+
+    public const MIN_VALUE : i16 = 0xff,ff;
+    public const MAX_VALUE : i16 = 0x7f,ff;
+}
+
+struct i32 : SignedInteger<i32> {
+    public const BIT_WIDTH : uword = 32;
+
+    public const MIN_VALUE : i32 = 0xff,ff,ff,ff;
+    public const MAX_VALUE : i32 = 0x7f,ff,ff,ff;
+}
+
+struct i64 : SignedInteger<i64> {
+    public const BIT_WIDTH : uword = 64;
+
+    public const MIN_VALUE : i64 = 0xff,ff,ff,ff,ff,ff,ff,ff;
+    public const MAX_VALUE : i64 = 0x7f,ff,ff,ff,ff,ff,ff,ff;
+}
+
+alias iword : i64;
+
+/*
+    Floating Integers
+*/
+
+struct flt : FloatingInteger<flt> {
+    public const BIT_WIDTH : uword = 32;
+
+    public const MIN_VALUE : flt = 0x00; // todo
+    public const MAX_VALUE : flt = 0x00; // todo
+    public const EPSILON : flt = 0x00; // todo
+}
+
+struct dbl : FloatingInteger<dbl> {
+    public const BIT_WIDTH : uword = 64;
+
+    public const MIN_VALUE : dbl = 0xff,ff,ff,ff,ff,ff,ff,ff;
+    public const MAX_VALUE : dbl = 0x7f,ff,ff,ff,ff,ff,ff,ff;
+    public const EPSILON : flt = 0x00; // todo
+}
+
+/*
+    Character Types
+*/
+
+struct char : Character<char> {
+    public const NULL : char = '\0';
+}
+
+struct char16 : Character<char16> {
+    public const NULL : char16 = '\0';
+}
+
+struct char32 : Character<char32> {
+    public const NULL : char32 = '\0';
+}

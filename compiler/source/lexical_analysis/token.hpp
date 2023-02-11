@@ -15,7 +15,7 @@
 #include "../xml/serialization.hpp"
 #endif
 
-using String = std::shared_ptr<std::string>;
+using String = std::shared_ptr<const std::string>;
 
 /*
  * File Position

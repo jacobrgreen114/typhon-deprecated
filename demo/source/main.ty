@@ -9,10 +9,9 @@ namespace Demo;
 var message = "Hello, World!";
 
 func PrintMessage() -> void {
-	Console::WriteLine(message);
 }
 
 func main(args : string) -> i32 {
-	PrintMessage(message, 32);
+	PrintMessage();
 	return 0;
 }
