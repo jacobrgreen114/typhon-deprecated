@@ -13,6 +13,6 @@ func PrintMessage() -> void {
 }
 
 func main(args : string) -> i32 {
-	PrintMessage(message);
+	PrintMessage(message, 32);
 	return 0;
 }

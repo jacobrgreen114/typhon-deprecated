@@ -10,7 +10,7 @@
 #include "../lexical_analysis/token.hpp"
 #include "../state_machine.hpp"
 
-#include "syntax.hpp"
+#include "syntax_tree.hpp"
 
 class ParserContext;
 using ParserState = State<ParserContext>;
@@ -161,20 +161,20 @@ constexpr LexicalTokenPredicate is_paren_close = [](auto& token) {
   return is_token_kind(token, LexicalKind::SymbolParenClose);
 };
 
-constexpr LexicalTokenPredicate is_brace_open = [](auto& token) {
-  return is_token_kind(token, LexicalKind::SymbolBraceOpen);
+constexpr LexicalTokenPredicate is_square_open = [](auto& token) {
+  return is_token_kind(token, LexicalKind::SymbolsquareOpen);
 };
 
-constexpr LexicalTokenPredicate is_brace_close = [](auto& token) {
-  return is_token_kind(token, LexicalKind::SymbolBraceClose);
+constexpr LexicalTokenPredicate is_square_close = [](auto& token) {
+  return is_token_kind(token, LexicalKind::SymbolsquareClose);
 };
 
-constexpr LexicalTokenPredicate is_bracket_open = [](auto& token) {
-  return is_token_kind(token, LexicalKind::SymbolBracketOpen);
+constexpr LexicalTokenPredicate is_curly_open = [](auto& token) {
+  return is_token_kind(token, LexicalKind::SymbolCurlyOpen);
 };
 
-constexpr LexicalTokenPredicate is_bracket_close = [](auto& token) {
-  return is_token_kind(token, LexicalKind::SymbolBracketClose);
+constexpr LexicalTokenPredicate is_curly_close = [](auto& token) {
+  return is_token_kind(token, LexicalKind::SymbolCurlyClose);
 };
 
 constexpr LexicalTokenPredicate is_arrow = [](auto& token) {

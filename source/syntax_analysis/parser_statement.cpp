@@ -75,7 +75,7 @@ auto statement_if_body_end_handler_(ParserContext& ctx) -> ParserState {
 }
 
 auto statement_if_body_start_handler_(ParserContext& ctx) -> ParserState {
-  assert(is_bracket_open(ctx.current()));
+  assert(is_curly_open(ctx.current()));
   ctx.push_states(statement_if_body_end_state, statement_unexpected_end_error_state);
   return statement_block_start_state;
 }
@@ -86,7 +86,7 @@ auto statement_if_expr_end_handler_(ParserContext& ctx) -> ParserState {
   auto node = ctx.get_statement_if_node();
   node->set_expr(expr);
 
-  return ctx.move_next_state(is_bracket_open,
+  return ctx.move_next_state(is_curly_open,
                              statement_if_body_start_state,
                              statement_if_error_state,
                              statement_unexpected_end_error_state);
@@ -142,7 +142,7 @@ auto statement_else_body_end_handler_(ParserContext& ctx) -> ParserState {
 }
 
 auto statement_else_body_start_handler_(ParserContext& ctx) -> ParserState {
-  assert(is_bracket_open(ctx.current()));
+  assert(is_curly_open(ctx.current()));
   ctx.push_states(statement_else_body_end_state, statement_unexpected_end_error_state);
   return statement_block_start_state;
 }
@@ -150,7 +150,7 @@ auto statement_else_body_start_handler_(ParserContext& ctx) -> ParserState {
 auto statement_else_handler_(ParserContext& ctx) -> ParserState {
   assert(is_keyword_else(ctx.current()));
   ctx.syntax_stack.emplace(std::make_shared<ElseStatement>());
-  return ctx.move_next_state(is_bracket_open,
+  return ctx.move_next_state(is_curly_open,
                              statement_else_body_start_state,
                              statement_error_state,
                              statement_unexpected_end_error_state);
@@ -262,7 +262,7 @@ auto statement_loop_body_end_handler_(ParserContext& ctx) -> ParserState {
 }
 
 auto statement_loop_body_start_handler_(ParserContext& ctx) -> ParserState {
-  assert(is_bracket_open(ctx.current()));
+  assert(is_curly_open(ctx.current()));
   ctx.push_states(statement_loop_body_end_state, statement_unexpected_end_error_state);
   return statement_block_start_state;
 }
@@ -270,7 +270,7 @@ auto statement_loop_body_start_handler_(ParserContext& ctx) -> ParserState {
 auto statement_loop_handler_(ParserContext& ctx) -> ParserState {
   assert(is_keyword_loop(ctx.current()));
   ctx.syntax_stack.emplace(std::make_shared<LoopStatement>());
-  return ctx.move_next_state(is_bracket_open,
+  return ctx.move_next_state(is_curly_open,
                              statement_loop_body_start_state,
                              statement_error_state,
                              statement_unexpected_end_error_state);
@@ -302,7 +302,7 @@ auto statement_while_body_end_handler_(ParserContext& ctx) -> ParserState {
 }
 
 auto statement_while_body_start_handler_(ParserContext& ctx) -> ParserState {
-  assert(is_bracket_open(ctx.current()));
+  assert(is_curly_open(ctx.current()));
   ctx.push_states(statement_while_body_end_state, statement_unexpected_end_error_state);
   return statement_block_start_state;
 }
@@ -313,7 +313,7 @@ auto statement_while_expr_end_handler_(ParserContext& ctx) -> ParserState {
   auto node = ctx.get_syntax_node<WhileStatement>();
   node->set_expr(expr);
 
-  return ctx.move_next_state(is_bracket_open,
+  return ctx.move_next_state(is_curly_open,
                              statement_while_body_start_state,
                              statement_while_error_state,
                              statement_unexpected_end_error_state);
@@ -365,7 +365,7 @@ auto statement_for_body_end_handler_(ParserContext& ctx) -> ParserState {
 }
 
 auto statement_for_body_start_handler_(ParserContext& ctx) -> ParserState {
-  assert(is_bracket_open(ctx.current()));
+  assert(is_curly_open(ctx.current()));
   ctx.push_states(statement_for_body_end_state, statement_unexpected_end_error_state);
   return statement_block_start_state;
 }
@@ -376,7 +376,7 @@ auto statement_for_postfix_end_handler_(ParserContext& ctx) -> ParserState {
   auto node = ctx.get_syntax_node<ForStatement>();
   node->set_postfix(stmt);
 
-  return ctx.move_next_state(is_bracket_open,
+  return ctx.move_next_state(is_curly_open,
                              statement_for_body_start_state,
                              statement_for_error_state,
                              statement_unexpected_end_error_state);
@@ -500,7 +500,7 @@ auto statement_block_statement_handler_(ParserContext& ctx) -> ParserState {
 }
 
 auto statement_block_possible_end_handler_(ParserContext& ctx) -> ParserState {
-  if (is_bracket_close(ctx.current())) {
+  if (is_curly_close(ctx.current())) {
     return statement_block_end_state;
   } else {
     return statement_block_statement_state;
@@ -508,7 +508,7 @@ auto statement_block_possible_end_handler_(ParserContext& ctx) -> ParserState {
 }
 
 auto statement_block_start_handler_(ParserContext& ctx) -> ParserState {
-  assert(is_bracket_open(ctx.current()));
+  assert(is_curly_open(ctx.current()));
 
   ctx.syntax_stack.push(std::make_shared<StatementBlock>());
   return ctx.move_next_state(statement_block_possible_end_state,

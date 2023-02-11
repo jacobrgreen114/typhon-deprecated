@@ -33,7 +33,7 @@ auto def_struct_unexpected_end_handler_(ParserContext& ctx) -> ParserState {
 
 auto def_struct_body_end_handler_(ParserContext& ctx) -> ParserState {
   auto& current = ctx.current();
-  assert(is_bracket_close(current));
+  assert(is_curly_close(current));
   return ctx.move_next_stack();
 }
 
@@ -42,7 +42,7 @@ auto def_struct_body_poss_end_handler_(ParserContext& ctx) -> ParserState {
   auto str = ctx.get_syntax_node<StructDefinition>();
   str->push_definition(def);
 
-  if (is_bracket_close(ctx.current())) {
+  if (is_curly_close(ctx.current())) {
     return def_struct_body_end_state;
   }
   return def_struct_body_state;
@@ -68,8 +68,8 @@ auto def_struct_body_handler_(ParserContext& ctx) -> ParserState {
 
 auto def_struct_body_start_handler_(ParserContext& ctx) -> ParserState {
   auto& current = ctx.current();
-  assert(is_bracket_open(current));
-  return ctx.move_next_state(is_bracket_close,
+  assert(is_curly_open(current));
+  return ctx.move_next_state(is_curly_close,
                              def_struct_body_end_state,
                              def_struct_body_state,
                              def_struct_unexpected_end_state);
@@ -83,7 +83,7 @@ auto def_struct_name_handler_(ParserContext& ctx) -> ParserState {
   auto def   = ctx.get_syntax_node<StructDefinition>();
   def->set_name(name);
 
-  return ctx.move_next_state(is_bracket_open,
+  return ctx.move_next_state(is_curly_open,
                              def_struct_body_start_state,
                              def_struct_error_state,
                              def_struct_unexpected_end_state);

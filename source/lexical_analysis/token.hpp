@@ -200,9 +200,9 @@ enum class LexicalKind : lexical_kind_t {
   SymbolParenClose,
 
   // [
-  SymbolBraceOpen,
+  SymbolsquareOpen,
   // ]
-  SymbolBraceClose,
+  SymbolsquareClose,
 
   // <
   SymbolAngleOpen,
@@ -210,9 +210,9 @@ enum class LexicalKind : lexical_kind_t {
   SymbolAngleClose,
 
   // {
-  SymbolBracketOpen,
+  SymbolCurlyOpen,
   // }
-  SymbolBracketClose,
+  SymbolCurlyClose,
 
   // ->
   SymbolArrow,

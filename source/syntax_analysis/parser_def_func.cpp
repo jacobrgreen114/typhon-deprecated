@@ -38,7 +38,7 @@ constexpr ParserState func_def_body_end_state = ParserState{func_def_body_end_ha
 
 auto func_def_body_start_handler_(ParserContext& ctx) -> ParserState {
   auto& current = ctx.current();
-  assert(is_bracket_open(current));
+  assert(is_curly_open(current));
   ctx.push_states(func_def_body_end_state, func_def_body_end_exit_state);
   return statement_block_start_state;
 }
@@ -52,7 +52,7 @@ auto func_def_return_name_handler_(ParserContext& ctx) -> ParserState {
   auto* func_def = ctx.get_func_def_node();
   func_def->set_return_type(current.value());
 
-  return ctx.move_next_state(is_bracket_open,
+  return ctx.move_next_state(is_curly_open,
                              func_def_body_start_state,
                              func_def_error_state,
                              func_def_unexpected_end_error_state);
@@ -76,8 +76,8 @@ auto func_def_param_block_end_handler_(ParserContext& ctx) -> ParserState {
   assert(is_paren_close(current));
 
   constexpr auto conditions = std::array<ParserContext::RefMatchCondition, 2>{
-      ParserContext::RefMatchCondition{is_arrow,        func_def_return_start_state},
-      ParserContext::RefMatchCondition{is_bracket_open, func_def_body_start_state  }
+      ParserContext::RefMatchCondition{is_arrow,      func_def_return_start_state},
+      ParserContext::RefMatchCondition{is_curly_open, func_def_body_start_state  }
   };
 
   return ctx.move_next_state(func_def_error_state, func_def_unexpected_end_error_state, conditions);

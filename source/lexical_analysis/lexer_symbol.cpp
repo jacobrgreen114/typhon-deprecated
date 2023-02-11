@@ -7,63 +7,61 @@
 
 #include "lexer_comment.hpp"
 
-#define is ==
+constexpr auto period       = '.';
+constexpr auto semicolon    = ';';
+constexpr auto colon        = ':';
+constexpr auto comma        = ',';
 
-constexpr auto period        = '.';
-constexpr auto colon         = ':';
-constexpr auto semicolon     = ';';
+constexpr auto paren_open   = '(';
+constexpr auto paren_close  = ')';
 
-constexpr auto paren_open    = '(';
-constexpr auto paren_close   = ')';
+constexpr auto square_open  = '[';
+constexpr auto square_close = ']';
 
-constexpr auto brace_open    = '[';
-constexpr auto brace_close   = ']';
+constexpr auto angle_open   = '<';
+constexpr auto angle_close  = '>';
 
-constexpr auto angle_open    = '<';
-constexpr auto angle_close   = '>';
+constexpr auto curly_open   = '{';
+constexpr auto curly_close  = '}';
 
-constexpr auto bracket_open  = '{';
-constexpr auto bracket_close = '}';
+constexpr auto equals       = '=';
 
-constexpr auto equals        = '=';
+constexpr auto pipe         = '|';
+constexpr auto amp          = '&';
+constexpr auto caret        = '^';
 
-constexpr auto pipe          = '|';
-constexpr auto amp           = '&';
-constexpr auto caret         = '^';
+constexpr auto plus         = '+';
+constexpr auto minus        = '-';
+constexpr auto star         = '*';
+constexpr auto slash        = '/';
 
-constexpr auto plus          = '+';
-constexpr auto minus         = '-';
-constexpr auto star          = '*';
-constexpr auto slash         = '/';
+constexpr auto is_period(char c) -> bool { return c == period; }
+constexpr auto is_colon(char c) -> bool { return c == colon; }
+constexpr auto is_semicolon(char c) -> bool { return c == semicolon; }
+constexpr auto is_comma(char c) -> bool { return c == comma; }
 
-constexpr auto is_period(char c) -> bool { return c is period; }
-constexpr auto is_colon(char c) -> bool { return c is colon; }
-constexpr auto is_semicolon(char c) -> bool { return c is semicolon; }
+constexpr auto is_paren_open(char c) -> bool { return c == paren_open; }
+constexpr auto is_paren_close(char c) -> bool { return c == paren_close; }
 
-constexpr auto is_paren_open(char c) -> bool { return c is paren_open; }
-constexpr auto is_paren_close(char c) -> bool { return c is paren_close; }
+constexpr auto is_square_open(char c) -> bool { return c == square_open; }
+constexpr auto is_square_close(char c) -> bool { return c == square_close; }
 
-constexpr auto is_brace_open(char c) -> bool { return c is brace_open; }
-constexpr auto is_brace_close(char c) -> bool { return c is brace_close; }
+constexpr auto is_angle_open(char c) -> bool { return c == angle_open; }
+constexpr auto is_angle_close(char c) -> bool { return c == angle_close; }
 
-constexpr auto is_angle_open(char c) -> bool { return c is angle_open; }
-constexpr auto is_angle_close(char c) -> bool { return c is angle_close; }
+constexpr auto is_curly_open(char c) -> bool { return c == curly_open; }
+constexpr auto is_curly_close(char c) -> bool { return c == curly_close; }
 
-constexpr auto is_bracket_open(char c) -> bool { return c is bracket_open; }
-constexpr auto is_bracket_close(char c) -> bool { return c is bracket_close; }
+constexpr auto is_equals(char c) -> bool { return c == equals; }
 
-constexpr auto is_equals(char c) -> bool { return c is equals; }
+constexpr auto is_pipe(char c) -> bool { return c == pipe; }
+constexpr auto is_amp(char c) -> bool { return c == amp; }
+constexpr auto is_caret(char c) -> bool { return c == caret; }
 
-constexpr auto is_pipe(char c) -> bool { return c is pipe; }
-constexpr auto is_amp(char c) -> bool { return c is amp; }
-constexpr auto is_caret(char c) -> bool { return c is caret; }
-
-constexpr auto is_plus(char c) -> bool { return c is plus; }
-constexpr auto is_minus(char c) -> bool { return c is minus; }
-constexpr auto is_star(char c) -> bool { return c is star; }
-constexpr auto is_slash(char c) -> bool { return c is slash; }
-
-#undef is
+constexpr auto is_plus(char c) -> bool { return c == plus; }
+constexpr auto is_minus(char c) -> bool { return c == minus; }
+constexpr auto is_star(char c) -> bool { return c == star; }
+constexpr auto is_slash(char c) -> bool { return c == slash; }
 
 constexpr auto create_symbol_token(LexerContext& ctx, LexicalKind kind) -> void {
   create_empty_token(ctx, kind);
@@ -129,7 +127,17 @@ constexpr auto symbol_semicolon_state          = LexerState{[](LexerContext& ctx
   return ctx.move_next_state(unknown_state, exit_state);
 }};
 
-// Symbol Brace States
+// Symbol Comma States
+
+constexpr auto symbol_comma_state              = LexerState{[](LexerContext& ctx) -> LexerState {
+  auto current = ctx.current();
+  assert(is_comma(current));
+
+  create_symbol_token(ctx, LexicalKind::SymbolComma);
+  return ctx.move_next_state(unknown_state, exit_state);
+}};
+
+// Symbol square States
 
 constexpr auto symbol_paren_open_state         = LexerState{[](LexerContext& ctx) -> LexerState {
   auto current = ctx.current();
@@ -147,21 +155,21 @@ constexpr auto symbol_paren_close_state        = LexerState{[](LexerContext& ctx
   return ctx.move_next_state(unknown_state, exit_state);
 }};
 
-// Symbol Brace States
+// Symbol square States
 
-constexpr auto symbol_brace_open_state         = LexerState{[](LexerContext& ctx) -> LexerState {
+constexpr auto symbol_square_open_state        = LexerState{[](LexerContext& ctx) -> LexerState {
   auto current = ctx.current();
-  assert(is_brace_open(current));
+  assert(is_square_open(current));
 
-  create_symbol_token(ctx, LexicalKind::SymbolBraceOpen);
+  create_symbol_token(ctx, LexicalKind::SymbolsquareOpen);
   return ctx.move_next_state(unknown_state, exit_state);
 }};
 
-constexpr auto symbol_brace_close_state        = LexerState{[](LexerContext& ctx) -> LexerState {
+constexpr auto symbol_square_close_state       = LexerState{[](LexerContext& ctx) -> LexerState {
   auto current = ctx.current();
-  assert(is_brace_close(current));
+  assert(is_square_close(current));
 
-  create_symbol_token(ctx, LexicalKind::SymbolBraceClose);
+  create_symbol_token(ctx, LexicalKind::SymbolsquareClose);
   return ctx.move_next_state(unknown_state, exit_state);
 }};
 
@@ -297,21 +305,21 @@ constexpr auto symbol_plus_unknown_state        = LexerState{[](LexerContext& ct
   return ctx.move_next_state(symbol_plus_state, symbol_plus_end_state, conditions);
 }};
 
-// Symbol Bracket States
+// Symbol curly States
 
-constexpr auto symbol_bracket_open_state        = LexerState{[](LexerContext& ctx) -> LexerState {
+constexpr auto symbol_curly_open_state          = LexerState{[](LexerContext& ctx) -> LexerState {
   auto current = ctx.current();
-  assert(is_bracket_open(current));
+  assert(is_curly_open(current));
 
-  create_symbol_token(ctx, LexicalKind::SymbolBracketOpen);
+  create_symbol_token(ctx, LexicalKind::SymbolCurlyOpen);
   return ctx.move_next_state(unknown_state, exit_state);
 }};
 
-constexpr auto symbol_bracket_close_state       = LexerState{[](LexerContext& ctx) -> LexerState {
+constexpr auto symbol_curly_close_state         = LexerState{[](LexerContext& ctx) -> LexerState {
   auto current = ctx.current();
-  assert(is_bracket_close(current));
+  assert(is_curly_close(current));
 
-  create_symbol_token(ctx, LexicalKind::SymbolBracketClose);
+  create_symbol_token(ctx, LexicalKind::SymbolCurlyClose);
   return ctx.move_next_state(unknown_state, exit_state);
 }};
 
@@ -603,28 +611,31 @@ constexpr LexerState symbol_unknown_state       = LexerState{[](LexerContext& ct
     case period:
       return symbol_period_state;
 
-    case colon:
-      return symbol_colon_unknown_state;
     case semicolon:
       return symbol_semicolon_state;
+    case colon:
+      return symbol_colon_unknown_state;
+
+    case comma:
+      return symbol_comma_state;
 
     case paren_open:
       return symbol_paren_open_state;
     case paren_close:
       return symbol_paren_close_state;
 
-    case brace_open:
-      return symbol_brace_open_state;
-    case brace_close:
-      return symbol_brace_close_state;
+    case square_open:
+      return symbol_square_open_state;
+    case square_close:
+      return symbol_square_close_state;
 
     case angle_open:
       return symbol_angle_open_unknown_state;
 
-    case bracket_open:
-      return symbol_bracket_open_state;
-    case bracket_close:
-      return symbol_bracket_close_state;
+    case curly_open:
+      return symbol_curly_open_state;
+    case curly_close:
+      return symbol_curly_close_state;
 
     case equals:
       return symbol_equals_unknown_state;

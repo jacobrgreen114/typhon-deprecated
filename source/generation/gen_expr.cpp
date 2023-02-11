@@ -26,6 +26,20 @@ auto write_expr_ident(std::ostream& writer, const std::shared_ptr<IdentifierExpr
   writer << *expr->identifier();
 }
 
+auto write_expr_call(std::ostream& writer, const std::shared_ptr<CallExpression>& expr) -> void {
+  writer << *expr->identifier() << '(';
+  auto& params = expr->parameters();
+  if (!params.empty()) {
+    write_expression(writer, params[0]);
+    for (auto it = ++params.begin(); it != params.end(); ++it) {
+      writer << ", ";
+      write_expression(writer, *it);
+    }
+  }
+
+  writer << ')';
+}
+
 auto write_expression(std::ostream& writer, const std::shared_ptr<ExpressionNode>& expr) -> void;
 
 constexpr auto is_no_space_op(Operator op) -> bool {
@@ -82,7 +96,7 @@ auto write_expression(std::ostream& writer, const std::shared_ptr<ExpressionNode
       break;
     }
     case SyntaxKind::ExprCall: {
-      // todo
+      write_expr_call(writer, ptr_cast<CallExpression>(expr));
       break;
     }
     case SyntaxKind::ExprUnary: {

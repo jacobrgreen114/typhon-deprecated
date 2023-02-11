@@ -31,7 +31,7 @@ add_executable(tyc
     source/lexical_analysis/lexer_symbol.cpp        source/lexical_analysis/lexer_symbol.hpp
     source/lexical_analysis/lexer_identifier.cpp    source/lexical_analysis/lexer_identifier.hpp
 
-    source/syntax_analysis/syntax.cpp               source/syntax_analysis/syntax.hpp
+        source/syntax_analysis/syntax_tree.cpp source/syntax_analysis/syntax_tree.hpp
     source/syntax_analysis/parser.cpp               source/syntax_analysis/parser.hpp
 
     source/syntax_analysis/parser_def_var.cpp       source/syntax_analysis/parser_def_var.hpp
