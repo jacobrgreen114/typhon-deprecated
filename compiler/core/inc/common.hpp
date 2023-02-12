@@ -57,7 +57,19 @@ constexpr auto ptr_cast(From* from) -> To* {
   return temp;
 }
 
+template <typename T>
+constexpr auto& deref(T* t) {
+  assert(t != nullptr);
+  return *t;
+}
+
+template <typename T>
+constexpr auto& deref(const std::unique_ptr<T>& t) {
+  return deref(t.get());
+}
+
 #else
+
 template <typename To, typename From>
 constexpr auto ptr_cast(std::unique_ptr<From> from) -> std::unique_ptr<To> {
   return std::unique_ptr<To>(reinterpret_cast<To*>(from.release()));
@@ -67,7 +79,23 @@ template <typename To, typename From>
 constexpr auto ptr_cast(From* from) -> To* {
   return reinterpret_cast<To*>(from);
 }
+
+template <typename T>
+constexpr auto& deref(T* t) {
+  return *t;
+}
+
+template <typename T>
+constexpr auto& deref(const std::unique_ptr<T>& t) {
+  return deref(t.get());
+}
+
 #endif
+
+template <typename To, typename From>
+constexpr auto ref_cast(From& from) -> To& {
+  return *reinterpret_cast<To*>(&from);
+}
 
 inline std::ostream& newline(std::ostream& os) {
   os.put(os.widen('\n'));

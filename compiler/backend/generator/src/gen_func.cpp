@@ -23,7 +23,7 @@ auto write_parameter_block(std::ostream& writer, const FuncDefinition& def) -> v
   const auto last_index  = parameters.size() - 1;
   for (size_t index = 0; index < parameters.size(); ++index) {
     auto& param = parameters[index];
-    write_parameter(writer, *param);
+    write_parameter(writer, deref(param));
     if (index < last_index) {
       writer << ", ";
     }
@@ -50,6 +50,6 @@ auto write_forward_decl(std::ostream& writer, const FuncDefinition& def) -> void
 
 auto write_function_definition(std::ostream& writer, const FuncDefinition& def) -> void {
   write_function_declaration(writer, def);
-  write_block(writer, *def.body());
+  write_block(writer, deref(def.body()));
   writer << newline;
 }

@@ -76,31 +76,31 @@ auto write_expr_unary(std::ostream& writer, const UnaryExpression& expr) -> void
 auto write_expression(std::ostream& writer, const std::unique_ptr<ExpressionNode>& expr) -> void {
   switch (expr->kind()) {
     case SyntaxKind::ExprBool: {
-      write_expr_bool(writer, *ptr_cast<BoolExpression>(expr.get()));
+      write_expr_bool(writer, deref(ptr_cast<BoolExpression>(expr.get())));
       break;
     }
     case SyntaxKind::ExprNumber: {
-      write_expr_number(writer, *ptr_cast<NumberExpression>(expr.get()));
+      write_expr_number(writer, deref(ptr_cast<NumberExpression>(expr.get())));
       break;
     }
     case SyntaxKind::ExprString: {
-      write_expr_string(writer, *ptr_cast<StringExpression>(expr.get()));
+      write_expr_string(writer, deref(ptr_cast<StringExpression>(expr.get())));
       break;
     }
     case SyntaxKind::ExprIdentifier: {
-      write_expr_ident(writer, *ptr_cast<IdentifierExpression>(expr.get()));
+      write_expr_ident(writer, deref(ptr_cast<IdentifierExpression>(expr.get())));
       break;
     }
     case SyntaxKind::ExprCall: {
-      write_expr_call(writer, *ptr_cast<CallExpression>(expr.get()));
+      write_expr_call(writer, deref(ptr_cast<CallExpression>(expr.get())));
       break;
     }
     case SyntaxKind::ExprUnary: {
-      write_expr_unary(writer, *ptr_cast<UnaryExpression>(expr.get()));
+      write_expr_unary(writer, deref(ptr_cast<UnaryExpression>(expr.get())));
       break;
     }
     case SyntaxKind::ExprBinary: {
-      write_expr_binary(writer, *ptr_cast<BinaryExpression>(expr.get()));
+      write_expr_binary(writer, deref(ptr_cast<BinaryExpression>(expr.get())));
       break;
     }
   }

@@ -54,7 +54,7 @@ auto forward_decl_structs(std::ostream& writer, const SyntaxTree::NodeArray& nod
   for (auto& node : nodes) {
     if (node->kind() == SyntaxKind::DefStruct) {
       empty = false;
-      write_forward_decl(writer, *ptr_cast<StructDefinition>(node.get()));
+      write_forward_decl(writer, deref(ptr_cast<StructDefinition>(node.get())));
       writer << newline;
     }
   }
@@ -117,7 +117,7 @@ auto forward_declare_funcs(std::ostream& writer, const SyntaxTree::NodeArray& no
   for (auto& node : nodes) {
     if (node->kind() == SyntaxKind::DefFunc) {
       empty = false;
-      write_forward_decl(writer, *ptr_cast<FuncDefinition>(node.get()));
+      write_forward_decl(writer, deref(ptr_cast<FuncDefinition>(node.get())));
       writer << newline;
     }
   }
@@ -142,7 +142,7 @@ auto forward_declare_vars(std::ostream& writer, const SyntaxTree::NodeArray& nod
   for (auto& node : nodes) {
     if (node->kind() == SyntaxKind::DefVar) {
       empty = false;
-      write_def(writer, *ptr_cast<VarDefinition>(node.get()));
+      write_def(writer, deref(ptr_cast<VarDefinition>(node.get())));
       writer << newline;
     }
   }
@@ -169,11 +169,11 @@ auto write_definitions(std::ostream& writer, const SyntaxTree& source) -> void {
   for (auto& node : source.nodes()) {
     switch (node->kind()) {
       case SyntaxKind::DefFunc: {
-        write_function_definition(writer, *ptr_cast<FuncDefinition>(node.get()));
+        write_function_definition(writer, deref(ptr_cast<FuncDefinition>(node.get())));
         break;
       }
       case SyntaxKind::DefStruct: {
-        write_struct_definition(writer, *ptr_cast<StructDefinition>(node.get()));
+        write_struct_definition(writer, deref(ptr_cast<StructDefinition>(node.get())));
         break;
       }
     }
@@ -214,12 +214,12 @@ auto generate_source_file(const SyntaxTree& syntax_tree) -> void {
 
 auto generate(const NameSpace& ns) -> void {
   for (auto& tree : ns.trees()) {
-    generate_source_file(*tree);
+    generate_source_file(deref(tree));
   }
 
   for (auto& sub : ns.sub_spaces()) {
-    generate(*sub);
+    generate(deref(sub));
   }
 }
 
-auto generate(const ProjectTree& source) -> void { generate(*source.root()); }
+auto generate(const ProjectTree& source) -> void { generate(deref(source.root())); }
