@@ -16,7 +16,7 @@ constexpr auto project_file_ext = std::string_view{".typ"};
 constexpr auto gen_src_file_ext = std::string_view{".cpp"};
 constexpr auto gen_hdr_file_ext = std::string_view{".hpp"};
 
-constexpr auto src_dir_name     = std::string_view{"source"};
+constexpr auto src_dir_name     = std::string_view{"src"};
 const auto src_dir_path         = fs::proximate(src_dir_name);
 
 constexpr auto obj_dir_name     = std::string_view{"obj"};

@@ -11,10 +11,10 @@
 #include <memory>
 #include <vector>
 
-#include "../source.hpp"
+#include "source.hpp"
 
 #ifdef TRACE
-#include "../xml/serialization.hpp"
+#include "xml/serialization.hpp"
 #endif
 
 using String = std::shared_ptr<const std::string>;

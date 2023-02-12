@@ -5,13 +5,13 @@
 
 #include "lexer_sm.hpp"
 
-#include "../timer.hpp"
+#include "timer.hpp"
 
 auto lex(const std::shared_ptr<SourceContext>& source) -> const TokenCollection {
   auto lexer   = Lexer{};
   auto context = LexerContext{source->path()};
 
-  TRACE_TIMER("lex")
+  TRACE_TIMER("lex");
   lexer.run(context);
   return TokenCollection{source, context.tokens};
 }

@@ -7,8 +7,8 @@
 #error
 #endif
 
-#include "../lexical_analysis/token.hpp"
-#include "../state_machine.hpp"
+#include "token.hpp"
+#include "state_machine.hpp"
 
 #include "syntax_tree.hpp"
 

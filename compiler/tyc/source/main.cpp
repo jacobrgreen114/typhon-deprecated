@@ -4,9 +4,10 @@
 #include "paths.hpp"
 
 #include "project_config.hpp"
-#include "lexical_analysis/lexer.hpp"
-#include "syntax_analysis/parser.hpp"
-#include "generation/generator.hpp"
+#include "lexer.hpp"
+#include "parser.hpp"
+#include "semantic_analyser.hpp"
+#include "generator.hpp"
 #include "timer.hpp"
 
 #ifdef TRACE
@@ -105,8 +106,6 @@ auto generate_sources(const SyntaxTreeCollection& syntax_trees) {
 #endif
 }
 
-auto create_project_tree(const SyntaxTreeCollection& syntax_trees) {}
-
 auto main(int argc, const char* argv[]) -> int {
   std::ios_base::sync_with_stdio(false);
 
@@ -117,8 +116,7 @@ auto main(int argc, const char* argv[]) -> int {
 
   auto sources      = find_source_files(*config);
   auto syntax_trees = parse_sources(sources);
-
-  create_project_tree(syntax_trees);
+  linquist(syntax_trees);
 
   generate_sources(syntax_trees);
 

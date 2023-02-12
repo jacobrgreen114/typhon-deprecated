@@ -7,6 +7,6 @@
 #error
 #endif
 
-#include "../syntax_analysis/syntax_tree.hpp"
+#include "project_tree.hpp"
 
-auto generate(const std::shared_ptr<SyntaxTree>& source) -> void;
+auto linquist(const SyntaxTreeCollection& syntax_trees) -> void;

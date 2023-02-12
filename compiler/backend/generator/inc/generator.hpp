@@ -5,8 +5,8 @@
 
 #ifndef __cplusplus
 #error
-#endif  //__cplusplus
+#endif
 
 #include "syntax_tree.hpp"
 
-auto parse(const TokenCollection& tokens) -> std::shared_ptr<SyntaxTree>;
+auto generate(const std::shared_ptr<SyntaxTree>& source) -> void;

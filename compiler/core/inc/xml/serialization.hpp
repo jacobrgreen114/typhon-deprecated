@@ -7,7 +7,7 @@
 #error
 #endif
 
-#include "../common.hpp"
+#include "common.hpp"
 
 namespace xml {
 

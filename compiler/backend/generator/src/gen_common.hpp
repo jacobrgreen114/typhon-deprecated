@@ -7,7 +7,7 @@
 #error
 #endif
 
-#include "../syntax_analysis/syntax_tree.hpp"
+#include "syntax_tree.hpp"
 
 constexpr auto keyword_auto = std::string_view{"auto"};
 

@@ -4,11 +4,11 @@
 #include "generator.hpp"
 #include "gen_var.hpp"
 
-#include "../paths.hpp"
+#include "paths.hpp"
 
-#include "../common.hpp"
+#include "common.hpp"
 
-#include "../timer.hpp"
+#include "timer.hpp"
 
 #include "gen_var.hpp"
 #include "gen_func.hpp"
@@ -121,7 +121,7 @@ const auto includes = std::vector<std::string_view>{"<cstdint>"};
 
 auto write_includes(std::ostream& writer) {
   for (auto& include : includes) {
-    writer << "#include " << include << newline;
+    writer << "#inc " << include << newline;
   }
   if (!includes.empty()) {
     writer << newline;

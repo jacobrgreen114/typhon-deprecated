@@ -11,8 +11,8 @@
 #include <memory>
 #include <vector>
 
-#include "../lexical_analysis/token.hpp"
-#include "../xml/serialization.hpp"
+#include "token.hpp"
+#include "xml/serialization.hpp"
 
 /*
  * Syntax Kind
@@ -776,7 +776,6 @@ class SyntaxTree final : public SyntaxNode {
   auto& nodes() const { return nodes_; }
 
   auto push_node(const Node& node) { nodes_.emplace_back(node); }
-
 
 #ifdef TRACE
  protected:

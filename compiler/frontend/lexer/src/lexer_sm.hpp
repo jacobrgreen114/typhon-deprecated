@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-#include "../state_machine.hpp"
+#include "state_machine.hpp"
 #include "token.hpp"
 
 #define LEXER_LOOP_OPTIMIZATION true
