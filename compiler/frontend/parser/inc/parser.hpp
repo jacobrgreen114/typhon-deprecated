@@ -9,4 +9,4 @@
 
 #include "../../../core/inc/syntax_tree.hpp"
 
-auto parse(const TokenCollection& tokens) -> std::shared_ptr<SyntaxTree>;
+auto parse(const TokenCollection& tokens) -> std::unique_ptr<SyntaxTree>;

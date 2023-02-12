@@ -330,7 +330,7 @@ class IdentifierExpression final : public ExpressionNode {
 class CallExpression final : public ExpressionNode {
   std::string identifier_;
 
-  std::vector<std::shared_ptr<ExpressionNode>> parameters_;
+  std::vector<std::unique_ptr<ExpressionNode>> parameters_;
 
  public:
   explicit CallExpression(std::string identifier)
@@ -341,8 +341,8 @@ class CallExpression final : public ExpressionNode {
 
   auto& parameters() const { return parameters_; }
 
-  auto push_parameter(const std::shared_ptr<ExpressionNode>& parameter) -> void {
-    parameters_.emplace_back(parameter);
+  auto push_parameter(std::unique_ptr<ExpressionNode> parameter) -> void {
+    parameters_.emplace_back(std::move(parameter));
   }
 
 #ifdef TRACE
@@ -357,7 +357,7 @@ class CallExpression final : public ExpressionNode {
 
 class Operation : public ExpressionNode {
  public:
-  using Expression = std::shared_ptr<ExpressionNode>;
+  using Expression = std::unique_ptr<ExpressionNode>;
 
   Operator op_;
 
@@ -381,7 +381,7 @@ class UnaryExpression final : public Operation {
   constexpr explicit UnaryExpression(Operator op)
       : Operation{SyntaxKind::ExprUnary, op} {}
 
-  auto set_expr(const Expression& expr) -> void { expr_ = expr; }
+  auto set_expr(Expression expr) -> void { expr_ = std::move(expr); }
 
 #ifdef TRACE
  protected:
@@ -401,9 +401,9 @@ class BinaryExpression final : public Operation {
   auto& lhs() const { return lhs_; }
   auto& rhs() const { return rhs_; }
 
-  auto set_lhs(const Expression& lhs) -> void { lhs_ = lhs; }
+  auto set_lhs(Expression lhs) -> void { lhs_ = std::move(lhs); }
 
-  auto set_rhs(const Expression& rhs) -> void { rhs_ = rhs; }
+  auto set_rhs(Expression rhs) -> void { rhs_ = std::move(rhs); }
 
 #ifdef TRACE
  protected:
@@ -423,7 +423,7 @@ class Statement : public SyntaxNode {
 
 class StatementBlock final : public SyntaxNode {
  public:
-  using Statement           = std::shared_ptr<Statement>;
+  using Statement           = std::unique_ptr<Statement>;
   using StatementCollection = std::vector<Statement>;
 
  private:
@@ -435,7 +435,9 @@ class StatementBlock final : public SyntaxNode {
 
   auto& statements() const { return statements_; }
 
-  auto push_statement(const Statement& statement) -> void { statements_.emplace_back(statement); }
+  auto push_statement(Statement statement) -> void {
+    statements_.emplace_back(std::move(statement));
+  }
 
 #ifdef TRACE
  protected:
@@ -444,7 +446,7 @@ class StatementBlock final : public SyntaxNode {
 };
 
 class ExprStatement final : public Statement {
-  std::shared_ptr<ExpressionNode> expr_;
+  std::unique_ptr<ExpressionNode> expr_;
 
  public:
   constexpr ExprStatement()
@@ -452,7 +454,7 @@ class ExprStatement final : public Statement {
 
   auto& expr() const { return expr_; }
 
-  auto set_expr(const std::shared_ptr<ExpressionNode>& expr) { expr_ = expr; }
+  auto set_expr(std::unique_ptr<ExpressionNode> expr) { expr_ = std::move(expr); }
 
 #ifdef TRACE
  protected:
@@ -461,7 +463,7 @@ class ExprStatement final : public Statement {
 };
 
 class ReturnStatement final : public Statement {
-  std::shared_ptr<ExpressionNode> expr_;
+  std::unique_ptr<ExpressionNode> expr_;
 
  public:
   constexpr ReturnStatement()
@@ -469,7 +471,7 @@ class ReturnStatement final : public Statement {
 
   auto& expr() const { return expr_; }
 
-  auto set_expr(const std::shared_ptr<ExpressionNode>& expr) { expr_ = expr; }
+  auto set_expr(std::unique_ptr<ExpressionNode> expr) { expr_ = std::move(expr); }
 
 #ifdef TRACE
  protected:
@@ -482,7 +484,7 @@ class ReturnStatement final : public Statement {
  */
 
 class BodyStatement : public Statement {
-  std::shared_ptr<StatementBlock> block_;
+  std::unique_ptr<StatementBlock> block_;
 
  protected:
   constexpr explicit BodyStatement(SyntaxKind kind)
@@ -491,11 +493,11 @@ class BodyStatement : public Statement {
  public:
   auto& body() const { return block_; }
 
-  auto set_body(const std::shared_ptr<StatementBlock>& block) { block_ = block; }
+  auto set_body(std::unique_ptr<StatementBlock> block) { block_ = std::move(block); }
 };
 
 class IfStatement : public BodyStatement {
-  std::shared_ptr<ExpressionNode> expr_;
+  std::unique_ptr<ExpressionNode> expr_;
 
  protected:
   constexpr explicit IfStatement(SyntaxKind kind)
@@ -507,7 +509,7 @@ class IfStatement : public BodyStatement {
 
   auto& expr() const { return expr_; }
 
-  auto set_expr(const std::shared_ptr<ExpressionNode>& expr) -> void { expr_ = expr; }
+  auto set_expr(std::unique_ptr<ExpressionNode> expr) -> void { expr_ = std::move(expr); }
 
 #ifdef TRACE
  protected:
@@ -534,7 +536,7 @@ class LoopStatement final : public BodyStatement {
 };
 
 class WhileStatement final : public BodyStatement {
-  std::shared_ptr<ExpressionNode> expr_;
+  std::unique_ptr<ExpressionNode> expr_;
 
  public:
   constexpr WhileStatement()
@@ -542,7 +544,7 @@ class WhileStatement final : public BodyStatement {
 
   auto& expr() const { return expr_; }
 
-  auto set_expr(const std::shared_ptr<ExpressionNode>& expr) -> void { expr_ = expr; }
+  auto set_expr(std::unique_ptr<ExpressionNode> expr) -> void { expr_ = std::move(expr); }
 
 #ifdef TRACE
  protected:
@@ -551,9 +553,9 @@ class WhileStatement final : public BodyStatement {
 };
 
 class ForStatement final : public BodyStatement {
-  using Prefix    = std::shared_ptr<Statement>;
-  using Condition = std::shared_ptr<ExpressionNode>;
-  using Postfix   = std::shared_ptr<ExpressionNode>;
+  using Prefix    = std::unique_ptr<Statement>;
+  using Condition = std::unique_ptr<ExpressionNode>;
+  using Postfix   = std::unique_ptr<ExpressionNode>;
 
   Prefix prefix_;
   Condition cond_;
@@ -567,9 +569,9 @@ class ForStatement final : public BodyStatement {
   auto& cond() const { return cond_; }
   auto& postfix() const { return postfix_; }
 
-  auto set_prefix(const Prefix& prefix) { prefix_ = prefix; }
-  auto set_cond(const Condition& cond) { cond_ = cond; }
-  auto set_postfix(const Postfix& postfix) { postfix_ = postfix; }
+  auto set_prefix(Prefix prefix) { prefix_ = std::move(prefix); }
+  auto set_cond(Condition cond) { cond_ = std::move(cond); }
+  auto set_postfix(Postfix postfix) { postfix_ = std::move(postfix); }
 
 #ifdef TRACE
  protected:
@@ -586,7 +588,7 @@ class ForeachStatement final : public BodyStatement {};
 class Definition;
 
 class DefStatement final : public Statement {
-  std::shared_ptr<Definition> def_;
+  std::unique_ptr<Definition> def_;
 
  public:
   constexpr DefStatement()
@@ -594,7 +596,7 @@ class DefStatement final : public Statement {
 
   auto& def() const { return def_; }
 
-  auto set_def(const std::shared_ptr<Definition>& def) { def_ = def; }
+  auto set_def(std::unique_ptr<Definition> def) { def_ = std::move(def); }
 
 #ifdef TRACE
  protected:
@@ -633,7 +635,7 @@ class Definition : public SyntaxNode {
 
 class VarDefinition : public Definition {
  public:
-  using Assignment = std::shared_ptr<ExpressionNode>;
+  using Assignment = std::unique_ptr<ExpressionNode>;
 
  private:
   std::string type_name_;
@@ -649,7 +651,9 @@ class VarDefinition : public Definition {
 
   auto set_type_name(const std::string& type_name) noexcept -> void { type_name_ = type_name; }
 
-  auto set_assignment(const Assignment& assignment) noexcept -> void { assignment_ = assignment; }
+  auto set_assignment(Assignment assignment) noexcept -> void {
+    assignment_ = std::move(assignment);
+  }
 
 #ifdef TRACE
  protected:
@@ -672,9 +676,9 @@ class FuncParameter final : public Definition {
 
 class FuncDefinition final : public Definition {
  public:
-  using Parameter           = std::shared_ptr<FuncParameter>;
+  using Parameter           = std::unique_ptr<FuncParameter>;
   using ParameterCollection = std::vector<Parameter>;
-  using Body                = std::shared_ptr<StatementBlock>;
+  using Body                = std::unique_ptr<StatementBlock>;
 
  private:
   ParameterCollection parameters_;
@@ -691,9 +695,9 @@ class FuncDefinition final : public Definition {
 
   void set_return_type(const std::string& ret_type) { return_ = ret_type; }
 
-  void push_parameter(const Parameter& param) { parameters_.emplace_back(param); }
+  void push_parameter(Parameter param) { parameters_.emplace_back(std::move(param)); }
 
-  auto set_body(const Body& body) { body_ = body; }
+  auto set_body(Body body) { body_ = std::move(body); }
 
 #ifdef TRACE
  protected:
@@ -702,13 +706,13 @@ class FuncDefinition final : public Definition {
 };
 
 class StructDefinition final : public Definition {
-  std::vector<std::shared_ptr<Definition>> defs_;
+  std::vector<std::unique_ptr<Definition>> defs_;
 
  public:
   explicit StructDefinition()
       : Definition(SyntaxKind::DefStruct) {}
 
-  auto push_definition(const std::shared_ptr<Definition>& def) { defs_.emplace_back(def); }
+  auto push_definition(std::unique_ptr<Definition> def) { defs_.emplace_back(std::move(def)); }
 
   auto& definitions() const { return defs_; }
 };
@@ -728,7 +732,7 @@ class Namespace final : public SyntaxNode {
 
   auto push_namespace(const std::string& ns) { namespaces_.emplace_back(ns); }
 
-  static const std::shared_ptr<Namespace> root;
+  static const std::unique_ptr<Namespace> root;
 
 #ifdef TRACE
  protected:
@@ -763,7 +767,7 @@ class Import final : public SyntaxNode {
 
 class SyntaxTree final : public SyntaxNode {
  public:
-  using Node      = std::shared_ptr<SyntaxNode>;
+  using Node      = std::unique_ptr<SyntaxNode>;
   using NodeArray = std::vector<Node>;
 
  private:
@@ -771,16 +775,16 @@ class SyntaxTree final : public SyntaxNode {
   NodeArray nodes_;
 
  public:
-  explicit SyntaxTree(const std::shared_ptr<SourceContext>& source)
+  explicit SyntaxTree(std::shared_ptr<SourceContext> source)
       : SyntaxNode(SyntaxKind::Source),
-        source_{source} {}
+        source_{std::move(source)} {}
 
   auto& source() const { return source_; }
   auto& nodes() const { return nodes_; }
 
-  auto push_node(const Node& node) { nodes_.emplace_back(node); }
+  auto push_node(Node node) { nodes_.emplace_back(std::move(node)); }
 
-  auto get_namespace() -> std::shared_ptr<Namespace>;
+  auto get_namespace() -> Namespace*;
 
 #ifdef TRACE
  protected:
@@ -788,7 +792,7 @@ class SyntaxTree final : public SyntaxNode {
 #endif
 };
 
-using SyntaxTreeCollection = std::vector<std::shared_ptr<SyntaxTree>>;
+using SyntaxTreeCollection = std::vector<std::unique_ptr<SyntaxTree>>;
 
 /*
  * Concepts

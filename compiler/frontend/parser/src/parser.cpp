@@ -8,11 +8,11 @@
 
 #include "timer.hpp"
 
-auto parse(const TokenCollection& tokens) -> std::shared_ptr<SyntaxTree> {
+auto parse(const TokenCollection& tokens) -> std::unique_ptr<SyntaxTree> {
   auto parser  = Parser{};
   auto context = ParserContext{tokens};
 
   TRACE_TIMER("parse");
   parser.run(context);
-  return context.source;
+  return std::move(context.source);
 }

@@ -54,7 +54,7 @@ auto namespace_identifier_handler_(ParserContext& ctx) -> ParserState {
 
 auto namespace_start_handler_(ParserContext& ctx) -> ParserState {
   assert(ctx.current().kind() == LexicalKind::KeywordNamespace);
-  ctx.syntax_stack.emplace(std::make_shared<Namespace>());
+  ctx.syntax_stack.emplace(std::make_unique<Namespace>());
   return ctx.move_next_state(is_identifier,
                              namespace_identifier_state,
                              namespace_error_state,
@@ -109,7 +109,7 @@ auto import_identifier_handler_(ParserContext& ctx) -> ParserState {
 
 auto import_start_handler_(ParserContext& ctx) -> ParserState {
   assert(ctx.current().kind() == LexicalKind::KeywordImport);
-  ctx.syntax_stack.emplace(std::make_shared<Import>());
+  ctx.syntax_stack.emplace(std::make_unique<Import>());
   return ctx.move_next_state(
       is_identifier, import_identifier_state, import_error_state, import_unexpected_end_state);
 }

@@ -9,4 +9,4 @@
 
 #include "gen_common.hpp"
 
-auto write_def(std::ostream& writer, const std::shared_ptr<VarDefinition>& def) -> void;
+auto write_def(std::ostream& writer, const VarDefinition& def) -> void;

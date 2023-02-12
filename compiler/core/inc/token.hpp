@@ -18,7 +18,7 @@
 #include "xml/serialization.hpp"
 #endif
 
-// using String = std::shared_ptr<const std::string>;
+// using String = std::unique_ptr<const std::string>;
 
 /*
  * File Position
@@ -331,17 +331,15 @@ class LexicalToken final
 
 auto operator<<(std::ostream& stream, const LexicalToken& token) -> std::ostream&;
 
-//using TokenCollection = std::vector<LexicalToken>;
-
 class TokenCollection {
   std::shared_ptr<SourceContext> source_;
   std::vector<LexicalToken> tokens_;
 
  public:
   explicit TokenCollection(const std::shared_ptr<SourceContext>& source,
-                           const std::vector<LexicalToken>& tokens)
+                           std::vector<LexicalToken> tokens)
       : source_{source},
-        tokens_{tokens} {}
+        tokens_{std::move(tokens)} {}
 
   NODISCARD auto& source() const { return source_; }
   NODISCARD auto& tokens() const { return tokens_; }

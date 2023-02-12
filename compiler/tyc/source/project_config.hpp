@@ -34,5 +34,5 @@ class ProjectConfig {
   NODISCARD auto& dir_obj() const { return obj_dir_; }
   NODISCARD auto& dir_bin() const { return bin_dir_; }
 
-  static std::shared_ptr<ProjectConfig> load(const fs::path& dir_path = fs::current_path());
+  static std::unique_ptr<ProjectConfig> load(const fs::path& dir_path = fs::current_path());
 };

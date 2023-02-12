@@ -7,6 +7,6 @@
 #error
 #endif
 
-#include "syntax_tree.hpp"
+#include "project_tree.hpp"
 
-auto generate(const std::shared_ptr<SyntaxTree>& source) -> void;
+auto generate(const ProjectTree& source) -> void;

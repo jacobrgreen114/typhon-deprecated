@@ -3,7 +3,7 @@
 
 #include "project_config.hpp"
 
-std::shared_ptr<ProjectConfig> ProjectConfig::load(const fs::path& dir_path) {
+std::unique_ptr<ProjectConfig> ProjectConfig::load(const fs::path& dir_path) {
   auto project_file_paths = std::vector<fs::path>{};
 
   for (auto& entry : fs::directory_iterator{dir_path}) {
@@ -22,5 +22,5 @@ std::shared_ptr<ProjectConfig> ProjectConfig::load(const fs::path& dir_path) {
 
   // todo : implement project file parsing
 
-  return std::make_shared<ProjectConfig>();
+  return std::make_unique<ProjectConfig>();
 }

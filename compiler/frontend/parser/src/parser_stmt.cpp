@@ -46,7 +46,7 @@ auto statement_expected_semicolon_error_handler_(ParserContext& ctx) -> ParserSt
 auto append_body_to_statement(ParserContext& ctx) {
   auto block = ctx.pop_syntax_node<StatementBlock>();
   auto node  = ctx.get_syntax_node<BodyStatement>();
-  node->set_body(block);
+  node->set_body(std::move(block));
 }
 
 /*
@@ -84,7 +84,7 @@ auto statement_if_expr_end_handler_(ParserContext& ctx) -> ParserState {
   assert(is_paren_close(ctx.current()));
   auto expr = ctx.pop_expr_node();
   auto node = ctx.get_statement_if_node();
-  node->set_expr(expr);
+  node->set_expr(std::move(expr));
 
   return ctx.move_next_state(is_curly_open,
                              statement_if_body_start_state,
@@ -100,7 +100,7 @@ auto statement_if_expr_start_handler_(ParserContext& ctx) -> ParserState {
 
 auto statement_if_handler_(ParserContext& ctx) -> ParserState {
   assert(is_keyword_if(ctx.current()));
-  ctx.syntax_stack.emplace(std::make_shared<IfStatement>());
+  ctx.syntax_stack.emplace(std::make_unique<IfStatement>());
   return ctx.move_next_state(is_paren_open,
                              statement_if_expr_start_state,
                              statement_if_error_state,
@@ -117,7 +117,7 @@ constexpr auto statement_elif_state = ParserState{statement_elif_handler_};
 
 auto statement_elif_handler_(ParserContext& ctx) -> ParserState {
   assert(is_keyword_elif(ctx.current()));
-  ctx.syntax_stack.emplace(std::make_shared<ElifStatement>());
+  ctx.syntax_stack.emplace(std::make_unique<ElifStatement>());
   return ctx.move_next_state(is_paren_open,
                              statement_if_expr_start_state,
                              statement_if_error_state,
@@ -149,7 +149,7 @@ auto statement_else_body_start_handler_(ParserContext& ctx) -> ParserState {
 
 auto statement_else_handler_(ParserContext& ctx) -> ParserState {
   assert(is_keyword_else(ctx.current()));
-  ctx.syntax_stack.emplace(std::make_shared<ElseStatement>());
+  ctx.syntax_stack.emplace(std::make_unique<ElseStatement>());
   return ctx.move_next_state(is_curly_open,
                              statement_else_body_start_state,
                              statement_error_state,
@@ -173,13 +173,13 @@ auto statement_return_end_handler_(ParserContext& ctx) -> ParserState {
 
   auto expr = ctx.pop_expr_node();
   auto ret  = ctx.get_statement_return_node();
-  ret->set_expr(expr);
+  ret->set_expr(std::move(expr));
   return ctx.move_next_stack();
 }
 
 auto statement_return_handler_(ParserContext& ctx) -> ParserState {
   assert(is_keyword_return(ctx.current()));
-  ctx.syntax_stack.emplace(std::make_shared<ReturnStatement>());
+  ctx.syntax_stack.emplace(std::make_unique<ReturnStatement>());
   ctx.push_states(statement_return_end_state, statement_unexpected_end_error_state);
   return ctx.move_next_state(expr_start_state, statement_unexpected_end_error_state);
 }
@@ -201,12 +201,12 @@ auto statement_expr_end_handler_(ParserContext& ctx) -> ParserState {
 
   auto expr = ctx.pop_expr_node();
   auto ret  = ctx.get_statement_expr_node();
-  ret->set_expr(expr);
+  ret->set_expr(std::move(expr));
   return ctx.move_next_stack();
 }
 
 auto statement_expr_handler_(ParserContext& ctx) -> ParserState {
-  ctx.syntax_stack.push(std::make_shared<ExprStatement>());
+  ctx.syntax_stack.push(std::make_unique<ExprStatement>());
   ctx.push_states(statement_expr_end_state, statement_unexpected_end_error_state);
   return expr_start_state;
 }
@@ -218,7 +218,7 @@ auto statement_expr_handler_(ParserContext& ctx) -> ParserState {
 auto append_definition(ParserContext& ctx) -> void {
   auto def   = ctx.pop_def_node();
   auto* node = ctx.get_statement_def_node();
-  node->set_def(def);
+  node->set_def(std::move(def));
 }
 
 /*
@@ -239,7 +239,7 @@ auto statement_def_var_end_handler_(ParserContext& ctx) -> ParserState {
 auto statement_def_var_start_handler_(ParserContext& ctx) -> ParserState {
   auto& current = ctx.current();
   assert(is_keyword_var(current));
-  ctx.syntax_stack.emplace(std::make_shared<DefStatement>());
+  ctx.syntax_stack.emplace(std::make_unique<DefStatement>());
   ctx.push_states(statement_def_var_end_state, statement_unexpected_end_error_state);
   return var_def_start_state;
 }
@@ -269,7 +269,7 @@ auto statement_loop_body_start_handler_(ParserContext& ctx) -> ParserState {
 
 auto statement_loop_handler_(ParserContext& ctx) -> ParserState {
   assert(is_keyword_loop(ctx.current()));
-  ctx.syntax_stack.emplace(std::make_shared<LoopStatement>());
+  ctx.syntax_stack.emplace(std::make_unique<LoopStatement>());
   return ctx.move_next_state(is_curly_open,
                              statement_loop_body_start_state,
                              statement_error_state,
@@ -311,7 +311,7 @@ auto statement_while_expr_end_handler_(ParserContext& ctx) -> ParserState {
   assert(is_paren_close(ctx.current()));
   auto expr = ctx.pop_syntax_node<ExpressionNode>();
   auto node = ctx.get_syntax_node<WhileStatement>();
-  node->set_expr(expr);
+  node->set_expr(std::move(expr));
 
   return ctx.move_next_state(is_curly_open,
                              statement_while_body_start_state,
@@ -327,7 +327,7 @@ auto statement_while_expr_start_handler_(ParserContext& ctx) -> ParserState {
 
 auto statement_while_handler_(ParserContext& ctx) -> ParserState {
   assert(is_keyword_while(ctx.current()));
-  ctx.syntax_stack.emplace(std::make_shared<WhileStatement>());
+  ctx.syntax_stack.emplace(std::make_unique<WhileStatement>());
   return ctx.move_next_state(is_paren_open,
                              statement_while_expr_start_state,
                              statement_while_error_state,
@@ -374,7 +374,7 @@ auto statement_for_postfix_end_handler_(ParserContext& ctx) -> ParserState {
   //assert(is_paren_close(ctx.current()));
   auto stmt = ctx.pop_syntax_node<ExpressionNode>();
   auto node = ctx.get_syntax_node<ForStatement>();
-  node->set_postfix(stmt);
+  node->set_postfix(std::move(stmt));
 
   return ctx.move_next_state(is_curly_open,
                              statement_for_body_start_state,
@@ -386,7 +386,7 @@ auto statement_for_condition_end_handler_(ParserContext& ctx) -> ParserState {
   assert(is_semicolon(ctx.current()));
   auto expression = ctx.pop_syntax_node<ExpressionNode>();
   auto node       = ctx.get_syntax_node<ForStatement>();
-  node->set_cond(expression);
+  node->set_cond(std::move(expression));
 
   ctx.push_states(statement_for_postfix_end_state, statement_unexpected_end_error_state);
   return ctx.move_next_state(expr_start_state, statement_unexpected_end_error_state);
@@ -395,7 +395,7 @@ auto statement_for_condition_end_handler_(ParserContext& ctx) -> ParserState {
 auto statement_for_prefix_end_handler_(ParserContext& ctx) -> ParserState {
   auto stmt = ctx.pop_syntax_node<Statement>();
   auto node = ctx.get_syntax_node<ForStatement>();
-  node->set_prefix(stmt);
+  node->set_prefix(std::move(stmt));
 
   ctx.push_states(statement_for_condition_end_state, statement_unexpected_end_error_state);
   return expr_start_state;
@@ -409,7 +409,7 @@ auto statement_for_prefix_start_handler_(ParserContext& ctx) -> ParserState {
 
 auto statement_for_handler_(ParserContext& ctx) -> ParserState {
   assert(is_keyword_for(ctx.current()));
-  ctx.syntax_stack.emplace(std::make_shared<ForStatement>());
+  ctx.syntax_stack.emplace(std::make_unique<ForStatement>());
   return ctx.move_next_state(is_paren_open,
                              statement_for_prefix_start_state,
                              statement_for_error_state,
@@ -490,7 +490,7 @@ auto statement_block_end_handler_(ParserContext& ctx) -> ParserState {
 auto statement_block_statement_end_handler_(ParserContext& ctx) -> ParserState {
   auto statement = ctx.pop_statement_node();
   auto* block    = ctx.get_statement_block();
-  block->push_statement(statement);
+  block->push_statement(std::move(statement));
   return statement_block_possible_end_state;
 }
 
@@ -510,7 +510,7 @@ auto statement_block_possible_end_handler_(ParserContext& ctx) -> ParserState {
 auto statement_block_start_handler_(ParserContext& ctx) -> ParserState {
   assert(is_curly_open(ctx.current()));
 
-  ctx.syntax_stack.push(std::make_shared<StatementBlock>());
+  ctx.syntax_stack.push(std::make_unique<StatementBlock>());
   return ctx.move_next_state(statement_block_possible_end_state,
                              statement_block_unexpected_end_error_state);
 }

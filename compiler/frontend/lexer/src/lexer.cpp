@@ -13,5 +13,5 @@ auto lex(const std::shared_ptr<SourceContext>& source) -> const TokenCollection 
 
   TRACE_TIMER("lex");
   lexer.run(context);
-  return TokenCollection{source, context.tokens};
+  return TokenCollection{source, std::move(context.tokens)};
 }

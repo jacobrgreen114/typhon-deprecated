@@ -49,7 +49,7 @@ auto find_source_files(const ProjectConfig& config) -> SourceCollection {
   for (auto& entry : fs::recursive_directory_iterator(config.dir_source())) {
     if (entry.is_regular_file() && entry.path().extension() == source_file_ext) {
       auto& path = entry.path();
-      sources.emplace_back(std::make_shared<SourceContext>(config.dir_source(), path));
+      sources.emplace_back(std::make_unique<SourceContext>(config.dir_source(), path));
     }
   }
 
@@ -57,7 +57,7 @@ auto find_source_files(const ProjectConfig& config) -> SourceCollection {
 }
 
 // todo : implement already compiled optimization
-auto parse_source(const std::shared_ptr<SourceContext>& source) -> std::shared_ptr<SyntaxTree> {
+auto parse_source(const std::shared_ptr<SourceContext>& source) -> std::unique_ptr<SyntaxTree> {
   TRACE_PRINT("Compiling : " << source->absolute_path() << std::endl);
 
   auto tokens = lex(source);
@@ -74,7 +74,7 @@ auto parse_sources(const SourceCollection& sources) -> SyntaxTreeCollection {
   trees.reserve(sources.size());
 
 #if PARALLEL_COMPILATION
-  auto compilation_futures = std::vector<std::future<std::shared_ptr<SyntaxTree>>>{};
+  auto compilation_futures = std::vector<std::future<std::unique_ptr<SyntaxTree>>>{};
   compilation_futures.reserve(sources.size());
 
   for (auto& source : sources) {
@@ -94,28 +94,28 @@ auto parse_sources(const SourceCollection& sources) -> SyntaxTreeCollection {
   return trees;
 }
 
-auto generate_sources(const SyntaxTreeCollection& syntax_trees) {
-#if PARALLEL_COMPILATION
-  auto generate_futures = std::vector<std::future<void>>{};
-  generate_futures.reserve(syntax_trees.size());
-
-  for (auto& tree : syntax_trees) {
-    generate_futures.push_back(std::async(std::launch::async, generate, tree));
-  }
-
-  for (auto& future : generate_futures) {
-    future.wait();
-  }
-
-#else
-  for (auto& tree : syntax_trees) {
-    generate(tree);
-  }
-#endif
-}
+// auto generate_sources(const SyntaxTreeCollection& syntax_trees) {
+// #if PARALLEL_COMPILATION
+//   auto generate_futures = std::vector<std::future<void>>{};
+//   generate_futures.reserve(syntax_trees.size());
+//
+//   for (auto& tree : syntax_trees) {
+//     generate_futures.push_back(std::async(std::launch::async, generate, tree));
+//   }
+//
+//   for (auto& future : generate_futures) {
+//     future.wait();
+//   }
+//
+// #else
+//   for (auto& tree : syntax_trees) {
+//     generate(tree);
+//   }
+// #endif
+// }
 
 class Compiler final {
-  std::shared_ptr<ProjectConfig> config_;
+  std::unique_ptr<ProjectConfig> config_;
 
  public:
   Compiler()
@@ -128,9 +128,11 @@ class Compiler final {
   auto run() -> int {
     auto sources      = find_source_files(*config_);
     auto syntax_trees = parse_sources(sources);
-    check(syntax_trees);
+    auto project_tree = check(syntax_trees);
 
-    generate_sources(syntax_trees);
+    // generate_sources(project_tree);
+
+    generate(project_tree);
     return 0;
   }
 };

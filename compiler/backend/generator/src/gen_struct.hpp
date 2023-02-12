@@ -9,7 +9,6 @@
 
 #include "gen_common.hpp"
 
-auto write_forward_decl(std::ostream& writer, const std::shared_ptr<StructDefinition>& def) -> void;
+auto write_forward_decl(std::ostream& writer, const StructDefinition& def) -> void;
 
-auto write_struct_definition(std::ostream& writer, const std::shared_ptr<StructDefinition>& str)
-    -> void;
+auto write_struct_definition(std::ostream& writer, const StructDefinition& str) -> void;

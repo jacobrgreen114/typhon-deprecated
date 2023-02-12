@@ -40,7 +40,7 @@ auto def_struct_body_end_handler_(ParserContext& ctx) -> ParserState {
 auto def_struct_body_poss_end_handler_(ParserContext& ctx) -> ParserState {
   auto def = ctx.pop_syntax_node<Definition>();
   auto str = ctx.get_syntax_node<StructDefinition>();
-  str->push_definition(def);
+  str->push_definition(std::move(def));
 
   if (is_curly_close(ctx.current())) {
     return def_struct_body_end_state;
@@ -91,7 +91,7 @@ auto def_struct_name_handler_(ParserContext& ctx) -> ParserState {
 
 auto def_struct_handler_(ParserContext& ctx) -> ParserState {
   assert(is_keyword_struct(ctx.current()));
-  ctx.syntax_stack.push(std::make_shared<StructDefinition>());
+  ctx.syntax_stack.push(std::make_unique<StructDefinition>());
   return ctx.move_next_state(is_identifier,
                              def_struct_name_state,
                              def_struct_error_state,

@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 23)
 
 option(OUTPUT_ASSEMBLY_ON_BUILD "Outputs generated assembly on compile")
 
-if (${OUTPUT_ASSEMBLY_ON_BUILD})
+if (${OUTPUT_ASSEMBLY_ON_BUILD} EQUAL ON)
     if (MSVC)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /FA")
     else()

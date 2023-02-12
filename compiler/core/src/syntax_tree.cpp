@@ -200,15 +200,15 @@ auto to_string(AccessModifier modifier) -> std::string_view {
  * Syntax Tree
  */
 
-const std::shared_ptr<Namespace> Namespace::root = std::make_shared<Namespace>();
+const std::unique_ptr<Namespace> Namespace::root = std::make_unique<Namespace>();
 
-auto SyntaxTree::get_namespace() -> std::shared_ptr<Namespace> {
+auto SyntaxTree::get_namespace() -> Namespace* {
   auto ns = std::find_if(nodes_.begin(), nodes_.end(), [](auto& node) -> bool {
     return node->kind() == SyntaxKind::Namespace;
   });
 
   if (ns != nodes_.end()) {
-    return ptr_cast<Namespace>(*ns);
+    return ptr_cast<Namespace>(ns->get());
   }
 
   return nullptr;

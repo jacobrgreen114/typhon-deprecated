@@ -19,7 +19,7 @@ constexpr ParserState func_def_unexpected_end_error_state =
 auto do_func_def_body_end(ParserContext& ctx) -> void {
   auto block = ctx.pop_statement_block();
   auto* def  = ctx.get_func_def_node();
-  def->set_body(block);
+  def->set_body(std::move(block));
 }
 
 auto func_def_body_end_exit_handler_(ParserContext& ctx) -> ParserState {
@@ -103,7 +103,7 @@ constexpr ParserState func_def_param_next_state = ParserState{func_def_param_nex
 auto func_def_param_end_handler_(ParserContext& ctx) -> ParserState {
   auto param     = ctx.pop_func_def_param();
   auto* func_def = ctx.get_func_def_node();
-  func_def->push_parameter(param);
+  func_def->push_parameter(std::move(param));
 
   static constexpr auto conditions = std::array<ParserContext::RefMatchCondition, 2>{
       ParserContext::RefMatchCondition{is_comma,       func_def_param_next_state     },
@@ -143,7 +143,7 @@ constexpr ParserState func_def_param_type_start_state =
 auto func_def_param_start_handler_(ParserContext& ctx) -> ParserState {
   auto& current = ctx.current();
   assert(is_identifier(current));
-  ctx.syntax_stack.push(std::make_shared<FuncParameter>(current.value()));
+  ctx.syntax_stack.push(std::make_unique<FuncParameter>(current.value()));
 
   static constexpr auto conditions = std::array<ParserContext::RefMatchCondition, 1>{
       ParserContext::RefMatchCondition{is_colon, func_def_param_type_start_state}
@@ -189,7 +189,7 @@ constexpr ParserState func_def_identifier_state = ParserState{func_def_identifie
 auto func_def_start_handler_(ParserContext& ctx) -> ParserState {
   auto& current = ctx.current();
   assert(is_keyword_func(current));
-  ctx.syntax_stack.emplace(std::make_shared<FuncDefinition>());
+  ctx.syntax_stack.emplace(std::make_unique<FuncDefinition>());
   return ctx.move_next_state(is_identifier,
                              func_def_identifier_state,
                              func_def_error_state,

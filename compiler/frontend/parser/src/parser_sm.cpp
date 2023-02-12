@@ -114,7 +114,7 @@ auto end_handler_(ParserContext& ctx) -> ParserState { return exit_state; }
 auto append_source_node(ParserContext& ctx) -> void {
   auto node = std::move(ctx.syntax_stack.top());
   ctx.syntax_stack.pop();
-  ctx.source->push_node(node);
+  ctx.source->push_node(std::move(node));
   assert(ctx.syntax_stack.empty());
 }
 
@@ -170,7 +170,7 @@ ParserContext::ParserContext(const TokenCollection& tokens)
     : tokens_{tokens},
       started_{false},
       current_{},
-      source{std::make_shared<SyntaxTree>(tokens.source())} {}
+      source{std::make_unique<SyntaxTree>(tokens.source())} {}
 
 auto ParserContext::current() -> const LexicalToken& { return *current_; }
 

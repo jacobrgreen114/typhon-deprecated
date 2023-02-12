@@ -9,4 +9,4 @@
 
 #include "gen_common.hpp"
 
-auto write_expression(std::ostream& writer, const std::shared_ptr<ExpressionNode>& expr) -> void;
+auto write_expression(std::ostream& writer, const std::unique_ptr<ExpressionNode>& expr) -> void;

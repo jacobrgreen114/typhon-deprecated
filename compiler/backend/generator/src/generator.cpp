@@ -54,7 +54,7 @@ auto forward_decl_structs(std::ostream& writer, const SyntaxTree::NodeArray& nod
   for (auto& node : nodes) {
     if (node->kind() == SyntaxKind::DefStruct) {
       empty = false;
-      write_forward_decl(writer, ptr_cast<StructDefinition>(node));
+      write_forward_decl(writer, *ptr_cast<StructDefinition>(node.get()));
       writer << newline;
     }
   }
@@ -117,7 +117,7 @@ auto forward_declare_funcs(std::ostream& writer, const SyntaxTree::NodeArray& no
   for (auto& node : nodes) {
     if (node->kind() == SyntaxKind::DefFunc) {
       empty = false;
-      write_forward_decl(writer, ptr_cast<FuncDefinition>(node));
+      write_forward_decl(writer, *ptr_cast<FuncDefinition>(node.get()));
       writer << newline;
     }
   }
@@ -142,7 +142,7 @@ auto forward_declare_vars(std::ostream& writer, const SyntaxTree::NodeArray& nod
   for (auto& node : nodes) {
     if (node->kind() == SyntaxKind::DefVar) {
       empty = false;
-      write_def(writer, ptr_cast<VarDefinition>(node));
+      write_def(writer, *ptr_cast<VarDefinition>(node.get()));
       writer << newline;
     }
   }
@@ -153,10 +153,10 @@ auto forward_declare_vars(std::ostream& writer, const SyntaxTree::NodeArray& nod
   }
 }
 
-auto forward_declare(std::ostream& writer, const std::shared_ptr<SyntaxTree>& source) -> void {
+auto forward_declare(std::ostream& writer, const SyntaxTree& source) -> void {
   writer << "/*" << newline << " *  Forward Declarations" << newline << " */" << newline << newline;
 
-  auto& nodes = source->nodes();
+  auto& nodes = source.nodes();
   forward_decl_structs(writer, nodes);
   writer << newline;
   forward_decl_objects(writer, nodes);
@@ -165,15 +165,15 @@ auto forward_declare(std::ostream& writer, const std::shared_ptr<SyntaxTree>& so
   forward_declare_vars(writer, nodes);
 }
 
-auto write_definitions(std::ostream& writer, const std::shared_ptr<SyntaxTree>& source) -> void {
-  for (auto& node : source->nodes()) {
+auto write_definitions(std::ostream& writer, const SyntaxTree& source) -> void {
+  for (auto& node : source.nodes()) {
     switch (node->kind()) {
       case SyntaxKind::DefFunc: {
-        write_function_definition(writer, ptr_cast<FuncDefinition>(node));
+        write_function_definition(writer, *ptr_cast<FuncDefinition>(node.get()));
         break;
       }
       case SyntaxKind::DefStruct: {
-        write_struct_definition(writer, ptr_cast<StructDefinition>(node));
+        write_struct_definition(writer, *ptr_cast<StructDefinition>(node.get()));
         break;
       }
     }
@@ -197,22 +197,29 @@ auto write_includes(std::ostream& writer) {
   }
 }
 
-auto generate_source_file(const std::shared_ptr<SyntaxTree>& syntax_tree) -> void {
-  auto& source        = syntax_tree->source();
+auto generate_source_file(const SyntaxTree& syntax_tree) -> void {
+  auto& source        = syntax_tree.source();
   auto& src_file_path = source->gen_source_path();
   TRACE_PRINT("Generating : " << src_file_path << std::endl);
 
   fs::create_directories(src_file_path.parent_path());
-
   auto writer = std::ofstream{src_file_path};
 
+  TRACE_TIMER("generate");
   write_source_header(writer, source->rel_path());
   write_includes(writer);
   forward_declare(writer, syntax_tree);
   write_definitions(writer, syntax_tree);
 }
 
-auto generate(const std::shared_ptr<SyntaxTree>& source) -> void {
-  TRACE_TIMER("generate");
-  generate_source_file(source);
+auto generate(const NameSpace& ns) -> void {
+  for (auto& tree : ns.trees()) {
+    generate_source_file(*tree);
+  }
+
+  for (auto& sub : ns.sub_spaces()) {
+    generate(*sub);
+  }
 }
+
+auto generate(const ProjectTree& source) -> void { generate(*source.root()); }

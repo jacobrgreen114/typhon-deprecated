@@ -25,6 +25,7 @@
 #include <chrono>
 #include <unordered_set>
 #include <set>
+#include <cassert>
 
 namespace fs     = std::filesystem;
 namespace chrono = std::chrono;
@@ -35,15 +36,36 @@ namespace chrono = std::chrono;
 
 #define throw_not_implemented() throw std::exception("not implemented!")
 
-#if _DEBUG
+#ifndef NDEBUG
 template <typename To, typename From>
-constexpr auto ptr_cast(const std::shared_ptr<From>& from) -> std::shared_ptr<To> {
-  return std::dynamic_pointer_cast<To>(from);
+constexpr auto ptr_cast(std::unique_ptr<From> from) -> std::unique_ptr<To> {
+  if (!from) {
+    return nullptr;
+  }
+  auto* temp = dynamic_cast<To*>(from.release());
+  assert(temp != nullptr);
+  return std::unique_ptr<To>(temp);
 }
+
+template <typename To, typename From>
+constexpr auto ptr_cast(From* from) -> To* {
+  if (from == nullptr) {
+    return nullptr;
+  }
+  auto* temp = dynamic_cast<To*>(from);
+  assert(temp != nullptr);
+  return temp;
+}
+
 #else
 template <typename To, typename From>
-constexpr auto ptr_cast(const std::shared_ptr<From>& from) -> std::shared_ptr<To> {
-  return std::reinterpret_pointer_cast<To>(from);
+constexpr auto ptr_cast(std::unique_ptr<From> from) -> std::unique_ptr<To> {
+  return std::unique_ptr<To>(reinterpret_cast<To*>(from.release()));
+}
+
+template <typename To, typename From>
+constexpr auto ptr_cast(From* from) -> To* {
+  return reinterpret_cast<To*>(from);
 }
 #endif
 

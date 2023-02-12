@@ -9,4 +9,4 @@
 
 #include "project_tree.hpp"
 
-auto check(const SyntaxTreeCollection& syntax_trees) -> std::shared_ptr<ProjectTree>;
+auto check(SyntaxTreeCollection& syntax_trees) -> ProjectTree;

@@ -22,9 +22,9 @@ struct ReturnState {
 
 class ParserContext final : public EnumeratingContext<ParserContext, LexicalToken> {
  public:
-  using Source          = std::shared_ptr<SyntaxTree>;
+  using Source          = std::unique_ptr<SyntaxTree>;
   using StateStack      = std::stack<ReturnState>;
-  using SyntaxStack     = std::stack<std::shared_ptr<SyntaxNode>>;
+  using SyntaxStack     = std::stack<std::unique_ptr<SyntaxNode>>;
   using PrecedenceStack = std::stack<Precedence>;
   using TokenStack      = std::stack<LexicalToken>;
 
@@ -81,11 +81,9 @@ class ParserContext final : public EnumeratingContext<ParserContext, LexicalToke
   }
 
   template <IsSyntaxNode T>
-  auto pop_syntax_node() -> std::shared_ptr<T> {
-    auto node = std::move(syntax_stack.top());
+  auto pop_syntax_node() -> std::unique_ptr<T> {
+    auto tnode = ptr_cast<T>(std::move(syntax_stack.top()));
     syntax_stack.pop();
-    auto tnode = std::dynamic_pointer_cast<T>(node);
-    assert(tnode);
     return tnode;
   }
 
