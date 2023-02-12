@@ -128,20 +128,22 @@ auto write_includes(std::ostream& writer) {
   }
 }
 
-auto generate_source_file(const fs::path& rel_path, const std::shared_ptr<SyntaxTree>& source)
-    -> void {
-  auto src_file_path = rel_src_path_to_gen_src_file_path(rel_path);
+auto generate_source_file(const std::shared_ptr<SyntaxTree>& syntax_tree) -> void {
+  auto& source        = syntax_tree->source();
+  auto& src_file_path = source->gen_source_path();
+  TRACE_PRINT("Generating : " << src_file_path << std::endl);
+
   fs::create_directories(src_file_path.parent_path());
 
   auto writer = std::ofstream{src_file_path};
 
-  write_source_header(writer, rel_path);
+  write_source_header(writer, source->rel_path());
   write_includes(writer);
-  forward_declare(writer, source);
-  write_definitions(writer, source);
+  forward_declare(writer, syntax_tree);
+  write_definitions(writer, syntax_tree);
 }
 
-auto generate(const fs::path& rel_path, const std::shared_ptr<SyntaxTree>& source) -> void {
+auto generate(const std::shared_ptr<SyntaxTree>& source) -> void {
   TRACE_TIMER("generate");
-  generate_source_file(rel_path, source);
+  generate_source_file(source);
 }

@@ -764,15 +764,19 @@ class SyntaxTree final : public SyntaxNode {
   using NodeArray = std::vector<Node>;
 
  private:
+  std::shared_ptr<SourceContext> source_;
   NodeArray nodes_;
 
  public:
-  constexpr SyntaxTree()
-      : SyntaxNode(SyntaxKind::Source) {}
+  explicit SyntaxTree(const std::shared_ptr<SourceContext>& source)
+      : SyntaxNode(SyntaxKind::Source),
+        source_{source} {}
+
+  auto& source() const { return source_; }
+  auto& nodes() const { return nodes_; }
 
   auto push_node(const Node& node) { nodes_.emplace_back(node); }
 
-  auto& nodes() const { return nodes_; }
 
 #ifdef TRACE
  protected:

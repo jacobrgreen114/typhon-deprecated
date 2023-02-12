@@ -1,0 +1,199 @@
+
+:root {
+    /* Global Fonts */
+    --default-font-family: "Courier New", sans-serif, monospace;
+
+    /* Global Fonts */
+    --default-foreground: hsl(0deg, 0%, 95%);
+    --default-foreground-highlight: hsl(30deg, 100%, 66%);
+
+    --default-background-hue: 210deg;
+    --default-background-sat: 0%;
+    --default-background: hsl(var(--default-background-hue), var(--default-background-sat), 25%);
+    --default-background-higher: hsl(var(--default-background-hue), var(--default-background-sat), 50%);
+    --default-background-high: hsl(var(--default-background-hue), var(--default-background-sat), 33%);
+    --default-background-lower: hsl(var(--default-background-hue), var(--default-background-sat), 12.5%);
+    --default-background-low: hsl(var(--default-background-hue), var(--default-background-sat), 16.5%);
+
+    --header-height: 4rem;
+    --header-drop-size: calc(1rem / 4);
+
+    --header-hover-drop: calc(1rem / 4);
+
+    --body-width: 48rem;
+    --body-left: calc((100vw / 2) - (var(--body-width) / 2));
+    --body-shadow-size: calc(1rem / 2);
+
+    --code-block-border-radius: calc(1rem / 4);
+    --code-block-padding: calc(1rem / 8) calc(1rem / 4);
+    --code-block-margin: calc(1rem / 8);
+}
+
+html {
+    color: var(--default-foreground);
+    background: var(--default-background);
+    font-family: var(--default-font-family);
+    font-size: 12pt;
+}
+
+
+body {
+    margin: 0;
+}
+
+h1 {
+    margin: 0;
+}
+
+h2 {
+    margin: 0;
+}
+
+h3 {
+    margin: 0;
+}
+
+h4 {
+    margin: 0;
+}
+
+ul {
+    margin: 0;
+}
+
+li {
+    margin: .25rem;
+}
+
+#header-bar-root {
+    background: var(--default-background-higher);
+    box-shadow: 0 0 var(--header-drop-size) var(--header-drop-size) var(--default-background-lower);
+
+}
+
+#header-bar-top {
+    height: calc(1rem / 4);
+    background: var(--default-foreground-highlight);
+}
+
+#header-bar {
+    height: var(--header-height);
+    padding: 0 1rem;
+    display: inline-flex;
+}
+
+.header-label {
+    margin: auto 1rem;
+    line-height: var(--header-height);
+    vertical-align: center;
+
+}
+
+.header-title {
+    color: var(--default-foreground-highlight);
+}
+
+.header-separator {
+    color: var(--default-background);
+}
+
+.header-entry {
+
+}
+
+.header-label:hover {
+    text-shadow: var(--header-hover-drop) var(--header-hover-drop) calc(var(--header-hover-drop) * 4) black;
+}
+
+#body {
+    background: var(--default-background-high);
+    width: var(--body-width);
+    left: var(--body-left);
+    position: absolute;
+    box-shadow:
+            0 calc(var(--body-shadow-size) * 2)
+            var(--body-shadow-size) var(--body-shadow-size)
+            var(--default-background-lower);
+    padding: 1rem;
+}
+
+#body-header {
+    margin: 0 0 1rem 0 ;
+}
+
+.section {
+    background: var(--default-background);
+    padding: 1rem;
+    margin: 0.5rem;
+    border-radius: 1rem;
+    box-shadow: .125rem .125rem .25rem .125rem var(--default-background-low);
+}
+
+
+
+.inline {
+    display: inline-flex;
+}
+
+.code-block {
+    background-color: var(--default-background-low);
+    border-radius: var(--code-block-border-radius);
+    width: fit-content;
+    height: fit-content;
+    padding: var(--code-block-padding);
+    margin: var(--code-block-margin);
+    box-shadow: .0625rem .0625rem .0625rem .0625rem var(--default-background-lower);
+}
+
+.code-block pre {
+    margin: 0;
+    padding: 0;
+}
+
+.code-comment {
+    color: hsl(120deg, 50%, 50%);
+}
+
+.code-constant {
+    color: hsl(30deg, 100%, 66%);
+}
+
+.code-keyword-primitive {
+    color: hsl(210deg, 100%, 66%);
+}
+
+.code-keyword-type {
+    color: hsl(300deg, 100%, 85%);
+}
+
+.code-keyword-control {
+    color: hsl(270deg, 100%, 85%);
+}
+
+.code-identifier {
+    color: hsl(60deg, 100%, 80%);
+}
+
+a:link {
+    color: unset;
+    background-color: unset;
+    text-decoration: unset;
+}
+
+a:visited {
+    color: unset;
+    background-color: unset;
+    text-decoration: unset;
+}
+
+a:hover {
+    color: unset;
+    background-color: unset;
+    text-decoration: unset;
+}
+
+a:active {
+    color: unset;
+    background-color: unset;
+    text-decoration: unset;
+}

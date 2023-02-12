@@ -14,6 +14,7 @@ constexpr auto project_file_ext = std::string_view{".typ"};
 //constexpr auto solution_file_ext = std::string_view{".tys"};
 
 constexpr auto gen_src_file_ext = std::string_view{".cpp"};
+constexpr auto gen_hdr_file_ext = std::string_view{".hpp"};
 
 constexpr auto src_dir_name     = std::string_view{"source"};
 const auto src_dir_path         = fs::proximate(src_dir_name);
@@ -24,10 +25,14 @@ const auto obj_dir_path         = fs::proximate(obj_dir_name);
 constexpr auto gen_dir_name     = std::string_view{"gen"};
 const auto gen_dir_path         = obj_dir_path / gen_dir_name;
 
+constexpr auto gen_src_name     = std::string_view{"src"};
+const auto gen_dir_src_path     = gen_dir_path / gen_src_name;
+
+constexpr auto gen_inc_name     = std::string_view{"inc"};
+const auto gen_dir_inc_path     = gen_dir_path / gen_inc_name;
+
 constexpr auto bin_dir_name     = std::string_view{"bin"};
 const auto bin_dir_path         = fs::proximate(bin_dir_name);
-
-auto rel_src_path_to_gen_src_file_path(const fs::path& rel_path) -> fs::path;
 
 #ifdef TRACE
 constexpr auto tok_file_ext = std::string_view{".tok.xml"};

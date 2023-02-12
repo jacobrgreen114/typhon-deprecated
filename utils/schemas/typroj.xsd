@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="Typhon.Project"
+            xmlns="Typhon.Project"
+            elementFormDefault="qualified">
+
+    <xsd:element name="Project" type="ProjectInfo"/>
+
+    <xsd:complexType name="ProjectInfo">
+        <xsd:all>
+            <xsd:element name="ProjectName" type="ProjectName"/>
+            <xsd:element name="BinaryType" type="BinaryType"/>
+
+            <xsd:element name="NoStd" type="xsd:boolean" minOccurs="0"/>
+
+            <xsd:element name="Configurations" type="ProjectConfigurationList" minOccurs="0"/>
+            <xsd:element name="References" type="ProjectReferenceList" minOccurs="0"/>
+        </xsd:all>
+    </xsd:complexType>
+
+    <xsd:complexType name="ProjectConfigurationList">
+        <xsd:sequence>
+            <xsd:element name="Configuration" type="ProjectConfiguration" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="ProjectConfiguration">
+        <xsd:all minOccurs="0">
+            <xsd:element name="Defines" type="DefineList" minOccurs="0"/>
+        </xsd:all>
+        <xsd:attribute name="BuildType" type="BuildType"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="ProjectReferenceList">
+        <xsd:sequence>
+            <xsd:element name="Project" type="ProjectReference" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="ProjectReference">
+        <xsd:attribute name="Name" use="required" type="ProjectName"/>
+        <xsd:attribute name="Path" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="ProjectName">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="1"/>
+            <xsd:pattern value="[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]+)*"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="BinaryType">
+        <xsd:restriction base="xsd:simpleType">
+            <xsd:enumeration value="Exe"/>
+            <xsd:enumeration value="Lib"/>
+            <xsd:enumeration value="Dyn"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="BuildType">
+        <xsd:restriction base="xsd:simpleType">
+            <xsd:enumeration value="Debug"/>
+            <xsd:enumeration value="RelWithDebInfo"/>
+            <xsd:enumeration value="Release"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="Platform">
+        <xsd:restriction base="xsd:simpleType">
+            <xsd:enumeration value="x86"/>
+            <xsd:enumeration value="x64"/>
+            <xsd:enumeration value="Arm"/>
+            <xsd:enumeration value="Arm64"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="OperatingSystem">
+        <xsd:restriction base="xsd:simpleType">
+            <xsd:enumeration value="Windows"/>
+            <xsd:enumeration value="Linux"/>
+            <xsd:enumeration value="Darwin"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="DefineList">
+        <xsd:sequence>
+            <xsd:element name="Define" type="Define" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:simpleType name="Define">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="1"/>
+            <xsd:pattern value="[A-Z_]+"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+
+</xsd:schema>

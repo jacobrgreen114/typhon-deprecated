@@ -21,7 +21,7 @@ auto write_tokens(const fs::path& rel_path, const TokenCollection& tokens) -> vo
   fs::create_directories(token_path.parent_path());
 
   auto token_file = std::ofstream{token_path, std::ofstream::out | std::ofstream::trunc};
-  for (auto& token : tokens) {
+  for (auto& token : tokens.tokens()) {
     token.serialize(token_file, "token");
   }
 #endif
@@ -43,11 +43,12 @@ auto find_source_files(const ProjectConfig& config) -> SourceCollection {
     exit(-1);
   }
 
-  auto sources = std::vector<SourceContext>{};
+  auto sources = SourceCollection{};
 
   for (auto& entry : fs::recursive_directory_iterator(config.dir_source())) {
     if (entry.is_regular_file() && entry.path().extension() == source_file_ext) {
-      sources.emplace_back(entry.path());
+      auto& path = entry.path();
+      sources.emplace_back(std::make_shared<SourceContext>(config.dir_source(), path));
     }
   }
 
@@ -55,18 +56,16 @@ auto find_source_files(const ProjectConfig& config) -> SourceCollection {
 }
 
 // todo : implement already compiled optimization
-auto parse_source(const SourceContext& source) -> std::shared_ptr<SyntaxTree> {
-  TRACE_PRINT("Compiling : " << fs::absolute(source.path()) << std::endl);
+auto parse_source(const std::shared_ptr<SourceContext>& source) -> std::shared_ptr<SyntaxTree> {
+  TRACE_PRINT("Compiling : " << source->absolute_path() << std::endl);
 
-  const auto rel_path = fs::relative(source.path(), src_dir_path).stem();
-
-  auto tokens         = lex(source.path().string());
-  write_tokens(rel_path, tokens);
+  auto tokens = lex(source);
+  write_tokens(source->rel_path(), tokens);
 
   auto syntax = parse(tokens);
-  write_syntax(rel_path, *syntax);
+  write_syntax(source->rel_path(), *syntax);
 
-  //generate(rel_path, syntax);
+  TRACE_PRINT(newline);
 
   return syntax;
 }
@@ -96,6 +95,18 @@ auto parse_sources(const SourceCollection& sources) -> SyntaxTreeCollection {
   return trees;
 }
 
+auto generate_sources(const SyntaxTreeCollection& syntax_trees) {
+#if PARALLEL_COMPILATION
+  throw_not_implemented();
+#else
+  for (auto& tree : syntax_trees) {
+    generate(tree);
+  }
+#endif
+}
+
+auto create_project_tree(const SyntaxTreeCollection& syntax_trees) {}
+
 auto main(int argc, const char* argv[]) -> int {
   std::ios_base::sync_with_stdio(false);
 
@@ -106,6 +117,10 @@ auto main(int argc, const char* argv[]) -> int {
 
   auto sources      = find_source_files(*config);
   auto syntax_trees = parse_sources(sources);
+
+  create_project_tree(syntax_trees);
+
+  generate_sources(syntax_trees);
 
   return 0;
 }

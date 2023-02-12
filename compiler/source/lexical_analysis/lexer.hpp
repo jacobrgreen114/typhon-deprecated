@@ -1,4 +1,4 @@
-// Copyright (c) 2023. Jacob R. Green
+// Copyright (c) 2023 Jacob R. Green
 // All Rights Reserved.
 
 #pragma once
@@ -9,4 +9,4 @@
 
 #include "token.hpp"
 
-auto lex(const std::string& path) -> TokenCollection;
+auto lex(const std::shared_ptr<SourceContext>& source) -> const TokenCollection;

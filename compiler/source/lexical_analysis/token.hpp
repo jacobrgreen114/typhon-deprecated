@@ -11,6 +11,8 @@
 #include <memory>
 #include <vector>
 
+#include "../source.hpp"
+
 #ifdef TRACE
 #include "../xml/serialization.hpp"
 #endif
@@ -328,4 +330,18 @@ class LexicalToken final
 
 auto operator<<(std::ostream& stream, const LexicalToken& token) -> std::ostream&;
 
-using TokenCollection = std::vector<LexicalToken>;
+//using TokenCollection = std::vector<LexicalToken>;
+
+class TokenCollection {
+  std::shared_ptr<SourceContext> source_;
+  std::vector<LexicalToken> tokens_;
+
+ public:
+  explicit TokenCollection(const std::shared_ptr<SourceContext>& source,
+                           const std::vector<LexicalToken>& tokens)
+      : source_{source},
+        tokens_{tokens} {}
+
+  NODISCARD auto& source() const { return source_; }
+  NODISCARD auto& tokens() const { return tokens_; }
+};

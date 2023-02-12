@@ -1,0 +1,17 @@
+
+
+object BaseString<Character T> {
+    module var _buffer : mut T[]?;
+    module var _lenth : mut uword;
+
+    internal func ctor() = default;
+}
+
+
+object BaseMutableString<Character T> : BaseString<T> {
+
+}
+
+object String : BaseString<char> { }
+object String16 : BaseString<char16> { }
+object String32 : BaseString<char32> { }

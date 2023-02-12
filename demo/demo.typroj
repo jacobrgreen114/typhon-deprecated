@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Project xmlns="Typhon.Project"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.w3.org/2001/XMLSchema file://../utils/schemas/typroj.xsd">
+    <ProjectName>Typhon.Demo</ProjectName>
+    <BinaryType>Exe</BinaryType>
+
+    <NoStd>true</NoStd>
+
+    <Configurations>
+    </Configurations>
+
+    <References>
+        <Project Name="Typhon.Core"/>
+    </References>
+</Project>

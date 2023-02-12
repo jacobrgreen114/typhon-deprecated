@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Typhon Reference</title>
+    <link rel="stylesheet" href="../index.css" >
+</head>
+<body>
+    <div id="header-bar-root">
+        <div id="header-bar-top"></div>
+        <div id="header-bar">
+            <a href="../index.html">
+                <h1 class="header-label header-title" >Typhon</h1>
+            </a>
+            <h2 class="header-label header-separator">|</h2>
+            <a href="language.html">
+                <h2 class="header-label header-entry" >Language</h2>
+            </a>
+        </div>
+    </div>
+    <div id="body">
+        <div id="body-header">
+            <h1>Language Reference</h1>
+        </div>
+
+        <div id="table-of-contents" class="section">
+            <h3>Table of Contents</h3>
+            <ul>
+                <li>Types</li>
+                <ul>
+                    <li><a href="#section-primitives">Primitives</a></li>
+                    <li><a href="#section-constants">Constants</a></li>
+                    <li><a href="#section-variables">Variables</a></li>
+                    <li>Functions</li>
+                    <li>Structs</li>
+                    <li>Classes</li>
+                    <li>Aliases</li>
+                </ul>
+                <li>Interfaces</li>
+                <ul>
+                    <li>Concepts</li>
+                    <li>Interfaces</li>
+                </ul>
+                <li>Modifiers</li>
+                <ul>
+                    <li>Access</li>
+                    <li>Static</li>
+                    <li>Mutable</li>
+                </ul>
+            </ul>
+        </div>
+
+        <div id="section-primitives" class="section">
+            <h3>Primitives</h3>
+            <ul>
+                <li><h4>Booleans</h4></li>
+                <ul>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">bool</code></div> - 8bit boolean</li>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">bool32</code></div> - 32bit boolean</li>
+                </ul>
+                <li><h4>Unsigned Integers</h4></li>
+                <ul>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">u8</code></div> - 8bit unsigned integer</li>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">u16</code></div> - 16bit unsigned integer</li>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">u32</code></div> - 32bit unsigned integer</li>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">u64</code></div> - 64bit unsigned integer</li>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">uword</code></div> - native unsigned integer</li>
+                </ul>
+                <li><h4>Signed Integers</h4></li>
+                <ul>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">i8</code></div> - 8bit signed integer</li>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">i16</code></div> - 16bit signed integer</li>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">i32</code></div> - 32bit signed integer</li>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">i64</code></div> - 64bit signed integer</li>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">iword</code></div> - native signed integer</li>
+                </ul>
+                <li><h4>Floating-point Integers</h4></li>
+                <ul>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">f32</code></div> - 32bit floating point</li>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">f64</code></div> - 64bit floating point</li>
+                </ul>
+                <li><h4>Characters</h4></li>
+                <ul>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">char8</code></div> - 8bit character</li>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">char16</code></div> - 16bit character</li>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">char32</code></div> - 32bit character</li>
+                </ul>
+                <li><h4>Strings</h4></li>
+                <ul>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">string8</code></div> - string of 8bit characters</li>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">string16</code></div> - string of 16bit characters</li>
+                    <li><div class="code-block inline"><code class="code-keyword-primitive">string32</code></div> - string of 32bit characters</li>
+                </ul>
+
+
+            </ul>
+
+        </div>
+        <div id="section-constants" class="section">
+            <h3>Constants</h3>
+            <p><p class="inline">A</p> <div class="code-block inline"><code class="code-keyword-type">const</code></div> is a compile-time constant variable.</p>
+            <h4>Equivalence</h4>
+            <ul>
+                <li><div class="code-block inline"><code class="code-keyword-type">constexpr</code></div> in C++</li>
+                <li><div class="code-block inline"><code class="code-keyword-type">const</code></div> in C#</li>
+            </ul>
+
+        </div>
+
+        <div id="section-variables" class="section">
+            <h3>Variables</h3>
+            <p><p class="inline">A</p> <div class="code-block inline"><code class="code-keyword-type">var</code></div> is a variable.</p>
+
+            <div class="code-block">
+<pre><code><code class="code-comment">// Variable Definitions</code>
+<code class="code-keyword-type">var</code> <code class="code-identifier">uninitialized</code> : <code class="code-keyword-primitive">i32</code>;
+<code class="code-keyword-type">var</code> <code class="code-identifier">auto_deduced_type</code> = <code class="code-constant">0</code>;
+<code class="code-keyword-type">var</code> <code class="code-identifier">explicit_type_and_assignment</code> : <code class="code-keyword-primitive">i32</code> = <code class="code-constant">0</code>;
+</code></pre>
+            </div>
+        </div>
+
+        <div id="section-functions" class="section">
+            <h3>Functions</h3>
+            <p><div class="inline">A</div> <div class="code-block inline"><code class="code-keyword-type">func</code></div> is a function.</p>
+
+            <div class="code-block">
+<pre><code><code class="code-comment">// Function Definition</code>
+<code class="code-keyword-type">func</code> <code class="code-identifier">main</code>(<code class="code-identifier">args</code> : <code class="code-keyword-primitive">string</code>[]) -> <code class="code-keyword-primitive">i32</code> {
+    <code class="code-keyword-control">return</code> <code class="code-constant">0</code>;
+}
+</code></pre>
+            </div>
+        </div>
+    </div>
+    </div>
+</body>
+</html>

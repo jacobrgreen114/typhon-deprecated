@@ -31,7 +31,7 @@ class LexerContext final : public EnumeratingContext<LexerContext, char> {
   std::string buffer_;
 
  public:
-  TokenCollection tokens;
+  std::vector<LexicalToken> tokens;
 
   explicit LexerContext(const fs::path& path);
 

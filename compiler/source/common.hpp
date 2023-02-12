@@ -59,20 +59,6 @@ inline std::ostream& newline(std::ostream& os, uint64_t count) {
   return os;
 }
 
-class SourceContext final {
-  fs::path path_;
-
- public:
-  explicit SourceContext(const fs::path& path)
-      : path_{path} {}
-
-  NODISCARD auto& path() const { return path_; }
-
-  NODISCARD auto filename() const { return path_.filename(); }
-};
-
-using SourceCollection = std::vector<SourceContext>;
-
 #ifdef TRACE
 #define TRACE_PRINT(str) std::cout << "[TRACE] " << str
 #else

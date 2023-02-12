@@ -3,6 +3,8 @@
 
 #include "parser_statemachine.hpp"
 
+#include <utility>
+
 #include "parser_def_var.hpp"
 #include "parser_def_func.hpp"
 #include "parser_def_struct.hpp"
@@ -164,21 +166,21 @@ auto start_handler_(ParserContext& ctx) -> ParserState {
 
 #pragma region Parser Context
 
-ParserContext::ParserContext(const std::vector<LexicalToken>& tokens)
+ParserContext::ParserContext(const TokenCollection& tokens)
     : tokens_{tokens},
       started_{false},
       current_{},
-      source{std::make_shared<SyntaxTree>()} {}
+      source{std::make_shared<SyntaxTree>(tokens.source())} {}
 
 auto ParserContext::current() -> const LexicalToken& { return *current_; }
 
 auto ParserContext::move_next() -> bool {
   if (!started_) {
-    current_ = tokens_.begin();
+    current_ = tokens_.tokens().begin();
     started_ = true;
-    return !(current_ == tokens_.end());
+    return !(current_ == tokens_.tokens().end());
   }
-  return ++current_ < tokens_.end();
+  return ++current_ < tokens_.tokens().end();
 }
 
 #pragma endregion

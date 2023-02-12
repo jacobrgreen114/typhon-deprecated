@@ -49,7 +49,7 @@ add_executable(tyc
 
         source/timer.hpp
         source/xml/serialization.cpp source/xml/serialization.hpp
-        source/project_config.cpp source/project_config.hpp source/common.hpp source/generation/gen_common.cpp source/generation/gen_common.hpp source/generation/gen_expr.cpp source/generation/gen_expr.hpp source/generation/gen_stmt.cpp source/generation/gen_stmt.hpp source/generation/gen_func.cpp source/generation/gen_func.hpp source/generation/gen_struct.cpp source/generation/gen_struct.hpp source/lexical_analysis/lexer_string.cpp source/lexical_analysis/lexer_string.hpp source/syntax_analysis/parser_import.cpp source/syntax_analysis/parser_import.hpp)
+        source/project_config.cpp source/project_config.hpp source/common.hpp source/generation/gen_common.cpp source/generation/gen_common.hpp source/generation/gen_expr.cpp source/generation/gen_expr.hpp source/generation/gen_stmt.cpp source/generation/gen_stmt.hpp source/generation/gen_func.cpp source/generation/gen_func.hpp source/generation/gen_struct.cpp source/generation/gen_struct.hpp source/lexical_analysis/lexer_string.cpp source/lexical_analysis/lexer_string.hpp source/syntax_analysis/parser_import.cpp source/syntax_analysis/parser_import.hpp source/source.cpp source/source.hpp)
 
 target_precompile_headers(tyc
 PRIVATE
