@@ -3,7 +3,7 @@
 
 #include "parser_def_func.hpp"
 
-#include "parser_statement.hpp"
+#include "parser_stmt.hpp"
 
 auto func_def_error_handler_(ParserContext& ctx) -> ParserState { throw_not_implemented(); }
 

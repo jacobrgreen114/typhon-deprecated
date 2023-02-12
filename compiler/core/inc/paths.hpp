@@ -10,8 +10,8 @@
 #include "common.hpp"
 
 constexpr auto source_file_ext  = std::string_view{".ty"};
-constexpr auto project_file_ext = std::string_view{".typ"};
-//constexpr auto solution_file_ext = std::string_view{".tys"};
+constexpr auto project_file_ext = std::string_view{".typroj"};
+//constexpr auto solution_file_ext = std::string_view{".tysln"};
 
 constexpr auto gen_src_file_ext = std::string_view{".cpp"};
 constexpr auto gen_hdr_file_ext = std::string_view{".hpp"};

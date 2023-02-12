@@ -13,3 +13,5 @@ target_link_libraries(tyc
         typhon_checker
         typhon_generator
 )
+
+target_msvc_runtime_library(tyc)

@@ -32,7 +32,8 @@ class Timer final {
 };
 
 #ifdef TRACE
-#define TRACE_TIMER(name) const auto _trace_timer_ = Timer{name};
+#define TRACE_TIMER(name) \
+  const auto _trace_timer_ = Timer { name }
 #else
 #define TRACE_TIMER(name) ((void)0)
 #endif

@@ -9,4 +9,4 @@
 
 #include "project_tree.hpp"
 
-auto linquist(const SyntaxTreeCollection& syntax_trees) -> void;
+auto check(const SyntaxTreeCollection& syntax_trees) -> std::shared_ptr<ProjectTree>;

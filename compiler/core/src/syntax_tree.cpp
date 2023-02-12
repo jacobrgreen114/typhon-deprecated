@@ -197,6 +197,24 @@ auto to_string(AccessModifier modifier) -> std::string_view {
 }
 
 /*
+ * Syntax Tree
+ */
+
+const std::shared_ptr<Namespace> Namespace::root = std::make_shared<Namespace>();
+
+auto SyntaxTree::get_namespace() -> std::shared_ptr<Namespace> {
+  auto ns = std::find_if(nodes_.begin(), nodes_.end(), [](auto& node) -> bool {
+    return node->kind() == SyntaxKind::Namespace;
+  });
+
+  if (ns != nodes_.end()) {
+    return ptr_cast<Namespace>(*ns);
+  }
+
+  return nullptr;
+}
+
+/*
  * Xml Serialization Overrides
  */
 

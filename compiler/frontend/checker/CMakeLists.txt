@@ -1,6 +1,6 @@
 
 add_library(typhon_checker
-        src/semantic_analyser.cpp
+        src/checker.cpp
 )
 
 target_include_directories(typhon_checker
@@ -19,3 +19,5 @@ target_precompile_headers(typhon_checker
         "${CMAKE_CURRENT_SOURCE_DIR}/../../core/inc/syntax_tree.hpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/../../core/inc/project_tree.hpp"
 )
+
+target_msvc_runtime_library(typhon_checker)

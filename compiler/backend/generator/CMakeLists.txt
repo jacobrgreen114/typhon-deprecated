@@ -19,3 +19,5 @@ target_link_libraries(typhon_generator
     PUBLIC
         typhon_core
 )
+
+target_msvc_runtime_library(typhon_generator)

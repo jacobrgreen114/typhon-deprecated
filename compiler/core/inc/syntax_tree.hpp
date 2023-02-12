@@ -723,9 +723,11 @@ class Namespace final : public SyntaxNode {
   explicit Namespace()
       : SyntaxNode{SyntaxKind::Namespace} {}
 
-  auto& namespaces() const { return namespaces_; }
+  NODISCARD auto& namespaces() const { return namespaces_; }
 
   auto push_namespace(const String& ns) { namespaces_.emplace_back(ns); }
+
+  static const std::shared_ptr<Namespace> root;
 
 #ifdef TRACE
  protected:
@@ -776,6 +778,8 @@ class SyntaxTree final : public SyntaxNode {
   auto& nodes() const { return nodes_; }
 
   auto push_node(const Node& node) { nodes_.emplace_back(node); }
+
+  auto get_namespace() -> std::shared_ptr<Namespace>;
 
 #ifdef TRACE
  protected:

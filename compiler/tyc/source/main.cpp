@@ -6,7 +6,7 @@
 #include "project_config.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
-#include "semantic_analyser.hpp"
+#include "checker.hpp"
 #include "generator.hpp"
 #include "timer.hpp"
 
@@ -66,8 +66,6 @@ auto parse_source(const std::shared_ptr<SourceContext>& source) -> std::shared_p
   auto syntax = parse(tokens);
   write_syntax(source->rel_path(), *syntax);
 
-  TRACE_PRINT(newline);
-
   return syntax;
 }
 
@@ -80,7 +78,7 @@ auto parse_sources(const SourceCollection& sources) -> SyntaxTreeCollection {
   compilation_futures.reserve(sources.size());
 
   for (auto& source : sources) {
-    compilation_futures.push_back(std::async(std::launch::async, compile, source));
+    compilation_futures.push_back(std::async(std::launch::async, parse_source, source));
   }
 
   for (auto& future : compilation_futures) {
@@ -98,7 +96,17 @@ auto parse_sources(const SourceCollection& sources) -> SyntaxTreeCollection {
 
 auto generate_sources(const SyntaxTreeCollection& syntax_trees) {
 #if PARALLEL_COMPILATION
-  throw_not_implemented();
+  auto generate_futures = std::vector<std::future<void>>{};
+  generate_futures.reserve(syntax_trees.size());
+
+  for (auto& tree : syntax_trees) {
+    generate_futures.push_back(std::async(std::launch::async, generate, tree));
+  }
+
+  for (auto& future : generate_futures) {
+    future.wait();
+  }
+
 #else
   for (auto& tree : syntax_trees) {
     generate(tree);
@@ -106,19 +114,36 @@ auto generate_sources(const SyntaxTreeCollection& syntax_trees) {
 #endif
 }
 
+class Compiler final {
+  std::shared_ptr<ProjectConfig> config_;
+
+ public:
+  Compiler()
+      : config_{ProjectConfig::load()} {
+    if (!config_) {
+      throw std::exception("Failed to load project config");
+    }
+  }
+
+  auto run() -> int {
+    auto sources      = find_source_files(*config_);
+    auto syntax_trees = parse_sources(sources);
+    check(syntax_trees);
+
+    generate_sources(syntax_trees);
+    return 0;
+  }
+};
+
 auto main(int argc, const char* argv[]) -> int {
   std::ios_base::sync_with_stdio(false);
 
-  auto config = ProjectConfig::load();
-  if (!config) {
-    throw std::exception("Failed to load project config");
-  }
+  auto app     = Compiler{};
 
-  auto sources      = find_source_files(*config);
-  auto syntax_trees = parse_sources(sources);
-  linquist(syntax_trees);
+  auto timer   = Timer{};
+  auto result  = app.run();
+  auto elapsed = timer.elapsed();
 
-  generate_sources(syntax_trees);
-
-  return 0;
+  std::cout << "Compilation Time : " << std::fixed << elapsed << " secs" << std::endl;
+  return result;
 }

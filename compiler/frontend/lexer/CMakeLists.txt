@@ -24,3 +24,5 @@ target_link_libraries(typhon_lexer
     PUBLIC
         typhon_core
 )
+
+target_msvc_runtime_library(typhon_lexer)

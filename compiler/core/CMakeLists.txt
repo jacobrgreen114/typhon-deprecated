@@ -35,5 +35,8 @@ target_precompile_headers(typhon_core
         <unordered_set>
         <set>
         <future>
+        <execution>
         <cassert>
 )
+
+target_msvc_runtime_library(typhon_core)

@@ -1,12 +1,12 @@
 
 add_library(typhon_parser
     src/parser.cpp
-    src/parser_statemachine.cpp
+        src/parser_sm.cpp
 
     src/parser_import.cpp
 
     src/parser_expression.cpp
-    src/parser_statement.cpp
+        src/parser_stmt.cpp
 
     src/parser_def_var.cpp
     src/parser_def_func.cpp
@@ -28,3 +28,5 @@ target_link_libraries(typhon_parser
     PUBLIC
         typhon_core
 )
+
+target_msvc_runtime_library(typhon_parser)

@@ -14,23 +14,74 @@
 #include "gen_func.hpp"
 #include "gen_struct.hpp"
 
+#define FIND_IF_OPTIMIZATION false
+
+auto find_if_def_var(auto begin, auto end) {
+  return std::find_if(std::execution::par, begin, end, [](auto& node) -> bool {
+    return node->kind() == SyntaxKind::DefVar;
+  });
+}
+
+auto find_if_def_func(auto begin, auto end) {
+  return std::find_if(std::execution::par, begin, end, [](auto& node) -> bool {
+    return node->kind() == SyntaxKind::DefFunc;
+  });
+}
+
+auto find_if_def_struct(auto begin, auto end) {
+  return std::find_if(std::execution::par, begin, end, [](auto& node) -> bool {
+    return node->kind() == SyntaxKind::DefStruct;
+  });
+}
+
+auto find_if_def_object(auto begin, auto end) {
+  return std::find_if(std::execution::par, begin, end, [](auto& node) -> bool {
+    return node->kind() == SyntaxKind::DefObject;
+  });
+}
+
 auto forward_decl_structs(std::ostream& writer, const SyntaxTree::NodeArray& nodes) {
+  auto empty = true;
+
+#if FIND_IF_OPTIMIZATION
+  for (auto it = find_if_def_struct(nodes.begin(), nodes.end()); it != nodes.end();
+       it      = find_if_def_struct(++it, nodes.end())) {
+    empty = false;
+    write_forward_decl(writer, ptr_cast<StructDefinition>(*it));
+    writer << newline;
+  }
+#else
   for (auto& node : nodes) {
     if (node->kind() == SyntaxKind::DefStruct) {
+      empty = false;
       write_forward_decl(writer, ptr_cast<StructDefinition>(node));
       writer << newline;
     }
+  }
+#endif
+
+  if (!empty) {
+    writer << newline;
   }
 }
 
 auto forward_decl_objects(std::ostream& writer, const SyntaxTree::NodeArray& nodes) {
   auto empty = true;
+
+#if FIND_IF_OPTIMIZATION
+  for (auto it = find_if_def_object(nodes.begin(), nodes.end()); it != nodes.end();
+       it      = find_if_def_object(++it, nodes.end())) {
+    empty = false;
+    // todo : implement
+  }
+#else
   for (auto& node : nodes) {
     if (node->kind() == SyntaxKind::DefObject) {
       empty = false;
       // todo : implement
     }
   }
+#endif
 
   if (!empty) {
     writer << newline;
@@ -55,6 +106,14 @@ auto forward_decl_aliases(std::ostream& writer, const SyntaxTree::NodeArray& nod
 auto forward_declare_funcs(std::ostream& writer, const SyntaxTree::NodeArray& nodes) {
   auto empty = true;
 
+#if FIND_IF_OPTIMIZATION
+  for (auto it = find_if_def_func(nodes.begin(), nodes.end()); it != nodes.end();
+       it      = find_if_def_func(++it, nodes.end())) {
+    empty = false;
+    write_forward_decl(writer, ptr_cast<FuncDefinition>(*it));
+    writer << newline;
+  }
+#else
   for (auto& node : nodes) {
     if (node->kind() == SyntaxKind::DefFunc) {
       empty = false;
@@ -62,6 +121,7 @@ auto forward_declare_funcs(std::ostream& writer, const SyntaxTree::NodeArray& no
       writer << newline;
     }
   }
+#endif
 
   if (!empty) {
     writer << newline;
@@ -71,6 +131,14 @@ auto forward_declare_funcs(std::ostream& writer, const SyntaxTree::NodeArray& no
 auto forward_declare_vars(std::ostream& writer, const SyntaxTree::NodeArray& nodes) {
   auto empty = true;
 
+#if FIND_IF_OPTIMIZATION
+  for (auto it = find_if_def_var(nodes.begin(), nodes.end()); it != nodes.end();
+       it      = find_if_def_var(++it, nodes.end())) {
+    empty = false;
+    write_def(writer, ptr_cast<VarDefinition>(*it));
+    writer << newline;
+  }
+#else
   for (auto& node : nodes) {
     if (node->kind() == SyntaxKind::DefVar) {
       empty = false;
@@ -78,6 +146,7 @@ auto forward_declare_vars(std::ostream& writer, const SyntaxTree::NodeArray& nod
       writer << newline;
     }
   }
+#endif
 
   if (!empty) {
     writer << newline;
@@ -91,7 +160,7 @@ auto forward_declare(std::ostream& writer, const std::shared_ptr<SyntaxTree>& so
   forward_decl_structs(writer, nodes);
   writer << newline;
   forward_decl_objects(writer, nodes);
-  forward_decl_aliases(writer, nodes);
+  //forward_decl_aliases(writer, nodes);
   forward_declare_funcs(writer, nodes);
   forward_declare_vars(writer, nodes);
 }
@@ -121,7 +190,7 @@ const auto includes = std::vector<std::string_view>{"<cstdint>"};
 
 auto write_includes(std::ostream& writer) {
   for (auto& include : includes) {
-    writer << "#inc " << include << newline;
+    writer << "#include " << include << newline;
   }
   if (!includes.empty()) {
     writer << newline;

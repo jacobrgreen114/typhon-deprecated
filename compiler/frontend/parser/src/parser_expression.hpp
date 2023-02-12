@@ -1,4 +1,4 @@
-// Copyright (c) 2023. Jacob R. Green
+// Copyright (c) 2023 Jacob R. Green
 // All Rights Reserved.
 
 #pragma once
@@ -7,6 +7,6 @@
 #error
 #endif
 
-#include "parser_statemachine.hpp"
+#include "parser_sm.hpp"
 
 extern const ParserState expr_start_state;

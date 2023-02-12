@@ -7,7 +7,7 @@
 #error
 #endif
 
-#include "parser_statemachine.hpp"
+#include "parser_sm.hpp"
 
 extern const ParserState namespace_start_state;
 extern const ParserState import_start_state;
