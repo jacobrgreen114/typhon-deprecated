@@ -9,6 +9,7 @@
 
 #include <string>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "token.hpp"
@@ -282,12 +283,12 @@ class BoolExpression final : public ConstantExpression {
 
 class ValueExpression : public ConstantExpression {
  private:
-  String value_;
+  std::string value_;
 
  protected:
-  explicit ValueExpression(const SyntaxKind kind, const String& value)
+  explicit ValueExpression(const SyntaxKind kind, std::string value)
       : ConstantExpression{kind},
-        value_{value} {}
+        value_{std::move(value)} {}
 
  public:
   auto& value() const { return value_; }
@@ -300,23 +301,23 @@ class ValueExpression : public ConstantExpression {
 
 class NumberExpression final : public ValueExpression {
  public:
-  explicit NumberExpression(const String& value)
+  explicit NumberExpression(const std::string& value)
       : ValueExpression{SyntaxKind::ExprNumber, value} {}
 };
 
 class StringExpression final : public ValueExpression {
  public:
-  explicit StringExpression(const String& value)
+  explicit StringExpression(const std::string& value)
       : ValueExpression{SyntaxKind::ExprString, value} {}
 };
 
 class IdentifierExpression final : public ExpressionNode {
-  String identifier_;
+  std::string identifier_;
 
  public:
-  explicit IdentifierExpression(const String& identifier)
+  explicit IdentifierExpression(std::string identifier)
       : ExpressionNode{SyntaxKind::ExprIdentifier},
-        identifier_{identifier} {}
+        identifier_{std::move(identifier)} {}
 
   auto& identifier() const { return identifier_; }
 
@@ -327,14 +328,14 @@ class IdentifierExpression final : public ExpressionNode {
 };
 
 class CallExpression final : public ExpressionNode {
-  String identifier_;
+  std::string identifier_;
 
   std::vector<std::shared_ptr<ExpressionNode>> parameters_;
 
  public:
-  explicit CallExpression(const String& identifier)
+  explicit CallExpression(std::string identifier)
       : ExpressionNode{SyntaxKind::ExprCall},
-        identifier_{identifier} {}
+        identifier_{std::move(identifier)} {}
 
   auto& identifier() const { return identifier_; }
 
@@ -607,18 +608,22 @@ class DefStatement final : public Statement {
 
 class Definition : public SyntaxNode {
   AccessModifier modifier_;
-  String name_;
+  std::string name_;
 
  protected:
-  explicit Definition(SyntaxKind kind, const String& name = nullptr)
+  explicit Definition(SyntaxKind kind)
+      : SyntaxNode(kind),
+        modifier_{AccessModifier::Public} {}
+
+  explicit Definition(SyntaxKind kind, std::string name)
       : SyntaxNode(kind),
         modifier_{AccessModifier::Public},
-        name_{name} {}
+        name_{std::move(name)} {}
 
  public:
   auto& name() const { return name_; }
 
-  auto set_name(const String& name) noexcept -> void { name_ = name; }
+  auto set_name(const std::string& name) noexcept -> void { name_ = name; }
 
 #ifdef TRACE
  protected:
@@ -631,22 +636,18 @@ class VarDefinition : public Definition {
   using Assignment = std::shared_ptr<ExpressionNode>;
 
  private:
-  String type_name_;
+  std::string type_name_;
   Assignment assignment_;
 
  public:
-  explicit VarDefinition(const String& name       = nullptr,
-                         const String& type_name  = nullptr,
-                         const Assignment& assign = nullptr)
-      : Definition(SyntaxKind::DefVar, name),
-        type_name_{type_name},
-        assignment_{assign} {}
+  explicit VarDefinition()
+      : Definition(SyntaxKind::DefVar) {}
 
  public:
   auto& type_name() const { return type_name_; }
   auto& assignment() const { return assignment_; }
 
-  auto set_type_name(const String& type_name) noexcept -> void { type_name_ = type_name; }
+  auto set_type_name(const std::string& type_name) noexcept -> void { type_name_ = type_name; }
 
   auto set_assignment(const Assignment& assignment) noexcept -> void { assignment_ = assignment; }
 
@@ -658,15 +659,15 @@ class VarDefinition : public Definition {
 
 class FuncParameter final : public Definition {
  private:
-  String type_name_;
+  std::string type_name_;
 
  public:
-  explicit FuncParameter(const String& name = nullptr)
+  explicit FuncParameter(const std::string& name)
       : Definition(SyntaxKind::DefParam, name) {}
 
   auto& type_name() const { return type_name_; }
 
-  auto set_type_name(const String& type_name) noexcept -> void { type_name_ = type_name; }
+  auto set_type_name(const std::string& type_name) noexcept -> void { type_name_ = type_name; }
 };
 
 class FuncDefinition final : public Definition {
@@ -677,7 +678,7 @@ class FuncDefinition final : public Definition {
 
  private:
   ParameterCollection parameters_;
-  String return_;
+  std::string return_;
   Body body_;
 
  public:
@@ -688,7 +689,7 @@ class FuncDefinition final : public Definition {
   auto& return_type() const { return return_; }
   auto& body() const { return body_; }
 
-  void set_return_type(const String& ret_type) { return_ = ret_type; }
+  void set_return_type(const std::string& ret_type) { return_ = ret_type; }
 
   void push_parameter(const Parameter& param) { parameters_.emplace_back(param); }
 
@@ -717,7 +718,7 @@ class StructDefinition final : public Definition {
  */
 
 class Namespace final : public SyntaxNode {
-  std::vector<String> namespaces_;
+  std::vector<std::string> namespaces_;
 
  public:
   explicit Namespace()
@@ -725,7 +726,7 @@ class Namespace final : public SyntaxNode {
 
   NODISCARD auto& namespaces() const { return namespaces_; }
 
-  auto push_namespace(const String& ns) { namespaces_.emplace_back(ns); }
+  auto push_namespace(const std::string& ns) { namespaces_.emplace_back(ns); }
 
   static const std::shared_ptr<Namespace> root;
 
@@ -740,7 +741,7 @@ class Namespace final : public SyntaxNode {
  */
 
 class Import final : public SyntaxNode {
-  std::vector<String> namespaces_;
+  std::vector<std::string> namespaces_;
 
  public:
   explicit Import()
@@ -748,7 +749,7 @@ class Import final : public SyntaxNode {
 
   auto& namespaces() const { return namespaces_; }
 
-  auto push_namespace(const String& ns) { namespaces_.emplace_back(ns); }
+  auto push_namespace(const std::string& ns) { namespaces_.emplace_back(ns); }
 
 #ifdef TRACE
  protected:

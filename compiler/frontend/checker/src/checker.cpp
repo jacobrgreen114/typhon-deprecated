@@ -20,7 +20,7 @@ auto place_tree(const std::shared_ptr<ProjectTree>& project,
 
     // Find namespace in project tree
     auto desired_ns = std::find_if(sub_spaces.begin(), sub_spaces.end(), [=](auto& sub_ns) -> bool {
-      return *sub_ns->name() == *ns;
+      return sub_ns->name() == ns;
     });
 
     if (desired_ns != sub_spaces.end()) {

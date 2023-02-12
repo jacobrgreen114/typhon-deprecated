@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "source.hpp"
@@ -17,7 +18,7 @@
 #include "xml/serialization.hpp"
 #endif
 
-using String = std::shared_ptr<const std::string>;
+// using String = std::shared_ptr<const std::string>;
 
 /*
  * File Position
@@ -301,26 +302,26 @@ class LexicalToken final
 #endif
 {
  public:
-  using ValueType = String;
+  using ValueType = std::string;
 
  private:
   const FilePosition pos_;
   const LexicalKind kind_;
-  const ValueType value_;
+  const std::string value_;
 
  public:
-  LexicalToken(const FilePosition& pos, LexicalKind kind, ValueType value)
+  LexicalToken(const FilePosition& pos, LexicalKind kind, std::string value)
       : pos_{pos},
         kind_{kind},
         value_{std::move(value)} {}
 
   LexicalToken(const FilePosition& pos, LexicalKind kind)
-      : LexicalToken{pos, kind, nullptr} {}
+      : pos_{pos},
+        kind_{kind} {}
 
   NODISCARD constexpr auto& pos() const { return pos_; }
   NODISCARD constexpr auto& kind() const { return kind_; }
   NODISCARD constexpr auto& value() const { return value_; }
-  NODISCARD auto has_value() const -> bool { return static_cast<bool>(value_); }
 
 #ifdef TRACE
  protected:

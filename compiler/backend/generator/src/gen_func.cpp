@@ -6,14 +6,14 @@
 #include "gen_stmt.hpp"
 
 auto write_parameter(std::ostream& writer, const std::shared_ptr<FuncParameter>& param) {
-  if (param->type_name()) {
-    auto type_name = mutate_type_name(*param->type_name());
+  if (!param->type_name().empty()) {
+    auto type_name = mutate_type_name(param->type_name());
     writer << type_name;
   } else {
     writer << keyword_auto;
   }
 
-  writer << " " << *param->name();
+  writer << " " << param->name();
 }
 
 auto write_parameter_block(std::ostream& writer, const std::shared_ptr<FuncDefinition>& def)
@@ -34,12 +34,12 @@ auto write_parameter_block(std::ostream& writer, const std::shared_ptr<FuncDefin
 }
 
 auto write_function_declaration(std::ostream& writer, const std::shared_ptr<FuncDefinition>& def) {
-  writer << keyword_auto << ' ' << *def->name();
+  writer << keyword_auto << ' ' << def->name();
 
   write_parameter_block(writer, def);
 
-  if (def->return_type()) {
-    auto ret_type_name = mutate_type_name(*def->return_type());
+  if (!def->return_type().empty()) {
+    auto ret_type_name = mutate_type_name(def->return_type());
     writer << " -> " << ret_type_name;
   }
 }

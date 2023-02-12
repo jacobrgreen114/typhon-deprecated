@@ -7,6 +7,8 @@
 #error
 #endif
 
+#include <utility>
+
 #include "syntax_tree.hpp"
 
 class NameSpace final {
@@ -14,13 +16,15 @@ class NameSpace final {
   using SubSpace = std::shared_ptr<NameSpace>;
 
  private:
-  String name_;
+  std::string name_;
   std::vector<SubSpace> sub_spaces_;
   std::vector<std::shared_ptr<SyntaxTree>> syntax_trees_;
 
  public:
-  explicit NameSpace(const String& name)
-      : name_{name} {}
+  explicit NameSpace() = default;
+
+  explicit NameSpace(std::string name)
+      : name_{std::move(name)} {}
 
   NODISCARD auto& name() const { return name_; }
   NODISCARD auto& sub_spaces() const { return sub_spaces_; }
@@ -35,7 +39,7 @@ class ProjectTree final {
 
  public:
   ProjectTree()
-      : root_{std::make_shared<NameSpace>(nullptr)} {};
+      : root_{std::make_shared<NameSpace>()} {};
 
   NODISCARD auto& root() const { return root_; }
 };

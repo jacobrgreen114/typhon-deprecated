@@ -231,22 +231,22 @@ void BoolExpression::on_serialize(xml::SerializationContext& context) const {
 
 void ValueExpression::on_serialize(xml::SerializationContext& context) const {
   SyntaxNode::on_serialize(context);
-  if (value_) {
-    context.add_attribute("value", *value_);
+  if (!value_.empty()) {
+    context.add_attribute("value", value_);
   }
 }
 
 void IdentifierExpression::on_serialize(xml::SerializationContext& context) const {
   ExpressionNode::on_serialize(context);
-  if (identifier_) {
-    context.add_attribute("name", *identifier_);
+  if (!identifier_.empty()) {
+    context.add_attribute("name", identifier_);
   }
 }
 
 auto CallExpression::on_serialize(xml::SerializationContext& context) const -> void {
   SyntaxNode::on_serialize(context);
-  if (identifier_) {
-    context.add_attribute("name", *identifier_);
+  if (!identifier_.empty()) {
+    context.add_attribute("name", identifier_);
   }
 
   for (auto& param : parameters()) {
@@ -343,16 +343,16 @@ void StatementBlock::on_serialize(xml::SerializationContext& context) const {
 
 void Definition::on_serialize(xml::SerializationContext& context) const {
   SyntaxNode::on_serialize(context);
-  if (name_) {
-    context.add_attribute("name", name_->c_str());
+  if (!name_.empty()) {
+    context.add_attribute("name", name_);
   }
   context.add_attribute("access", to_string(modifier_));
 }
 
 void VarDefinition::on_serialize(xml::SerializationContext& context) const {
   Definition::on_serialize(context);
-  if (type_name_) {
-    context.add_attribute("type", type_name_->c_str());
+  if (!type_name_.empty()) {
+    context.add_attribute("type", type_name_);
   }
 
   if (assignment_) {
@@ -362,8 +362,8 @@ void VarDefinition::on_serialize(xml::SerializationContext& context) const {
 
 void FuncDefinition::on_serialize(xml::SerializationContext& context) const {
   Definition::on_serialize(context);
-  if (return_) {
-    context.add_attribute("return", *return_);
+  if (!return_.empty()) {
+    context.add_attribute("return", return_);
   }
   if (body_) {
     context.add_element("body", *body_);
@@ -376,7 +376,7 @@ auto Namespace::on_serialize(xml::SerializationContext& context) const -> void {
   auto str = std::string{};
   for (auto& ns : namespaces_) {
     str += "::";
-    str += *ns;
+    str += ns;
   }
   context.add_attribute("namespace", str);
 }
@@ -387,7 +387,7 @@ auto Import::on_serialize(xml::SerializationContext& context) const -> void {
   auto str = std::string{};
   for (auto& ns : namespaces_) {
     str += "::";
-    str += *ns;
+    str += ns;
   }
   context.add_attribute("namespace", str);
 }

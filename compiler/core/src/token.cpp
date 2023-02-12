@@ -115,8 +115,8 @@ auto operator<<(std::ostream& stream, const FilePosition& position) -> std::ostr
 
 auto operator<<(std::ostream& stream, const LexicalToken& token) -> std::ostream& {
   stream << R"({ "pos" : ")" << token.pos() << R"(", "kind" : ")" << token.kind() << R"(")";
-  if (token.has_value()) {
-    stream << R"(, "value" : ")" << *token.value() << R"(")";
+  if (!token.value().empty()) {
+    stream << R"(, "value" : ")" << token.value() << R"(")";
   }
 
   stream << R"( })";
@@ -128,8 +128,8 @@ void LexicalToken::on_serialize(xml::SerializationContext& context) const {
   Serializable::on_serialize(context);
   context.add_attribute("pos", pos());
   context.add_attribute("kind", to_string(kind()));
-  if (value_) {
-    context.add_attribute("value", *value());
+  if (!value_.empty()) {
+    context.add_attribute("value", value());
   }
 }
 #endif

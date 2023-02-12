@@ -61,8 +61,7 @@ constexpr auto create_empty_token(LexerContext& ctx, LexicalKind kind) {
 }
 
 constexpr auto create_value_token(LexerContext& ctx, LexicalKind kind) {
-  ctx.tokens.emplace_back(
-      ctx.token_position(), kind, std::make_shared<std::string>(ctx.pop_buffer()));
+  ctx.tokens.emplace_back(ctx.token_position(), kind, ctx.pop_buffer());
 }
 
 constexpr auto should_match_whitespace(const char c) -> bool { return ('\0' < c and c <= ' '); }

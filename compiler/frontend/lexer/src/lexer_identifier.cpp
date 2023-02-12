@@ -44,27 +44,11 @@ const auto keywords = std::unordered_map<std::string_view, LexicalKind>{
     {"mut",       LexicalKind::KeywordMutable  },
 };
 
-auto identifier_cache = std::unordered_map<std::string_view, String>{};
-
-auto cached_identifier(const std::string& str) -> String {
-  if (auto cached = identifier_cache.find(str); cached != identifier_cache.end()) {
-    return cached->second;
-  }
-  
-  auto new_str                      = std::make_shared<std::string>(str);
-  return identifier_cache[*new_str] = new_str;
-}
-
 auto create_identifier_token(LexerContext& ctx) -> void {
   const auto str   = ctx.pop_buffer();
   const auto& kind = keywords.find(str);
   if (kind == keywords.end()) {
-#if CACHE_IDENTIFIERS
-    ctx.tokens.emplace_back(ctx.token_position(), LexicalKind::Identifier, cached_identifier(str));
-#else
-    ctx.tokens.emplace_back(
-        ctx.token_position(), LexicalKind::Identifier, std::make_shared<std::string>(str));
-#endif
+    ctx.tokens.emplace_back(ctx.token_position(), LexicalKind::Identifier, str);
   } else {
     create_empty_token(ctx, kind->second);
   }

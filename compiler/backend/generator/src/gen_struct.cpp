@@ -6,7 +6,7 @@
 #include "gen_var.hpp"
 
 auto write_declaration(std::ostream& writer, const std::shared_ptr<StructDefinition>& def) -> void {
-  writer << "class " << *def->name();
+  writer << "class " << def->name();
 }
 
 auto write_forward_decl(std::ostream& writer, const std::shared_ptr<StructDefinition>& def)

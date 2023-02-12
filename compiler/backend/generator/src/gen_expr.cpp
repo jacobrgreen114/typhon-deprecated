@@ -13,21 +13,21 @@ auto write_expr_bool(std::ostream& writer, const std::shared_ptr<BoolExpression>
 
 auto write_expr_number(std::ostream& writer, const std::shared_ptr<NumberExpression>& expr)
     -> void {
-  writer << *expr->value();
+  writer << expr->value();
 }
 
 auto write_expr_string(std::ostream& writer, const std::shared_ptr<StringExpression>& expr)
     -> void {
-  writer << '"' << *expr->value() << '"';
+  writer << '"' << expr->value() << '"';
 }
 
 auto write_expr_ident(std::ostream& writer, const std::shared_ptr<IdentifierExpression>& expr)
     -> void {
-  writer << *expr->identifier();
+  writer << expr->identifier();
 }
 
 auto write_expr_call(std::ostream& writer, const std::shared_ptr<CallExpression>& expr) -> void {
-  writer << *expr->identifier() << '(';
+  writer << expr->identifier() << '(';
   auto& params = expr->parameters();
   if (!params.empty()) {
     write_expression(writer, params[0]);
