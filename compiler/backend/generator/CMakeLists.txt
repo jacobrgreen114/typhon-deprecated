@@ -8,7 +8,7 @@ add_library(typhon_generator
         src/gen_var.cpp
         src/gen_func.cpp
         src/gen_struct.cpp
-)
+        src/gen_object.cpp src/gen_object.hpp)
 
 target_include_directories(typhon_generator
     PUBLIC
@@ -17,7 +17,7 @@ target_include_directories(typhon_generator
 
 target_link_libraries(typhon_generator
     PUBLIC
-        typhon_core
+        typhon_checker
 )
 
 target_msvc_runtime_library(typhon_generator)

@@ -1,0 +1,9 @@
+// Copyright (c) 2023 Jacob R. Green
+// All Rights Reserved.
+
+namespace Demo::Vars;
+
+var mut uninitialized : i32;
+var auto_deduced = 0;
+var specified : i32 = 0;
+var mut mutable = 0;

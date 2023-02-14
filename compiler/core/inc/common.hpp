@@ -39,10 +39,20 @@ namespace chrono = std::chrono;
 #ifndef NDEBUG
 template <typename To, typename From>
 constexpr auto ptr_cast(std::unique_ptr<From> from) -> std::unique_ptr<To> {
-  if (!from) {
+  if (from == nullptr) {
     return nullptr;
   }
-  auto* temp = dynamic_cast<To*>(from.release());
+  auto temp = dynamic_cast<To*>(from.release());
+  assert(temp != nullptr);
+  return std::unique_ptr<To>(temp);
+}
+
+template <typename To, typename From>
+constexpr auto ptr_cast(std::shared_ptr<From> from) -> std::shared_ptr<To> {
+  if (from == nullptr) {
+    return nullptr;
+  }
+  auto temp = std::dynamic_pointer_cast<To>(from);
   assert(temp != nullptr);
   return std::unique_ptr<To>(temp);
 }
@@ -52,7 +62,7 @@ constexpr auto ptr_cast(From* from) -> To* {
   if (from == nullptr) {
     return nullptr;
   }
-  auto* temp = dynamic_cast<To*>(from);
+  auto temp = dynamic_cast<To*>(from);
   assert(temp != nullptr);
   return temp;
 }
@@ -63,21 +73,21 @@ constexpr auto& deref(T* t) {
   return *t;
 }
 
-template <typename T>
-constexpr auto& deref(const std::unique_ptr<T>& t) {
-  return deref(t.get());
-}
-
 #else
 
 template <typename To, typename From>
 constexpr auto ptr_cast(std::unique_ptr<From> from) -> std::unique_ptr<To> {
-  return std::unique_ptr<To>(reinterpret_cast<To*>(from.release()));
+  return std::unique_ptr<To>(static_cast<To*>(from.release()));
+}
+
+template <typename To, typename From>
+constexpr auto ptr_cast(std::shared_ptr<From> from) -> std::shared_ptr<To> {
+  return std::static_pointer_cast<To>(from);
 }
 
 template <typename To, typename From>
 constexpr auto ptr_cast(From* from) -> To* {
-  return reinterpret_cast<To*>(from);
+  return static_cast<To*>(from);
 }
 
 template <typename T>
@@ -85,16 +95,21 @@ constexpr auto& deref(T* t) {
   return *t;
 }
 
+#endif
+
 template <typename T>
 constexpr auto& deref(const std::unique_ptr<T>& t) {
   return deref(t.get());
 }
 
-#endif
+template <typename T>
+constexpr auto& deref(const std::shared_ptr<T>& t) {
+  return deref(t.get());
+}
 
 template <typename To, typename From>
 constexpr auto ref_cast(From& from) -> To& {
-  return *reinterpret_cast<To*>(&from);
+  return *static_cast<To*>(&from);
 }
 
 inline std::ostream& newline(std::ostream& os) {

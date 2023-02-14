@@ -161,7 +161,7 @@ constexpr auto symbol_square_open_state        = LexerState{[](LexerContext& ctx
   auto current = ctx.current();
   assert(is_square_open(current));
 
-  create_symbol_token(ctx, LexicalKind::SymbolsquareOpen);
+  create_symbol_token(ctx, LexicalKind::SymbolSquareOpen);
   return ctx.move_next_state(unknown_state, exit_state);
 }};
 
@@ -606,8 +606,7 @@ constexpr auto symbol_slash_unknown_state       = LexerState{[](LexerContext& ct
 // Symbol Start States
 
 constexpr LexerState symbol_unknown_state       = LexerState{[](LexerContext& ctx) -> LexerState {
-  auto& current = ctx.current();
-  switch (current) {
+  switch (ctx.current()) {
     case period:
       return symbol_period_state;
 

@@ -65,7 +65,7 @@ auto expr_bool_handler_(ParserContext& ctx) -> ParserState {
   auto kind = ctx.current().kind();
   assert(kind == LexicalKind::KeywordTrue || kind == LexicalKind::KeywordFalse);
   const auto value = kind == LexicalKind::KeywordTrue;
-  ctx.syntax_stack.push(std::make_unique<BoolExpression>(value));
+  ctx.syntax_stack.push(std::make_unique<BooleanExpression>(ctx.current().pos(), value));
   return ctx.move_next_state(expr_possible_end_state, expr_exit_end_state);
 }
 
@@ -79,7 +79,7 @@ constexpr auto expr_number_state = ParserState{expr_number_handler_};
 
 auto expr_number_handler_(ParserContext& ctx) -> ParserState {
   const auto& value = ctx.current().value();
-  ctx.syntax_stack.push(std::make_unique<NumberExpression>(value));
+  ctx.syntax_stack.push(std::make_unique<NumberExpression>(ctx.current().pos(), value));
   return ctx.move_next_state(expr_possible_end_state, expr_exit_end_state);
 }
 
@@ -93,7 +93,7 @@ constexpr auto expr_string_state = ParserState{expr_string_handler_};
 
 auto expr_string_handler_(ParserContext& ctx) -> ParserState {
   const auto& value = ctx.current().value();
-  ctx.syntax_stack.push(std::make_unique<StringExpression>(value));
+  ctx.syntax_stack.push(std::make_unique<StringExpression>(ctx.current().pos(), value));
   return ctx.move_next_state(expr_possible_end_state, expr_exit_end_state);
 }
 
@@ -127,9 +127,8 @@ auto expr_call_end_handler_(ParserContext& ctx) -> ParserState {
 }
 
 auto expr_call_param_end_handler_(ParserContext& ctx) -> ParserState {
-  auto expr = ctx.pop_syntax_node<ExpressionNode>();
-  auto call = ctx.get_syntax_node<CallExpression>();
-  call->push_parameter(std::move(expr));
+  auto expr = ctx.pop_syntax_node<BaseExpression>();
+  ctx.get_syntax_node<CallExpression>().push_parameter(std::move(expr));
 
   auto& current = ctx.current();
   if (is_comma(current)) {
@@ -149,7 +148,7 @@ auto expr_call_param_start_handler_(ParserContext& ctx) -> ParserState {
 auto expr_call_start_handler_(ParserContext& ctx) -> ParserState {
   assert(is_paren_open(ctx.current()));
   const auto& value = ctx.token_stack.top().value();
-  ctx.syntax_stack.push(std::make_unique<CallExpression>(value));
+  ctx.syntax_stack.push(std::make_unique<CallExpression>(ctx.current().pos(), value));
   ctx.token_stack.pop();
 
   return ctx.move_next_state(is_paren_close,
@@ -160,7 +159,7 @@ auto expr_call_start_handler_(ParserContext& ctx) -> ParserState {
 
 auto do_expr_access(ParserContext& ctx) {
   const auto& value = ctx.token_stack.top().value();
-  ctx.syntax_stack.push(std::make_unique<IdentifierExpression>(value));
+  ctx.syntax_stack.push(std::make_unique<IdentifierExpression>(ctx.current().pos(), value));
   ctx.token_stack.pop();
 }
 
@@ -196,12 +195,12 @@ constexpr ParserState expr_binary_state          = ParserState{expr_binary_handl
 auto do_expr_binary_end(ParserContext& ctx) -> void {
   ctx.precedence_stack.pop();
 
-  auto rhs = ctx.pop_expr_node();
-  auto op  = ctx.pop_expr_binary_node();
-  auto lhs = ctx.pop_expr_node();
+  auto rhs = ctx.pop_syntax_node<BaseExpression>();
+  auto op  = ctx.pop_syntax_node<BinaryExpression>();
+  auto lhs = ctx.pop_syntax_node<BaseExpression>();
 
-  op->set_lhs(std::move(lhs));
-  op->set_rhs(std::move(rhs));
+  deref(op).set_lhs(std::move(lhs));
+  deref(op).set_rhs(std::move(rhs));
 
   ctx.syntax_stack.emplace(std::move(op));
 }
@@ -232,7 +231,7 @@ auto expr_binary_handler_(ParserContext& ctx) -> ParserState {
   }
 
   ctx.precedence_stack.emplace(precedence);
-  ctx.syntax_stack.emplace(std::make_unique<BinaryExpression>(op));
+  ctx.syntax_stack.emplace(std::make_unique<BinaryExpression>(ctx.current().pos(), op));
 
   ctx.push_states(expr_binary_end_state, expr_binary_end_exit_state);
   return ctx.move_next_state(expr_unknown_state, expr_unexpected_end_error_state);
@@ -252,9 +251,8 @@ constexpr auto expr_unary_state          = ParserState{expr_unary_handler_};
 
 void do_expr_unary_end(ParserContext& ctx) {
   ctx.precedence_stack.pop();
-  auto expr   = ctx.pop_expr_node();
-  auto* unary = ctx.get_expr_unary_node();
-  unary->set_expr(std::move(expr));
+  auto expr = ctx.pop_syntax_node<BaseExpression>();
+  ctx.get_syntax_node<UnaryExpression>().set_expr(std::move(expr));
 }
 
 auto expr_unary_end_exit_handler_(ParserContext& ctx) -> ParserState {
@@ -278,7 +276,7 @@ auto expr_unary_handler_(ParserContext& ctx) -> ParserState {
   const auto prec     = get_precedence(op);
   ctx.precedence_stack.push(prec);
 
-  ctx.syntax_stack.push(std::make_unique<UnaryExpression>(op));
+  ctx.syntax_stack.push(std::make_unique<UnaryExpression>(ctx.current().pos(), op));
   ctx.push_states(expr_unary_end_state, expr_unary_end_exit_state);
   return ctx.move_next_state(expr_unknown_state, expr_unexpected_end_error_state);
 }

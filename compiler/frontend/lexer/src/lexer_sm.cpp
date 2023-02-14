@@ -45,6 +45,7 @@ auto whitespace_handler_(LexerContext& ctx) -> LexerState {
 /*
  * States
  */
+
 auto unknown_handler_(LexerContext& ctx) -> LexerState;
 auto start_handler_(LexerContext& ctx) -> LexerState;
 
@@ -77,27 +78,24 @@ auto start_handler_(LexerContext& ctx) -> LexerState {
   return ctx.move_next_state(unknown_state, exit_state);
 }
 
-#pragma endregion
-
-#pragma region Lexer Context
-
-constexpr auto null_char = '\0';
+/*
+ * Lexer Context
+ */
 
 LexerContext::LexerContext(const fs::path& path)
     : path_{path},
       stream_{path},
-      current_{null_char} {
+      current_{eof_char} {
   if (stream_.fail()) {
     throw std::exception("failed to open file.");
   }
 }
 
+constexpr auto eof = std::ifstream::traits_type::eof();
 auto LexerContext::move_next() -> bool {
-  constexpr auto eof = std::ifstream::traits_type::eof();
-
-  auto c             = stream_.get();
+  auto c = stream_.get();
   if (c == eof) {
-    current_ = null_char;
+    current_ = eof_char;
     return false;
   }
 
@@ -111,15 +109,11 @@ auto LexerContext::move_next() -> bool {
   return true;
 }
 
-auto LexerContext::buffer_current() -> void { buffer_.push_back(current_); }
-
-auto LexerContext::mark_start_of_token() -> void { token_pos_ = current_pos_; }
-
 #pragma endregion
 
-#pragma region Lexer
+/*
+ * Lexer
+ */
 
 Lexer::Lexer()
     : StateMachine<LexerContext>{start_state} {}
-
-#pragma endregion

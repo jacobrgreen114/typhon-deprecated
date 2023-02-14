@@ -26,9 +26,7 @@ class Timer final {
     return static_cast<double>(duration.count()) * clock::period::num / clock::period::den;
   }
 
-  ~Timer() {
-    TRACE_PRINT("Timer " << name_ << " : " << std::fixed << elapsed() << " secs" << std::endl);
-  }
+  ~Timer() { TRACE_PRINT(name_ << " : " << std::fixed << elapsed() << " secs" << std::endl); }
 };
 
 #ifdef TRACE

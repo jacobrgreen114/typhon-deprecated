@@ -7,6 +7,6 @@
 #error
 #endif  //__cplusplus
 
-#include "../../../core/inc/syntax_tree.hpp"
+#include "syntax_tree.hpp"
 
 auto parse(const TokenCollection& tokens) -> std::unique_ptr<SyntaxTree>;

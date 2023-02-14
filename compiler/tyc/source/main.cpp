@@ -57,7 +57,7 @@ auto find_source_files(const ProjectConfig& config) -> SourceCollection {
 }
 
 // todo : implement already compiled optimization
-auto parse_source(const std::shared_ptr<SourceContext>& source) -> std::unique_ptr<SyntaxTree> {
+auto parse_source(const SourceContext::Pointer& source) -> std::unique_ptr<SyntaxTree> {
   TRACE_PRINT("Compiling : " << source->absolute_path() << std::endl);
 
   auto tokens = lex(source);
@@ -94,26 +94,6 @@ auto parse_sources(const SourceCollection& sources) -> SyntaxTreeCollection {
   return trees;
 }
 
-// auto generate_sources(const SyntaxTreeCollection& syntax_trees) {
-// #if PARALLEL_COMPILATION
-//   auto generate_futures = std::vector<std::future<void>>{};
-//   generate_futures.reserve(syntax_trees.size());
-//
-//   for (auto& tree : syntax_trees) {
-//     generate_futures.push_back(std::async(std::launch::async, generate, tree));
-//   }
-//
-//   for (auto& future : generate_futures) {
-//     future.wait();
-//   }
-//
-// #else
-//   for (auto& tree : syntax_trees) {
-//     generate(tree);
-//   }
-// #endif
-// }
-
 class Compiler final {
   std::unique_ptr<ProjectConfig> config_;
 
@@ -129,8 +109,6 @@ class Compiler final {
     auto sources      = find_source_files(*config_);
     auto syntax_trees = parse_sources(sources);
     auto project_tree = check(syntax_trees);
-
-    // generate_sources(project_tree);
 
     generate(project_tree);
     return 0;

@@ -1,0 +1,9 @@
+// Copyright (c) 2023 Jacob R. Green
+// All Rights Reserved.
+
+namespace Demo;
+
+func main() -> i32 {
+	var result = 0;
+	return result;
+}

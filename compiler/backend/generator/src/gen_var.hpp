@@ -9,4 +9,6 @@
 
 #include "gen_common.hpp"
 
-auto write_def(std::ostream& writer, const VarDefinition& def) -> void;
+auto write_forward_decl(std::ostream& writer, const VariableDefinition& def) -> void;
+
+auto write_def(std::ostream& writer, const VariableDefinition& def) -> void;

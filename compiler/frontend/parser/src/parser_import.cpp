@@ -40,9 +40,7 @@ auto namespace_identifier_next_handler_(ParserContext& ctx) -> ParserState {
 
 auto namespace_identifier_handler_(ParserContext& ctx) -> ParserState {
   assert(is_identifier(ctx.current()));
-  auto& value = ctx.current().value();
-  auto node   = ctx.get_syntax_node<Namespace>();
-  node->push_namespace(value);
+  ctx.get_syntax_node<NamespaceDeclaration>().push_namespace(ctx.current().value());
 
   static constexpr auto conditions = std::array<ParserMatchCondition, 2>{
       ParserMatchCondition{is_doublecolon, namespace_identifier_next_state},
@@ -54,7 +52,7 @@ auto namespace_identifier_handler_(ParserContext& ctx) -> ParserState {
 
 auto namespace_start_handler_(ParserContext& ctx) -> ParserState {
   assert(ctx.current().kind() == LexicalKind::KeywordNamespace);
-  ctx.syntax_stack.emplace(std::make_unique<Namespace>());
+  ctx.syntax_stack.emplace(std::make_unique<NamespaceDeclaration>(ctx.current().pos()));
   return ctx.move_next_state(is_identifier,
                              namespace_identifier_state,
                              namespace_error_state,
@@ -95,9 +93,7 @@ auto import_identifier_next_handler_(ParserContext& ctx) -> ParserState {
 
 auto import_identifier_handler_(ParserContext& ctx) -> ParserState {
   assert(is_identifier(ctx.current()));
-  auto& value = ctx.current().value();
-  auto node   = ctx.get_syntax_node<Import>();
-  node->push_namespace(value);
+  ctx.get_syntax_node<NamespaceImport>().push_namespace(ctx.current().value());
 
   static constexpr auto conditions = std::array<ParserMatchCondition, 2>{
       ParserMatchCondition{is_doublecolon, import_identifier_next_state},
@@ -109,7 +105,7 @@ auto import_identifier_handler_(ParserContext& ctx) -> ParserState {
 
 auto import_start_handler_(ParserContext& ctx) -> ParserState {
   assert(ctx.current().kind() == LexicalKind::KeywordImport);
-  ctx.syntax_stack.emplace(std::make_unique<Import>());
+  ctx.syntax_stack.emplace(std::make_unique<NamespaceImport>(ctx.current().pos()));
   return ctx.move_next_state(
       is_identifier, import_identifier_state, import_error_state, import_unexpected_end_state);
 }

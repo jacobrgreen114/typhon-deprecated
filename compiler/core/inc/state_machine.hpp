@@ -1,9 +1,11 @@
 // Copyright (c) 2023 Jacob R. Green
 // All Rights Reserved.
 
-#ifdef __cplusplus
-
 #pragma once
+
+#ifndef __cplusplus
+#error "!cplusplus"
+#endif  // __cplusplus
 
 #include <cassert>
 #include <exception>
@@ -146,7 +148,3 @@ class EnumeratingContext : public Enumerator<TEnumType> {
     return fail;
   }
 };
-
-#else
-#error "!cplusplus"
-#endif  // __cplusplus

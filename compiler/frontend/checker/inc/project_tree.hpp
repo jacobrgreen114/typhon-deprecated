@@ -16,6 +16,7 @@ class NameSpace final {
   using SubSpace = std::unique_ptr<NameSpace>;
 
  private:
+  NameSpace* parent_ = nullptr;
   std::string name_;
   std::vector<SubSpace> sub_spaces_;
   std::vector<std::unique_ptr<SyntaxTree>> syntax_trees_;
@@ -31,7 +32,26 @@ class NameSpace final {
   NODISCARD auto& sub_spaces() { return sub_spaces_; }
   NODISCARD auto& trees() const { return syntax_trees_; }
 
-  auto push_sub_space(SubSpace ns) { sub_spaces_.emplace_back(std::move(ns)); }
+  NODISCARD auto parent() const { return parent_; }
+
+  NODISCARD auto full_name() const {
+    auto full_name = name();
+    for (auto* par = parent(); par != nullptr; par = par->parent()) {
+      if (!par->name().empty()) {
+        full_name.insert(0, "_");
+        full_name.insert(0, par->name());
+      }
+    }
+    return full_name;
+  }
+
+  auto gen_header_path() const { return gen_dir_src_path / full_name().append(gen_hdr_file_ext); }
+
+  auto push_sub_space(SubSpace ns) {
+    ns->parent_ = this;
+    sub_spaces_.emplace_back(std::move(ns));
+  }
+
   auto push_tree(std::unique_ptr<SyntaxTree> tree) { syntax_trees_.emplace_back(std::move(tree)); }
 };
 

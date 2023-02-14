@@ -5,25 +5,41 @@
 
 #include "parser_def_var.hpp"
 #include "parser_def_func.hpp"
+#include "parser_def_object.hpp"
 
 auto def_struct_error_handler_(ParserContext& ctx) -> ParserState;
 auto def_struct_unexpected_end_handler_(ParserContext& ctx) -> ParserState;
+
 auto def_struct_body_end_handler_(ParserContext& ctx) -> ParserState;
 auto def_struct_body_poss_end_handler_(ParserContext& ctx) -> ParserState;
+
+auto def_struct_var_end_handler_(ParserContext& ctx) -> ParserState;
+auto def_struct_func_end_handler_(ParserContext& ctx) -> ParserState;
+auto def_struct_struct_end_handler_(ParserContext& ctx) -> ParserState;
+auto def_struct_object_end_handler_(ParserContext& ctx) -> ParserState;
+
 auto def_struct_body_handler_(ParserContext& ctx) -> ParserState;
 auto def_struct_body_start_handler_(ParserContext& ctx) -> ParserState;
+
 auto def_struct_name_handler_(ParserContext& ctx) -> ParserState;
 auto def_struct_handler_(ParserContext& ctx) -> ParserState;
 
 constexpr auto def_struct_error_state          = ParserState{def_struct_error_handler_};
 constexpr auto def_struct_unexpected_end_state = ParserState{def_struct_unexpected_end_handler_};
-constexpr auto def_struct_body_end_state       = ParserState{def_struct_body_end_handler_};
 
+constexpr auto def_struct_body_end_state       = ParserState{def_struct_body_end_handler_};
 constexpr auto def_struct_body_poss_end_state  = ParserState{def_struct_body_poss_end_handler_};
+
+constexpr auto def_struct_var_end_state        = ParserState{def_struct_var_end_handler_};
+constexpr auto def_struct_func_end_state       = ParserState{def_struct_func_end_handler_};
+constexpr auto def_struct_struct_end_state     = ParserState{def_struct_struct_end_handler_};
+constexpr auto def_struct_object_end_state     = ParserState{def_struct_object_end_handler_};
+
 constexpr auto def_struct_body_state           = ParserState{def_struct_body_handler_};
 constexpr auto def_struct_body_start_state     = ParserState{def_struct_body_start_handler_};
+
 constexpr auto def_struct_name_state           = ParserState{def_struct_name_handler_};
-constexpr ParserState def_struct_state         = ParserState{def_struct_handler_};
+constexpr ParserState def_struct_start_state   = ParserState{def_struct_handler_};
 
 auto def_struct_error_handler_(ParserContext& ctx) -> ParserState { throw_not_implemented(); }
 
@@ -38,27 +54,57 @@ auto def_struct_body_end_handler_(ParserContext& ctx) -> ParserState {
 }
 
 auto def_struct_body_poss_end_handler_(ParserContext& ctx) -> ParserState {
-  auto def = ctx.pop_syntax_node<Definition>();
-  auto str = ctx.get_syntax_node<StructDefinition>();
-  str->push_definition(std::move(def));
-
   if (is_curly_close(ctx.current())) {
     return def_struct_body_end_state;
   }
   return def_struct_body_state;
 }
 
-auto def_struct_body_handler_(ParserContext& ctx) -> ParserState {
-  auto& current = ctx.current();
+template <typename T>
+auto do_type_end_handler(ParserContext& ctx) -> ParserState {
+  auto var = ctx.pop_syntax_node<VariableDefinition>();
+  ctx.get_syntax_node<StructDefinition>().push_var(std::move(var));
+  return def_struct_body_poss_end_state;
+}
 
-  ctx.push_states(def_struct_body_poss_end_state, def_struct_unexpected_end_state);
-  switch (current.kind()) {
+auto def_struct_var_end_handler_(ParserContext& ctx) -> ParserState {
+  auto var = ctx.pop_syntax_node<VariableDefinition>();
+  ctx.get_syntax_node<StructDefinition>().push_var(std::move(var));
+  return def_struct_body_poss_end_state;
+}
+
+auto def_struct_func_end_handler_(ParserContext& ctx) -> ParserState {
+  auto func = ctx.pop_syntax_node<FunctionDefinition>();
+  ctx.get_syntax_node<StructDefinition>().push_func(std::move(func));
+  return def_struct_body_poss_end_state;
+}
+
+auto def_struct_struct_end_handler_(ParserContext& ctx) -> ParserState {
+  auto strct = ctx.pop_syntax_node<StructDefinition>();
+  ctx.get_syntax_node<StructDefinition>().push_struct(std::move(strct));
+  return def_struct_body_poss_end_state;
+}
+
+auto def_struct_object_end_handler_(ParserContext& ctx) -> ParserState {
+  auto object = ctx.pop_syntax_node<ObjectDefinition>();
+  ctx.get_syntax_node<StructDefinition>().push_object(std::move(object));
+  return def_struct_body_poss_end_state;
+}
+
+auto def_struct_body_handler_(ParserContext& ctx) -> ParserState {
+  switch (ctx.current().kind()) {
     case LexicalKind::KeywordVar:
+      ctx.push_states(def_struct_var_end_state, def_struct_unexpected_end_state);
       return var_def_start_state;
     case LexicalKind::KeywordFunc:
+      ctx.push_states(def_struct_func_end_state, def_struct_unexpected_end_state);
       return func_def_start_state;
     case LexicalKind::KeywordStruct:
-      return def_struct_state;
+      ctx.push_states(def_struct_struct_end_state, def_struct_unexpected_end_state);
+      return def_struct_start_state;
+    case LexicalKind::KeywordObject:
+      ctx.push_states(def_struct_object_end_state, def_struct_unexpected_end_state);
+      return def_object_start_state;
     default:
       return def_struct_error_state;
   }
@@ -67,8 +113,7 @@ auto def_struct_body_handler_(ParserContext& ctx) -> ParserState {
 }
 
 auto def_struct_body_start_handler_(ParserContext& ctx) -> ParserState {
-  auto& current = ctx.current();
-  assert(is_curly_open(current));
+  assert(is_curly_open(ctx.current()));
   return ctx.move_next_state(is_curly_close,
                              def_struct_body_end_state,
                              def_struct_body_state,
@@ -76,12 +121,8 @@ auto def_struct_body_start_handler_(ParserContext& ctx) -> ParserState {
 }
 
 auto def_struct_name_handler_(ParserContext& ctx) -> ParserState {
-  auto& current = ctx.current();
-  assert(is_identifier(current));
-  auto& name = current.value();
-
-  auto def   = ctx.get_syntax_node<StructDefinition>();
-  def->set_name(name);
+  assert(is_identifier(ctx.current()));
+  ctx.get_syntax_node<StructDefinition>().set_name(ctx.current().value());
 
   return ctx.move_next_state(is_curly_open,
                              def_struct_body_start_state,
@@ -91,7 +132,7 @@ auto def_struct_name_handler_(ParserContext& ctx) -> ParserState {
 
 auto def_struct_handler_(ParserContext& ctx) -> ParserState {
   assert(is_keyword_struct(ctx.current()));
-  ctx.syntax_stack.push(std::make_unique<StructDefinition>());
+  ctx.syntax_stack.push(std::make_unique<StructDefinition>(ctx.current().pos()));
   return ctx.move_next_state(is_identifier,
                              def_struct_name_state,
                              def_struct_error_state,

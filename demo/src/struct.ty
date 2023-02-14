@@ -1,0 +1,10 @@
+// Copyright (c) 2023 Jacob R. Green
+// All Rights Reserved.
+
+namespace Demo;
+
+struct iVec3 {
+	var mut x : f32;
+	var mut y : f32;
+	var mut z : f32;
+}

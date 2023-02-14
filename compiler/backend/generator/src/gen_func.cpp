@@ -5,10 +5,9 @@
 
 #include "gen_stmt.hpp"
 
-auto write_parameter(std::ostream& writer, const FuncParameter& param) {
-  if (!param.type_name().empty()) {
-    auto type_name = mutate_type_name(param.type_name());
-    writer << type_name;
+auto write_parameter(std::ostream& writer, const FunctionParameter& param) {
+  if (param.is_typed()) {
+    writer << identifer_prefix << param.type_name();
   } else {
     writer << keyword_auto;
   }
@@ -16,7 +15,7 @@ auto write_parameter(std::ostream& writer, const FuncParameter& param) {
   writer << " " << param.name();
 }
 
-auto write_parameter_block(std::ostream& writer, const FuncDefinition& def) -> void {
+auto write_parameter_block(std::ostream& writer, const FunctionDefinition& def) -> void {
   writer << '(';
 
   const auto& parameters = def.parameters();
@@ -32,24 +31,23 @@ auto write_parameter_block(std::ostream& writer, const FuncDefinition& def) -> v
   writer << ')';
 }
 
-auto write_function_declaration(std::ostream& writer, const FuncDefinition& def) {
-  writer << keyword_auto << ' ' << def.name();
+auto write_declaration(std::ostream& writer, const FunctionDefinition& def) {
+  writer << keyword_auto << ' ' << identifer_prefix << def.name();
 
   write_parameter_block(writer, def);
 
-  if (!def.return_type().empty()) {
-    auto ret_type_name = mutate_type_name(def.return_type());
-    writer << " -> " << ret_type_name;
+  if (def.is_return_typed()) {
+    writer << " -> " << identifer_prefix << def.return_type();
   }
 }
 
-auto write_forward_decl(std::ostream& writer, const FuncDefinition& def) -> void {
-  write_function_declaration(writer, def);
+auto write_forward_decl(std::ostream& writer, const FunctionDefinition& def) -> void {
+  write_declaration(writer, def);
   writer << ';';
 }
 
-auto write_function_definition(std::ostream& writer, const FuncDefinition& def) -> void {
-  write_function_declaration(writer, def);
+auto write_definition(std::ostream& writer, const FunctionDefinition& def) -> void {
+  write_declaration(writer, def);
   write_block(writer, deref(def.body()));
   writer << newline;
 }

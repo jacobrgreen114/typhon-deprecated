@@ -15,7 +15,10 @@
 #include "state_machine.hpp"
 #include "token.hpp"
 
+// todo : determine if loop optimizations actually improve performance
 #define LEXER_LOOP_OPTIMIZATION true
+
+constexpr auto eof_char = '\0';
 
 #pragma region Lexer
 
@@ -40,10 +43,15 @@ class LexerContext final : public EnumeratingContext<LexerContext, char> {
 
   NODISCARD constexpr auto token_position() const -> auto& { return token_pos_; }
 
-  auto buffer_current() -> void;
-  auto mark_start_of_token() -> void;
+  auto buffer_current() -> void { buffer_.push_back(current_); };
+  auto mark_start_of_token() -> void { token_pos_ = current_pos_; };
 
   constexpr auto pop_buffer() { return std::move(buffer_); }
+
+  template <typename... Args>
+  constexpr auto emplace_token(Args&&... args) {
+    return tokens.emplace_back(std::forward<Args>(args)...);
+  }
 };
 
 using LexerMatchCondition    = LexerContext::MatchCondition;

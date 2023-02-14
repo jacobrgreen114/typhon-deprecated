@@ -7,7 +7,7 @@
  * Expressions
  */
 
-auto write_expr_bool(std::ostream& writer, const BoolExpression& expr) -> void {
+auto write_expr_bool(std::ostream& writer, const BooleanExpression& expr) -> void {
   writer << (expr.value() ? "true" : "false");
 }
 
@@ -20,11 +20,11 @@ auto write_expr_string(std::ostream& writer, const StringExpression& expr) -> vo
 }
 
 auto write_expr_ident(std::ostream& writer, const IdentifierExpression& expr) -> void {
-  writer << expr.identifier();
+  writer << identifer_prefix << expr.identifier();
 }
 
 auto write_expr_call(std::ostream& writer, const CallExpression& expr) -> void {
-  writer << expr.identifier() << '(';
+  writer << identifer_prefix << expr.identifier() << '(';
   auto& params = expr.parameters();
   if (!params.empty()) {
     write_expression(writer, params[0]);
@@ -37,7 +37,7 @@ auto write_expr_call(std::ostream& writer, const CallExpression& expr) -> void {
   writer << ')';
 }
 
-auto write_expression(std::ostream& writer, const std::unique_ptr<ExpressionNode>& expr) -> void;
+auto write_expression(std::ostream& writer, const std::unique_ptr<BaseExpression>& expr) -> void;
 
 constexpr auto is_no_space_op(Operator op) -> bool {
   return op == Operator::Access || op == Operator::Static;
@@ -73,10 +73,10 @@ auto write_expr_unary(std::ostream& writer, const UnaryExpression& expr) -> void
   throw_not_implemented();
 }
 
-auto write_expression(std::ostream& writer, const std::unique_ptr<ExpressionNode>& expr) -> void {
+auto write_expression(std::ostream& writer, const std::unique_ptr<BaseExpression>& expr) -> void {
   switch (expr->kind()) {
     case SyntaxKind::ExprBool: {
-      write_expr_bool(writer, deref(ptr_cast<BoolExpression>(expr.get())));
+      write_expr_bool(writer, deref(ptr_cast<BooleanExpression>(expr.get())));
       break;
     }
     case SyntaxKind::ExprNumber: {

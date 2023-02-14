@@ -9,4 +9,4 @@
 
 #include "parser_sm.hpp"
 
-extern const ParserState def_struct_start_state;
+extern const ParserState def_object_start_state;

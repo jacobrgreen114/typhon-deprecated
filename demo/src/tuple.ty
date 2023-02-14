@@ -1,0 +1,6 @@
+// Copyright (c) 2023 Jacob R. Green
+// All Rights Reserved.
+
+namespace Demo;
+
+// alias size = (x : i32, y : i32);

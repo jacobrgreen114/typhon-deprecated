@@ -200,19 +200,8 @@ auto to_string(AccessModifier modifier) -> std::string_view {
  * Syntax Tree
  */
 
-const std::unique_ptr<Namespace> Namespace::root = std::make_unique<Namespace>();
-
-auto SyntaxTree::get_namespace() -> Namespace* {
-  auto ns = std::find_if(nodes_.begin(), nodes_.end(), [](auto& node) -> bool {
-    return node->kind() == SyntaxKind::Namespace;
-  });
-
-  if (ns != nodes_.end()) {
-    return ptr_cast<Namespace>(ns->get());
-  }
-
-  return nullptr;
-}
+const std::unique_ptr<NamespaceDeclaration> NamespaceDeclaration::root =
+    std::make_unique<NamespaceDeclaration>(FilePosition{0, 0});
 
 /*
  * Xml Serialization Overrides
@@ -220,31 +209,32 @@ auto SyntaxTree::get_namespace() -> Namespace* {
 
 #ifdef TRACE
 
-auto SyntaxNode::on_serialize(xml::SerializationContext& context) const -> void {
+auto BaseSyntax::on_serialize(xml::SerializationContext& context) const -> void {
+  context.add_attribute("pos", pos());
   context.add_attribute("kind", to_string(kind()));
 }
 
-void BoolExpression::on_serialize(xml::SerializationContext& context) const {
-  SyntaxNode::on_serialize(context);
+void BooleanExpression::on_serialize(xml::SerializationContext& context) const {
+  BaseSyntax::on_serialize(context);
   context.add_attribute("value", value_ ? "true" : "false");
 }
 
-void ValueExpression::on_serialize(xml::SerializationContext& context) const {
-  SyntaxNode::on_serialize(context);
+void BaseConstantValueExpression::on_serialize(xml::SerializationContext& context) const {
+  BaseSyntax::on_serialize(context);
   if (!value_.empty()) {
     context.add_attribute("value", value_);
   }
 }
 
 void IdentifierExpression::on_serialize(xml::SerializationContext& context) const {
-  ExpressionNode::on_serialize(context);
+  BaseExpression::on_serialize(context);
   if (!identifier_.empty()) {
     context.add_attribute("name", identifier_);
   }
 }
 
 auto CallExpression::on_serialize(xml::SerializationContext& context) const -> void {
-  SyntaxNode::on_serialize(context);
+  BaseSyntax::on_serialize(context);
   if (!identifier_.empty()) {
     context.add_attribute("name", identifier_);
   }
@@ -254,20 +244,20 @@ auto CallExpression::on_serialize(xml::SerializationContext& context) const -> v
   }
 }
 
-auto Operation::on_serialize(xml::SerializationContext& context) const -> void {
-  SyntaxNode::on_serialize(context);
+auto BaseOperation::on_serialize(xml::SerializationContext& context) const -> void {
+  BaseSyntax::on_serialize(context);
   context.add_attribute("op", to_string(op()));
 }
 
 void UnaryExpression::on_serialize(xml::SerializationContext& context) const {
-  Operation::on_serialize(context);
+  BaseOperation::on_serialize(context);
   if (expr_) {
     context.add_element("expr", *expr_);
   }
 }
 
 void BinaryExpression::on_serialize(xml::SerializationContext& context) const {
-  Operation::on_serialize(context);
+  BaseOperation::on_serialize(context);
   if (lhs_) {
     context.add_element("lhs", *lhs_);
   }
@@ -276,29 +266,29 @@ void BinaryExpression::on_serialize(xml::SerializationContext& context) const {
   }
 }
 
-auto DefStatement::on_serialize(xml::SerializationContext& context) const -> void {
-  SyntaxNode::on_serialize(context);
+auto DefinitionStatement::on_serialize(xml::SerializationContext& context) const -> void {
+  BaseSyntax::on_serialize(context);
   if (def_) {
     context.add_element("def", *def_);
   }
 }
 
-void ExprStatement::on_serialize(xml::SerializationContext& context) const {
-  Statement::on_serialize(context);
+void ExpressionStatement::on_serialize(xml::SerializationContext& context) const {
+  BaseStatement::on_serialize(context);
   if (expr_) {
     context.add_element("expr", *expr_);
   }
 }
 
 void ReturnStatement::on_serialize(xml::SerializationContext& context) const {
-  SyntaxNode::on_serialize(context);
+  BaseSyntax::on_serialize(context);
   if (expr_) {
     context.add_element("expr", *expr_);
   }
 }
 
 void IfStatement::on_serialize(xml::SerializationContext& context) const {
-  SyntaxNode::on_serialize(context);
+  BaseSyntax::on_serialize(context);
   if (expr_) {
     context.add_element("pred", *expr_);
   }
@@ -308,7 +298,7 @@ void IfStatement::on_serialize(xml::SerializationContext& context) const {
 }
 
 auto WhileStatement::on_serialize(xml::SerializationContext& context) const -> void {
-  SyntaxNode::on_serialize(context);
+  BaseSyntax::on_serialize(context);
   if (expr_) {
     context.add_element("pred", *expr_);
   }
@@ -318,7 +308,7 @@ auto WhileStatement::on_serialize(xml::SerializationContext& context) const -> v
 }
 
 auto ForStatement::on_serialize(xml::SerializationContext& context) const -> void {
-  SyntaxNode::on_serialize(context);
+  BaseSyntax::on_serialize(context);
   if (prefix_) {
     context.add_element("pre", *prefix_);
   }
@@ -341,16 +331,16 @@ void StatementBlock::on_serialize(xml::SerializationContext& context) const {
   }
 }
 
-void Definition::on_serialize(xml::SerializationContext& context) const {
-  SyntaxNode::on_serialize(context);
+void BaseDefinition::on_serialize(xml::SerializationContext& context) const {
+  BaseSyntax::on_serialize(context);
   if (!name_.empty()) {
     context.add_attribute("name", name_);
   }
   context.add_attribute("access", to_string(modifier_));
 }
 
-void VarDefinition::on_serialize(xml::SerializationContext& context) const {
-  Definition::on_serialize(context);
+void VariableDefinition::on_serialize(xml::SerializationContext& context) const {
+  BaseDefinition::on_serialize(context);
   if (!type_name_.empty()) {
     context.add_attribute("type", type_name_);
   }
@@ -360,8 +350,8 @@ void VarDefinition::on_serialize(xml::SerializationContext& context) const {
   }
 }
 
-void FuncDefinition::on_serialize(xml::SerializationContext& context) const {
-  Definition::on_serialize(context);
+void FunctionDefinition::on_serialize(xml::SerializationContext& context) const {
+  BaseDefinition::on_serialize(context);
   if (!return_.empty()) {
     context.add_attribute("return", return_);
   }
@@ -370,8 +360,8 @@ void FuncDefinition::on_serialize(xml::SerializationContext& context) const {
   }
 }
 
-auto Namespace::on_serialize(xml::SerializationContext& context) const -> void {
-  SyntaxNode::on_serialize(context);
+auto NamespaceDeclaration::on_serialize(xml::SerializationContext& context) const -> void {
+  BaseSyntax::on_serialize(context);
 
   auto str = std::string{};
   for (auto& ns : namespaces_) {
@@ -381,8 +371,8 @@ auto Namespace::on_serialize(xml::SerializationContext& context) const -> void {
   context.add_attribute("namespace", str);
 }
 
-auto Import::on_serialize(xml::SerializationContext& context) const -> void {
-  SyntaxNode::on_serialize(context);
+auto NamespaceImport::on_serialize(xml::SerializationContext& context) const -> void {
+  BaseSyntax::on_serialize(context);
 
   auto str = std::string{};
   for (auto& ns : namespaces_) {
@@ -393,9 +383,26 @@ auto Import::on_serialize(xml::SerializationContext& context) const -> void {
 }
 
 auto SyntaxTree::on_serialize(xml::SerializationContext& context) const -> void {
-  SyntaxNode::on_serialize(context);
-  for (auto& node : nodes_) {
-    context.add_element("node", *node);
+  BaseSyntax::on_serialize(context);
+
+  for (auto& ns : namespaces()) {
+    context.add_element("import", deref(ns));
+  }
+
+  for (auto& imp : imports()) {
+    context.add_element("import", deref(imp));
+  }
+
+  for (auto& var : variables()) {
+    context.add_element("var", deref(var));
+  }
+
+  for (auto& fn : functions()) {
+    context.add_element("func", deref(fn));
+  }
+
+  for (auto& strct : structs()) {
+    context.add_element("struct", deref(strct));
   }
 }
 

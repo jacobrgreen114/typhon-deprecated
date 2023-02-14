@@ -9,7 +9,10 @@
 
 #include "syntax_tree.hpp"
 
-constexpr auto keyword_auto = std::string_view{"auto"};
+constexpr auto keyword_auto          = std::string_view{"auto"};
+
+constexpr auto identifer_prefix      = std::string_view{"__ty_"};
+constexpr auto namespace_file_prefix = std::string_view{"__ty_ns_"};
 
 enum class GeneratedFile {
   Source,

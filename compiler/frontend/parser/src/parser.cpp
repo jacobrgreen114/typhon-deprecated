@@ -12,7 +12,10 @@ auto parse(const TokenCollection& tokens) -> std::unique_ptr<SyntaxTree> {
   auto parser  = Parser{};
   auto context = ParserContext{tokens};
 
-  TRACE_TIMER("parse");
-  parser.run(context);
+  {
+    TRACE_TIMER("Parser");
+    parser.run(context);
+  }
+
   return std::move(context.source);
 }

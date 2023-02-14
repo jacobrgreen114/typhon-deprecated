@@ -9,6 +9,6 @@
 
 #include "gen_common.hpp"
 
-auto write_forward_decl(std::ostream& writer, const FuncDefinition& def) -> void;
+auto write_forward_decl(std::ostream& writer, const FunctionDefinition& def) -> void;
 
-auto write_function_definition(std::ostream& writer, const FuncDefinition& def) -> void;
+auto write_definition(std::ostream& writer, const FunctionDefinition& def) -> void;

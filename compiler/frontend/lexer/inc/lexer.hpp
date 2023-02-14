@@ -9,4 +9,4 @@
 
 #include "token.hpp"
 
-auto lex(const std::shared_ptr<SourceContext>& source) -> const TokenCollection;
+auto lex(SourceContext::Pointer source) -> const TokenCollection;

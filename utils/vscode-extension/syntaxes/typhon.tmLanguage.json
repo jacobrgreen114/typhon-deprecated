@@ -1,0 +1,67 @@
+{
+    "scopeName": "source.typhon",
+    "fileTypes": [
+        ".ty"
+    ],
+    "foldingStartMarker": "\\{\\s*$",
+    "foldingStopMarker": "^\\s*\\}",
+    "patterns": [
+        {
+            "name": "comment.line.typhon",
+            "begin": "//",
+            "end": "\n"
+        },
+        {
+            "name": "comment.block.typhon",
+            "begin": "/\\*",
+            "end": "\\*/"
+        },
+        {
+            "name": "constant.numeric.typhon",
+            "match": "(0x[0-9a-fA-F,]+|0b[0-1,]+|-?[0-9,]+\\.[0-9,]+|-?[0-9,]+)"
+        },
+        {
+            "name": "constant.language.typhon",
+            "match": "\\b(true|false|null)\\b"
+        },
+        {
+            "name": "storage.type.typhon",
+            "match": "\\b(alias|const|var|func|struct|class|object|concept|interface|constructor|destructor|this|void|bool|bool32|u8|u16|u32|u64|uword|i8|i16|i32|i64|uword|f32|f64|char|char16|char32|string|string16|string32)\\b"
+        },
+        {
+            "name": "storage.modifier.typhon",
+            "match": "\\b(private|module|protected|internal|public|mut|static|extern)\\b"
+        },
+        {
+            "name": "keyword.control.typhon",
+            "match": "\\b(if|elif|else|loop|while|for|foreach|switch|match|return)\\b"
+        },
+        {
+            "name": "keyword.operator.word.typhon",
+            "match": "\\b(or|xor|and|is|as)\\b"
+        },
+        {
+            "name": "keyword.other.typhon",
+            "match": "\\b(import|namespace)\\b"
+        },
+        {
+            "name": "identifier.language.typhon",
+            "match": "\\b[a-zA-Z_]+[a-zA-Z0-9_]*\\b"
+        },
+        {
+            "name": "keyword.operator.typhon",
+            "match": "(\\.|;|::|:|->|==|\\+=|\\-=|\\*=|/=|\\|=|\\^=|&=|<=|>=|<<|>>|=|\\+|\\-|\\*|/|\\|\\||&&|\\||\\^|\\&|!=|!)"
+        },
+        {
+            "name": "string.quoted.double.typhon",
+            "begin": "\"",
+            "end": "\"",
+            "patterns": [
+                {
+                    "name": "constant.character.escape.typhon",
+                    "match": "\\."
+                }
+            ]
+        }
+    ]
+}

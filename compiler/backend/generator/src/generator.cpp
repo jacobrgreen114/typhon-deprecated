@@ -13,6 +13,7 @@
 #include "gen_var.hpp"
 #include "gen_func.hpp"
 #include "gen_struct.hpp"
+#include "gen_object.hpp"
 
 #define FIND_IF_OPTIMIZATION false
 
@@ -40,144 +41,87 @@ auto find_if_def_object(auto begin, auto end) {
   });
 }
 
-auto forward_decl_structs(std::ostream& writer, const SyntaxTree::NodeArray& nodes) {
-  auto empty = true;
-
-#if FIND_IF_OPTIMIZATION
-  for (auto it = find_if_def_struct(nodes.begin(), nodes.end()); it != nodes.end();
-       it      = find_if_def_struct(++it, nodes.end())) {
-    empty = false;
-    write_forward_decl(writer, ptr_cast<StructDefinition>(*it));
+auto forward_decl_structs(std::ostream& writer, const SyntaxTree& tree, GeneratedFile file) {
+  for (auto& strc : tree.structs()) {
     writer << newline;
-  }
-#else
-  for (auto& node : nodes) {
-    if (node->kind() == SyntaxKind::DefStruct) {
-      empty = false;
-      write_forward_decl(writer, deref(ptr_cast<StructDefinition>(node.get())));
-      writer << newline;
-    }
-  }
-#endif
-
-  if (!empty) {
-    writer << newline;
+    write_forward_decl(writer, deref(strc));
   }
 }
 
-auto forward_decl_objects(std::ostream& writer, const SyntaxTree::NodeArray& nodes) {
-  auto empty = true;
-
-#if FIND_IF_OPTIMIZATION
-  for (auto it = find_if_def_object(nodes.begin(), nodes.end()); it != nodes.end();
-       it      = find_if_def_object(++it, nodes.end())) {
-    empty = false;
-    // todo : implement
-  }
-#else
-  for (auto& node : nodes) {
-    if (node->kind() == SyntaxKind::DefObject) {
-      empty = false;
-      // todo : implement
-    }
-  }
-#endif
-
-  if (!empty) {
+auto forward_decl_objects(std::ostream& writer, const SyntaxTree& tree, GeneratedFile file) {
+  for (auto& object : tree.objects()) {
     writer << newline;
+    write_forward_decl(writer, deref(object));
   }
 }
 
-auto forward_decl_aliases(std::ostream& writer, const SyntaxTree::NodeArray& nodes) {
-  auto empty = true;
+auto forward_decl_aliases(std::ostream& writer, const SyntaxTree& nodes, GeneratedFile file) {
+  // for (auto& node : nodes) {
+  //   if (node->kind() == SyntaxKind::DefObject) {
+  //     empty = false;
+  //     // todo : implement
+  //   }
+  // }
+}
 
-  for (auto& node : nodes) {
-    if (node->kind() == SyntaxKind::DefObject) {
-      empty = false;
-      // todo : implement
-    }
-  }
-
-  if (!empty) {
-    writer << newline;
+auto forward_declare_funcs(std::ostream& writer, const SyntaxTree& tree, GeneratedFile file) {
+  for (auto& fn : tree.functions()) {
+    write_forward_decl(writer, deref(fn));
   }
 }
 
-auto forward_declare_funcs(std::ostream& writer, const SyntaxTree::NodeArray& nodes) {
-  auto empty = true;
-
-#if FIND_IF_OPTIMIZATION
-  for (auto it = find_if_def_func(nodes.begin(), nodes.end()); it != nodes.end();
-       it      = find_if_def_func(++it, nodes.end())) {
-    empty = false;
-    write_forward_decl(writer, ptr_cast<FuncDefinition>(*it));
-    writer << newline;
-  }
-#else
-  for (auto& node : nodes) {
-    if (node->kind() == SyntaxKind::DefFunc) {
-      empty = false;
-      write_forward_decl(writer, deref(ptr_cast<FuncDefinition>(node.get())));
-      writer << newline;
-    }
-  }
-#endif
-
-  if (!empty) {
-    writer << newline;
+auto forward_declare_vars(std::ostream& writer, const SyntaxTree& tree, GeneratedFile file) {
+  for (auto& var : tree.variables()) {
+    write_forward_decl(writer, deref(ptr_cast<VariableDefinition>(var.get())));
   }
 }
 
-auto forward_declare_vars(std::ostream& writer, const SyntaxTree::NodeArray& nodes) {
-  auto empty = true;
+auto forward_declare_source(std::ostream& writer, const SyntaxTree& tree) -> void {
+  // writer << "/*" << newline << " *  Forward Declarations" << newline << " */" << newline;
 
-#if FIND_IF_OPTIMIZATION
-  for (auto it = find_if_def_var(nodes.begin(), nodes.end()); it != nodes.end();
-       it      = find_if_def_var(++it, nodes.end())) {
-    empty = false;
-    write_def(writer, ptr_cast<VarDefinition>(*it));
-    writer << newline;
-  }
-#else
-  for (auto& node : nodes) {
-    if (node->kind() == SyntaxKind::DefVar) {
-      empty = false;
-      write_def(writer, deref(ptr_cast<VarDefinition>(node.get())));
-      writer << newline;
-    }
-  }
-#endif
-
-  if (!empty) {
-    writer << newline;
-  }
+  // forward_decl_structs(writer, tree, GeneratedFile::Source);
+  // writer << newline;
+  // forward_decl_objects(writer, tree, GeneratedFile::Source);
+  // writer << newline;
+  // forward_decl_aliases(writer, nodes);
+  // writer << newline;
+  // forward_declare_funcs(writer, tree, GeneratedFile::Source);
+  // writer << newline;
 }
 
-auto forward_declare(std::ostream& writer, const SyntaxTree& source) -> void {
+auto forward_declare_internal(std::ostream& writer, const SyntaxTree& tree) -> void {
   writer << "/*" << newline << " *  Forward Declarations" << newline << " */" << newline << newline;
 
-  auto& nodes = source.nodes();
-  forward_decl_structs(writer, nodes);
-  writer << newline;
-  forward_decl_objects(writer, nodes);
+  forward_declare_vars(writer, tree, GeneratedFile::HeaderInternal);
+  //writer << newline;
+  forward_decl_structs(writer, tree, GeneratedFile::HeaderInternal);
+  //writer << newline;
+  forward_decl_objects(writer, tree, GeneratedFile::HeaderInternal);
+  //writer << newline;
   //forward_decl_aliases(writer, nodes);
-  forward_declare_funcs(writer, nodes);
-  forward_declare_vars(writer, nodes);
+  //writer << newline;
+  forward_declare_funcs(writer, tree, GeneratedFile::HeaderInternal);
+  //writer << newline;
 }
 
 auto write_definitions(std::ostream& writer, const SyntaxTree& source) -> void {
-  for (auto& node : source.nodes()) {
-    switch (node->kind()) {
-      case SyntaxKind::DefFunc: {
-        write_function_definition(writer, deref(ptr_cast<FuncDefinition>(node.get())));
-        break;
-      }
-      case SyntaxKind::DefStruct: {
-        write_struct_definition(writer, deref(ptr_cast<StructDefinition>(node.get())));
-        break;
-      }
-    }
+  for (auto& var : source.variables()) {
+    write_def(writer, deref(var));
+  }
+
+  for (auto& str : source.structs()) {
     writer << newline;
+    write_struct_definition(writer, deref(str));
+  }
+
+  for (auto& object : source.objects()) {
+    writer << newline;
+    write_object_definition(writer, deref(object));
+  }
+
+  for (auto& fn : source.functions()) {
+    writer << newline;
+    write_definition(writer, deref(fn));
   }
 }
 
@@ -197,28 +141,67 @@ auto write_includes(std::ostream& writer) {
   }
 }
 
-auto generate_source_file(const SyntaxTree& syntax_tree) -> void {
-  auto& source        = syntax_tree.source();
-  auto& src_file_path = source->gen_source_path();
+auto generate_source_file(const NameSpace& ns, const SyntaxTree& syntax_tree) -> void {
+  auto& source        = deref(syntax_tree.source());
+  auto& src_file_path = source.gen_source_path();
   TRACE_PRINT("Generating : " << src_file_path << std::endl);
 
   fs::create_directories(src_file_path.parent_path());
   auto writer = std::ofstream{src_file_path};
 
-  TRACE_TIMER("generate");
-  write_source_header(writer, source->rel_path());
-  write_includes(writer);
-  forward_declare(writer, syntax_tree);
+  TRACE_TIMER("Generator");
+  write_source_header(writer, source.rel_path());
+
+  writer << "#include " << ns.gen_header_path().filename() << newline << newline;
+
+  forward_declare_source(writer, syntax_tree);
   write_definitions(writer, syntax_tree);
 }
 
+auto generate_internal_header(const NameSpace& ns, const SyntaxTree& syntax_tree) -> void {
+  auto& source        = deref(syntax_tree.source());
+  auto& src_file_path = source.gen_header_internal_path();
+  TRACE_PRINT("Generating : " << src_file_path << std::endl);
+
+  fs::create_directories(src_file_path.parent_path());
+  auto writer = std::ofstream{src_file_path};
+
+  TRACE_TIMER("Generator");
+  write_source_header(writer, source.rel_path());
+
+  writer << "#pragma once" << newline << newline;
+
+  writer << "#include \"" << ns.gen_header_path().filename().string() << '"' << newline << newline;
+
+  forward_declare_internal(writer, syntax_tree);
+  //write_definitions(writer, syntax_tree);
+}
+
+auto generate_namespace_header(const NameSpace& ns) {
+  auto writer = std::ofstream{ns.gen_header_path()};
+
+  write_source_header(writer, {});
+  writer << "#pragma once" << newline << newline;
+
+  writer << "#include \"../../../__builtins.hpp\"" << newline << newline;
+
+  for (auto& ptree : ns.trees()) {
+    auto& tree = deref(ptree);
+    writer << "#include \"" << deref(tree.source()).gen_header_internal_path().filename().string()
+           << '"' << newline;
+  }
+}
+
 auto generate(const NameSpace& ns) -> void {
-  for (auto& tree : ns.trees()) {
-    generate_source_file(deref(tree));
+  generate_namespace_header(ns);
+  for (auto& ptree : ns.trees()) {
+    auto& tree = deref(ptree);
+    generate_internal_header(ns, tree);
+    generate_source_file(ns, tree);
   }
 
-  for (auto& sub : ns.sub_spaces()) {
-    generate(deref(sub));
+  for (auto& psub : ns.sub_spaces()) {
+    generate(deref(psub));
   }
 }
 

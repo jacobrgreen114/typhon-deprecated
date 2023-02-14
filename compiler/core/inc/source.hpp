@@ -12,6 +12,10 @@
 #include "paths.hpp"
 
 class SourceContext final {
+ public:
+  using Pointer = std::shared_ptr<SourceContext>;
+
+ private:
   fs::path source_dir_;
   fs::path path_;
   fs::path rel_path_;

@@ -5,23 +5,33 @@
 
 #include "gen_expr.hpp"
 
-auto forward_declare(std::ostream& writer, const VarDefinition& def) -> void {
-  auto type_name = !def.type_name().empty() ? mutate_type_name(def.type_name()) : keyword_auto;
-  auto name      = def.name();
+auto write_declaration(std::ostream& writer, const VariableDefinition& def) -> void {
+  if (!def.is_mutable()) {
+    writer << "const ";
+  }
 
-  writer << type_name << ' ' << name << ';' << newline;
+  if (def.is_typed()) {
+    writer << identifer_prefix << def.type_name();
+  } else {
+    writer << keyword_auto;
+  }
+
+  writer << ' ' << identifer_prefix << def.name();
 }
 
-auto write_def(std::ostream& writer, const VarDefinition& def) -> void {
-  auto type_name = !def.type_name().empty() ? mutate_type_name(def.type_name()) : keyword_auto;
-  auto name      = def.name();
+auto write_forward_decl(std::ostream& writer, const VariableDefinition& def) -> void {
+  writer << "extern ";
+  write_declaration(writer, def);
+  writer << ';' << newline;
+}
 
-  writer << type_name << ' ' << name;
+auto write_def(std::ostream& writer, const VariableDefinition& def) -> void {
+  write_declaration(writer, def);
 
   if (def.assignment()) {
     writer << " = ";
     write_expression(writer, def.assignment());
   }
 
-  writer << ';';
+  writer << ';' << newline;
 }

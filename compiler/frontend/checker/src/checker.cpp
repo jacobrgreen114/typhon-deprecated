@@ -8,7 +8,11 @@ auto place_tree(const ProjectTree& project, std::unique_ptr<SyntaxTree> tree) {
   auto current_namespace = project.root().get();
 
   // If syntax trees doesn't specify a namespace place at root namespace
-  auto tree_namespace    = tree->get_namespace();
+  if (tree->namespaces().empty()) {
+    current_namespace->push_tree(std::move(tree));
+    return;
+  }
+  auto& tree_namespace = tree->namespaces()[0];
   if (!tree_namespace) {
     current_namespace->push_tree(std::move(tree));
     return;
@@ -30,9 +34,9 @@ auto place_tree(const ProjectTree& project, std::unique_ptr<SyntaxTree> tree) {
       current_namespace->push_sub_space(std::move(new_space));
       current_namespace = temp;
     }
-
-    current_namespace->push_tree(std::move(tree));
   }
+
+  current_namespace->push_tree(std::move(tree));
 }
 
 auto place_syntax_trees_into_project(const ProjectTree& project,
@@ -43,9 +47,12 @@ auto place_syntax_trees_into_project(const ProjectTree& project,
 }
 
 auto check(SyntaxTreeCollection& syntax_trees) -> ProjectTree {
-  TRACE_TIMER("checker");
   auto project_tree = ProjectTree{};
-  place_syntax_trees_into_project(project_tree, syntax_trees);
+
+  {
+    TRACE_TIMER("Checker");
+    place_syntax_trees_into_project(project_tree, syntax_trees);
+  }
 
   return project_tree;
 }

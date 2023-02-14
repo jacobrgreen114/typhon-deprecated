@@ -203,7 +203,7 @@ enum class LexicalKind : lexical_kind_t {
   SymbolParenClose,
 
   // [
-  SymbolsquareOpen,
+  SymbolSquareOpen,
   // ]
   SymbolsquareClose,
 
@@ -336,9 +336,8 @@ class TokenCollection {
   std::vector<LexicalToken> tokens_;
 
  public:
-  explicit TokenCollection(const std::shared_ptr<SourceContext>& source,
-                           std::vector<LexicalToken> tokens)
-      : source_{source},
+  explicit TokenCollection(SourceContext::Pointer source, std::vector<LexicalToken> tokens)
+      : source_{std::move(source)},
         tokens_{std::move(tokens)} {}
 
   NODISCARD auto& source() const { return source_; }

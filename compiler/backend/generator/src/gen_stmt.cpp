@@ -6,15 +6,15 @@
 #include "gen_expr.hpp"
 #include "gen_var.hpp"
 
-auto write_statement(std::ostream& writer, const std::unique_ptr<Statement>& statement) -> void;
+auto write_statement(std::ostream& writer, const std::unique_ptr<BaseStatement>& statement) -> void;
 auto write_block(std::ostream& writer, const StatementBlock& body) -> void;
 
-auto write_stmt_def(std::ostream& writer, const DefStatement& stmt) {
+auto write_stmt_def(std::ostream& writer, const DefinitionStatement& stmt) {
   auto& def = deref(stmt.def());
 
   switch (def.kind()) {
     case SyntaxKind::DefVar: {
-      write_def(writer, ref_cast<VarDefinition>(def));
+      write_def(writer, ref_cast<VariableDefinition>(def));
       break;
     }
     default: {
@@ -23,15 +23,15 @@ auto write_stmt_def(std::ostream& writer, const DefStatement& stmt) {
   }
 }
 
-auto write_stmt_expr(std::ostream& writer, const ExprStatement& stmt) {
+auto write_stmt_expr(std::ostream& writer, const ExpressionStatement& stmt) {
   write_expression(writer, stmt.expr());
-  writer << ';';
+  writer << ';' << newline;
 }
 
 auto write_stmt_ret(std::ostream& writer, const ReturnStatement& stmt) {
   writer << "return ";
   write_expression(writer, stmt.expr());
-  writer << ';';
+  writer << ';' << newline;
 }
 
 auto write_stmt_if(std::ostream& writer, const IfStatement& stmt) {
@@ -76,16 +76,17 @@ auto write_stmt_for(std::ostream& writer, const ForStatement& stmt) {
   write_block(writer, *stmt.body());
 }
 
-auto write_statement(std::ostream& writer, const std::unique_ptr<Statement>& statement) -> void {
+auto write_statement(std::ostream& writer, const std::unique_ptr<BaseStatement>& statement)
+    -> void {
   auto& stmt = deref(statement);
 
   switch (stmt.kind()) {
     case SyntaxKind::StmtDef: {
-      write_stmt_def(writer, ref_cast<DefStatement>(stmt));
+      write_stmt_def(writer, ref_cast<DefinitionStatement>(stmt));
       break;
     }
     case SyntaxKind::StmtExpr: {
-      write_stmt_expr(writer, ref_cast<ExprStatement>(stmt));
+      write_stmt_expr(writer, ref_cast<ExpressionStatement>(stmt));
       break;
     }
     case SyntaxKind::StmtRet: {
@@ -116,20 +117,21 @@ auto write_statement(std::ostream& writer, const std::unique_ptr<Statement>& sta
       write_stmt_for(writer, ref_cast<ForStatement>(stmt));
       break;
     }
+    default:
+      throw_not_implemented();
   }
 }
 
 auto write_block(std::ostream& writer, const StatementBlock& body) -> void {
   writer << " {";
-  if (body.statements().empty()) {
-    writer << " }";
-    return;
-  }
-  writer << newline;
-  for (auto& statement : body.statements()) {
-    write_statement(writer, statement);
-    writer << newline;
-  }
 
-  writer << '}';
+  if (!body.statements().empty()) {
+    writer << newline;
+    for (auto& statement : body.statements()) {
+      write_statement(writer, statement);
+    }
+    writer << '}';
+  } else {
+    writer << " }";
+  }
 }

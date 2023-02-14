@@ -4,20 +4,22 @@
 #include "gen_common.hpp"
 
 const auto c_type_map = std::unordered_map<std::string_view, std::string_view>{
-    {"bool32", "uint8_t" },
+    {"bool32", "__UINT32_TYPE__"},
 
-    {"u8",     "uint8_t" },
-    {"u16",    "uint16_t"},
-    {"u32",    "uint32_t"},
-    {"u64",    "uint64_t"},
+    {"u8",     "uint8_t"        },
+    {"u16",    "uint16_t"       },
+    {"u32",    "uint32_t"       },
+    {"u64",    "uint64_t"       },
+    {"uword",  "uintptr_t"      },
 
-    {"i8",     "int8_t"  },
-    {"i16",    "int16_t" },
-    {"i32",    "int32_t" },
-    {"i64",    "int64_t" },
+    {"i8",     "int8_t"         },
+    {"i16",    "int16_t"        },
+    {"i32",    "int32_t"        },
+    {"i64",    "int64_t"        },
+    {"iword",  "intptr_t"       },
 
-    {"flt",    "float"   },
-    {"dbl",    "double"  }
+    {"f32",    "float"          },
+    {"f64",    "double"         }
 };
 
 auto mutate_type_name(std::string_view view) -> std::string_view {

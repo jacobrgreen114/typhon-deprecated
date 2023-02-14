@@ -1,5 +1,6 @@
 
 add_library(typhon_checker
+        src/project_tree.cpp
         src/checker.cpp
 )
 
@@ -10,14 +11,12 @@ target_include_directories(typhon_checker
 
 target_link_libraries(typhon_checker
     PUBLIC
-        typhon_core
+        typhon_parser
 )
 
 target_precompile_headers(typhon_checker
     PUBLIC
-        "${CMAKE_CURRENT_SOURCE_DIR}/../../core/inc/token.hpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../../core/inc/syntax_tree.hpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../../core/inc/project_tree.hpp"
+        inc/project_tree.hpp
 )
 
 target_msvc_runtime_library(typhon_checker)

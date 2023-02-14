@@ -56,7 +56,7 @@ const auto lexical_kind_names_ = std::unordered_map<LexicalKind, std::string_vie
     {LexicalKind::SymbolParenOpen,        "SymbolParenOpen"       },
     {LexicalKind::SymbolParenClose,       "SymbolParenClose"      },
 
-    {LexicalKind::SymbolsquareOpen,       "SymbolSquareOpen"      },
+    {LexicalKind::SymbolSquareOpen,       "SymbolSquareOpen"      },
     {LexicalKind::SymbolsquareClose,      "SymbolSquareClose"     },
 
     {LexicalKind::SymbolAngleOpen,        "SymbolAngleOpen"       },

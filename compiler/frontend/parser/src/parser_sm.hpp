@@ -24,7 +24,7 @@ class ParserContext final : public EnumeratingContext<ParserContext, LexicalToke
  public:
   using Source          = std::unique_ptr<SyntaxTree>;
   using StateStack      = std::stack<ReturnState>;
-  using SyntaxStack     = std::stack<std::unique_ptr<SyntaxNode>>;
+  using SyntaxStack     = std::stack<std::unique_ptr<BaseSyntax>>;
   using PrecedenceStack = std::stack<Precedence>;
   using TokenStack      = std::stack<LexicalToken>;
 
@@ -74,10 +74,8 @@ class ParserContext final : public EnumeratingContext<ParserContext, LexicalToke
   }
 
   template <IsSyntaxNode T>
-  auto get_syntax_node() const -> T* {
-    auto* ptr = dynamic_cast<T*>(syntax_stack.top().get());
-    assert(ptr);
-    return ptr;
+  auto get_syntax_node() const -> T& {
+    return deref(ptr_cast<T>(syntax_stack.top().get()));
   }
 
   template <IsSyntaxNode T>
@@ -86,34 +84,6 @@ class ParserContext final : public EnumeratingContext<ParserContext, LexicalToke
     syntax_stack.pop();
     return tnode;
   }
-
-  auto get_var_def_node() { return get_syntax_node<VarDefinition>(); }
-  auto pop_def_node() { return pop_syntax_node<Definition>(); }
-
-  auto get_func_def_node() { return get_syntax_node<FuncDefinition>(); }
-  auto get_func_param_node() { return get_syntax_node<FuncParameter>(); }
-  auto pop_func_def_param() { return pop_syntax_node<FuncParameter>(); }
-
-  auto get_statement_node() { return get_syntax_node<Statement>(); }
-  auto pop_statement_node() { return pop_syntax_node<Statement>(); }
-
-  auto get_statement_def_node() { return get_syntax_node<DefStatement>(); }
-  auto get_statement_expr_node() { return get_syntax_node<ExprStatement>(); }
-
-  auto get_statement_return_node() { return get_syntax_node<ReturnStatement>(); }
-
-  auto get_statement_block() { return get_syntax_node<StatementBlock>(); }
-  auto pop_statement_block() { return pop_syntax_node<StatementBlock>(); }
-
-  auto get_statement_if_node() { return get_syntax_node<IfStatement>(); }
-  auto get_statement_elif_node() { return get_syntax_node<ElifStatement>(); }
-  auto get_statement_else_node() { return get_syntax_node<ElseStatement>(); }
-
-  auto pop_expr_node() { return pop_syntax_node<ExpressionNode>(); }
-
-  auto get_expr_unary_node() { return get_syntax_node<UnaryExpression>(); }
-
-  auto pop_expr_binary_node() { return pop_syntax_node<BinaryExpression>(); }
 };
 
 using ParserMatchCondition = ParserContext::RefMatchCondition;
@@ -160,7 +130,7 @@ constexpr LexicalTokenPredicate is_paren_close = [](auto& token) {
 };
 
 constexpr LexicalTokenPredicate is_square_open = [](auto& token) {
-  return is_token_kind(token, LexicalKind::SymbolsquareOpen);
+  return is_token_kind(token, LexicalKind::SymbolSquareOpen);
 };
 
 constexpr LexicalTokenPredicate is_square_close = [](auto& token) {
@@ -231,10 +201,16 @@ constexpr LexicalTokenPredicate is_keyword_return = [](auto& token) {
   return is_token_kind(token, LexicalKind::KeywordReturn);
 };
 
+constexpr LexicalTokenPredicate is_keyword_mut = [](auto& token) {
+  return is_token_kind(token, LexicalKind::KeywordMutable);
+};
+
 auto is_unary_pre_operator(const LexicalToken& token) -> bool;
 auto is_unary_post_operator(const LexicalToken& token) -> bool;
 
 auto is_binary_operator(const LexicalToken& token) -> bool;
+
+auto is_def_modifier(const LexicalToken& token) -> bool;
 
 extern const ParserState error_state;
 extern const ParserState unexpected_token_error_state;
