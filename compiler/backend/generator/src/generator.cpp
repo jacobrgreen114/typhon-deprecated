@@ -152,7 +152,7 @@ auto generate_source_file(const NameSpace& ns, const SyntaxTree& syntax_tree) ->
   TRACE_TIMER("Generator");
   write_source_header(writer, source.rel_path());
 
-  writer << "#include " << ns.gen_header_path().filename() << newline << newline;
+  writer << "#include \"" << ns.file_name() << "\"" << newline << newline;
 
   forward_declare_source(writer, syntax_tree);
   write_definitions(writer, syntax_tree);
@@ -171,23 +171,21 @@ auto generate_internal_header(const NameSpace& ns, const SyntaxTree& syntax_tree
 
   writer << "#pragma once" << newline << newline;
 
-  writer << "#include \"" << ns.gen_header_path().filename().string() << '"' << newline << newline;
+  writer << "#include \"" << ns.file_name() << '"' << newline << newline;
 
   forward_declare_internal(writer, syntax_tree);
-  //write_definitions(writer, syntax_tree);
 }
 
-auto generate_namespace_header(const NameSpace& ns) {
-  auto writer = std::ofstream{ns.gen_header_path()};
+auto generate_namespace_header(const ProjectConfig& config, const NameSpace& ns) {
+  auto writer = std::ofstream{config.dir_gen_source() / ns.file_name()};
 
   write_source_header(writer, {});
   writer << "#pragma once" << newline << newline;
 
   if (ns.parent()) {
-    writer << "#include \"" << deref(ns.parent()).gen_header_path().filename().string() << '"'
-           << newline;
+    writer << "#include \"" << deref(ns.parent()).file_name() << '"' << newline;
   } else {
-    writer << "#include \"../../../__builtins.hpp\"" << newline << newline;
+    writer << "#include \"../../__builtins.hpp\"" << newline << newline;
   }
 
   for (auto& ptree : ns.trees()) {
@@ -197,8 +195,8 @@ auto generate_namespace_header(const NameSpace& ns) {
   }
 }
 
-auto generate(const NameSpace& ns) -> void {
-  generate_namespace_header(ns);
+auto generate(const ProjectConfig& config, const NameSpace& ns) -> void {
+  generate_namespace_header(config, ns);
   for (auto& ptree : ns.trees()) {
     auto& tree = deref(ptree);
     generate_internal_header(ns, tree);
@@ -206,49 +204,78 @@ auto generate(const NameSpace& ns) -> void {
   }
 
   for (auto& psub : ns.sub_spaces()) {
-    generate(deref(psub));
+    generate(config, deref(psub));
   }
 }
 
-auto write_cmake_source_paths(std::ostream& writer, const NameSpace& ns) -> void {
+auto write_cmake_source_paths(const ProjectConfig& config,
+                              std::ostream& writer,
+                              const NameSpace& ns) -> void {
   for (auto& ptree : ns.trees()) {
-    auto& tree    = deref(ptree);
-    auto src_path = relative(deref(tree.source()).gen_source_path(), gen_src_name).string();
+    auto& tree     = deref(ptree);
+
+    auto file_name = deref(tree.source()).gen_source_path();
+
+    auto src_path  = relative(file_name, config.dir_build()).string();
     std::replace_if(
         src_path.begin(), src_path.end(), [](auto c) { return c == '\\'; }, '/');
 
-    writer << src_path << newline;
+    writer << indent << '"' << src_path << '"' << newline;
   }
 
   for (auto& psub : ns.sub_spaces()) {
-    write_cmake_source_paths(writer, deref(psub));
+    write_cmake_source_paths(config, writer, deref(psub));
   }
 }
 
-const auto cmake_file_path = obj_dir_path / "CMakeLists.txt";
-const auto build_path      = (obj_dir_path / "build");
+auto generate_cmake(const ProjectConfig& config, const ProjectTree& source) -> void {
+  const auto cmake_file_path = config.dir_build() / "CMakeLists.txt";
 
-const auto cmake_command =
-    std::string{"cmake -S \""} + obj_dir_path.string() + "\" -B \"" + build_path.string() + '"';
+  auto writer                = std::ofstream{cmake_file_path};
+  writer << "cmake_minimum_required(VERSION 3.20)" << newline << newline << "project( "
+         << config.name() << " )" << newline << newline;
 
-const auto solution_file = build_path / "Demo.sln";
+  auto bin               = fs::absolute(config.dir_binary());
+  auto build             = fs::absolute(config.dir_build());
+  auto rel_bin_dir = fs::proximate(bin, build).string();
+  std::replace_if(rel_bin_dir.begin(), rel_bin_dir.end(), [](auto c){ return c == '\\';}, '/');
 
-const auto build_command = std::string{"msbuild "} + '"' + solution_file.string() + '"';
 
-auto generate_cmake(const ProjectTree& source) -> void {
-  auto writer = std::ofstream{cmake_file_path};
-  writer << "cmake_minimum_required(VERSION 3.20)" << newline << newline << "project( Demo )"
-         << newline << newline << "add_executable( "
-         << "Demo" << newline << "\"../../__main.cpp\"" << newline;
-  write_cmake_source_paths(writer, deref(source.root()));
+  writer << "set(CMAKE_RUNTIME_OUTPUT_DIRECTORY \"${CMAKE_SOURCE_DIR}/" << rel_bin_dir
+         << "\")" << newline;
+  writer << "set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY \"${CMAKE_SOURCE_DIR}/" << rel_bin_dir
+         << "\")" << newline;
+  writer << "set(CMAKE_LIBRARY_OUTPUT_DIRECTORY \"${CMAKE_SOURCE_DIR}/" << rel_bin_dir
+         << "\")" << newline << newline;
+
+  auto binary_type = config.binary_type();
+  if (binary_type == BinaryType::Exe) {
+    writer << "add_executable( ";
+  } else {
+    writer << "add_library( ";
+  }
+
+  writer << config.name();
+
+  if (binary_type == BinaryType::Dyn) {
+    writer << " SHARED";
+  }
+
+  writer << newline << indent << "\"../../__main.cpp\"" << newline;
+  write_cmake_source_paths(config, writer, deref(source.root()));
   writer << ')' << newline;
 }
 
-auto generate(const ProjectTree& source) -> void {
-  generate(deref(source.root()));
-  generate_cmake(source);
+auto generate(const ProjectConfig& config, const ProjectTree& source) -> void {
+  generate(config, deref(source.root()));
+  generate_cmake(config, source);
 
+  // Build
+  const auto build_path = config.dir_build() / "build";
   {
+    const auto cmake_command = std::string{"cmake -S \""} + config.dir_build().string() +
+                               "\" -B \"" + build_path.string() + '"';
+
     std::cout << "[Typhon] CMake Command : " << cmake_command << std::endl;
     TRACE_TIMER("CMake");
     auto cmake_result = system(cmake_command.c_str());
@@ -258,8 +285,13 @@ auto generate(const ProjectTree& source) -> void {
     }
   }
 
+  // Compile
   {
-    std::cout << "[Typhon] Build Command : " << cmake_command << std::endl;
+    const auto solution_file = build_path / config.name() += ".sln";
+
+    const auto build_command = std::string{"msbuild "} + '"' + solution_file.string() + '"';
+
+    std::cout << "[Typhon] Build Command : " << build_command << std::endl;
     TRACE_TIMER("Build");
     auto compile_result = system(build_command.c_str());
     if (compile_result != 0) {

@@ -16,25 +16,25 @@
 #define PARALLEL_COMPILATION true
 #endif
 
-auto write_tokens(const fs::path& rel_path, const TokenCollection& tokens) -> void {
+auto write_tokens(const SourceContext& source, const TokenCollection& tokens) -> void {
 #ifdef TRACE
-  const auto token_path = (tok_dir_path / rel_path).concat(tok_file_ext);
+  const auto& token_path = source.gen_token_path();
   fs::create_directories(token_path.parent_path());
 
-  auto token_file = std::ofstream{token_path, std::ofstream::out | std::ofstream::trunc};
+  auto token_file = std::ofstream{token_path};
   for (auto& token : tokens.tokens()) {
     token.serialize(token_file, "token");
   }
 #endif
 }
 
-auto write_syntax(const fs::path& rel_path, const SyntaxTree& source) -> void {
+auto write_syntax(const SourceContext& source, const SyntaxTree& tree) -> void {
 #ifdef TRACE
-  const auto syntax_path = (syn_dir_path / rel_path).concat(syn_file_ext);
+  const auto& syntax_path = source.gen_syntax_path();
   fs::create_directories(syntax_path.parent_path());
 
-  auto syntax_file = std::ofstream{syntax_path, std::ofstream::out | std::ofstream::trunc};
-  source.serialize(syntax_file, "Source");
+  auto syntax_file = std::ofstream{syntax_path};
+  tree.serialize(syntax_file, "Source");
 #endif
 }
 
@@ -49,7 +49,7 @@ auto find_source_files(const ProjectConfig& config) -> SourceCollection {
   for (auto& entry : fs::recursive_directory_iterator(config.dir_source())) {
     if (entry.is_regular_file() && entry.path().extension() == source_file_ext) {
       auto& path = entry.path();
-      sources.emplace_back(std::make_unique<SourceContext>(config.dir_source(), path));
+      sources.emplace_back(std::make_unique<SourceContext>(config, path));
     }
   }
 
@@ -57,14 +57,15 @@ auto find_source_files(const ProjectConfig& config) -> SourceCollection {
 }
 
 // todo : implement already compiled optimization
-auto parse_source(const SourceContext::Pointer& source) -> std::unique_ptr<SyntaxTree> {
-  TRACE_PRINT("Compiling : " << source->absolute_path() << std::endl);
+auto parse_source(const SourceContext::Pointer& psource) -> std::unique_ptr<SyntaxTree> {
+  auto& source = deref(psource);
+  TRACE_PRINT("Compiling : " << source.absolute_path() << std::endl);
 
-  auto tokens = lex(source);
-  write_tokens(source->rel_path(), tokens);
+  auto tokens = lex(psource);
+  write_tokens(source, tokens);
 
   auto syntax = parse(tokens);
-  write_syntax(source->rel_path(), *syntax);
+  write_syntax(source, *syntax);
 
   return syntax;
 }
@@ -106,11 +107,13 @@ class Compiler final {
   }
 
   auto run() -> int {
-    auto sources      = find_source_files(*config_);
+    auto& config = deref(config_);
+
+    auto sources      = find_source_files(config);
     auto syntax_trees = parse_sources(sources);
     auto project_tree = check(syntax_trees);
 
-    generate(project_tree);
+    generate(config, project_tree);
     return 0;
   }
 };

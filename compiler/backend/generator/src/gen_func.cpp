@@ -6,10 +6,10 @@
 #include "gen_stmt.hpp"
 
 auto write_parameter(std::ostream& writer, const FunctionParameter& param) {
-  if (param.is_typed()) {
-    writer << identifer_prefix << param.type_name();
-  } else {
+  if (param.is_type_auto()) {
     writer << keyword_auto;
+  } else {
+    writer << identifer_prefix << param.type_name();
   }
 
   writer << " " << param.name();
@@ -36,7 +36,7 @@ auto write_declaration(std::ostream& writer, const FunctionDefinition& def) {
 
   write_parameter_block(writer, def);
 
-  if (def.is_return_typed()) {
+  if (!def.is_return_auto()) {
     writer << " -> " << identifer_prefix << def.return_type();
   }
 }

@@ -98,15 +98,20 @@ auto project_binary_type_handler(ProjectConfig& config, const xml_node& node) ->
   config.set_binary_type(bin_type);
 }
 
+auto to_lower(const std::string_view str) -> std::string {
+  auto lower = std::string{};
+  for (auto c : str) {
+    lower += tolower(c);
+  }
+  return lower;
+}
+
 constexpr auto true_string  = std::string_view{"true"};
 constexpr auto false_string = std::string_view{"false"};
 
 auto project_link_std_handler(ProjectConfig& config, const xml_node& node) -> void {
   auto value = std::string_view{node.value(), node.value_size()};
-  auto lower = std::string{};
-  for (auto c : value) {
-    lower += tolower(c);
-  }
+  auto lower = to_lower(value);
 
   if (lower == true_string) {
     config.set_link_std(true);

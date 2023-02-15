@@ -9,4 +9,4 @@
 
 #include "project_tree.hpp"
 
-auto generate(const ProjectTree& source) -> void;
+auto generate(const ProjectConfig& config, const ProjectTree& source) -> void;

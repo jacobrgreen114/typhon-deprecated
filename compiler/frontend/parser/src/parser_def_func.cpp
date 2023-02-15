@@ -23,6 +23,22 @@ auto do_func_def_body_end(ParserContext& ctx) -> void {
 
 auto func_def_body_end_exit_handler_(ParserContext& ctx) -> ParserState {
   do_func_def_body_end(ctx);
+  auto& def = ctx.get_syntax_node<FunctionDefinition>();
+
+  for (auto& p_param : def.parameters()) {
+    auto& param = deref(p_param);
+    if (param.is_type_auto()) {
+      std::cerr << "Error : auto-deduced function parameter types are not currently supported."
+                << std::endl;
+      return error_state;
+    }
+  }
+
+  if (def.is_return_auto()) {
+    std::cerr << "Error : auto-deduced return types are not currently supported." << std::endl;
+    return error_state;
+  }
+
   return ctx.pop_end_state();
 }
 

@@ -48,11 +48,7 @@ class NameSpace final {
 
  public:
   NODISCARD auto full_name() const { return full_name_("::"); }
-  NODISCARD auto file_name() const { return full_name_("."); }
-
-  NODISCARD auto gen_header_path() const {
-    return gen_dir_src_path / file_name().append(".ty").append(gen_hdr_file_ext);
-  }
+  NODISCARD auto file_name() const { return full_name_(".").append(gen_hdr_file_ext); }
 
   auto push_sub_space(SubSpace ns) {
     ns->parent_ = this;

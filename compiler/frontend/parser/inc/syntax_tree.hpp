@@ -897,7 +897,7 @@ class FunctionParameter final : public BaseDefinition {
 
   NODISCARD auto& type_name() const { return type_name_; }
 
-  NODISCARD auto is_typed() const { return !type_name_.empty(); }
+  NODISCARD auto is_type_auto() const { return type_name_.empty(); }
 
   auto set_type_name(const std::string& type_name) noexcept -> void { type_name_ = type_name; }
 };
@@ -927,7 +927,7 @@ class FunctionDefinition final : public BaseDefinition {
   NODISCARD auto& return_type() const { return return_; }
   NODISCARD auto& body() const { return body_; }
 
-  NODISCARD auto is_return_typed() const { return !return_.empty(); }
+  NODISCARD auto is_return_auto() const { return return_.empty(); }
 
   void set_return_type(const std::string& ret_type) { return_ = ret_type; }
 
