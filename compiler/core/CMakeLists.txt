@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.20)
 add_library(typhon_core
         src/paths.cpp
         src/source.cpp
+        src/project_config.cpp
 
         src/xml/serialization.cpp
 )

@@ -34,18 +34,25 @@ class NameSpace final {
 
   NODISCARD auto parent() const { return parent_; }
 
-  NODISCARD auto full_name() const {
+ private:
+  NODISCARD auto full_name_(const std::string_view sep) const {
     auto full_name = name();
     for (auto* par = parent(); par != nullptr; par = par->parent()) {
       if (!par->name().empty()) {
-        full_name.insert(0, "_");
+        full_name.insert(0, sep);
         full_name.insert(0, par->name());
       }
     }
     return full_name;
   }
 
-  auto gen_header_path() const { return gen_dir_src_path / full_name().append(gen_hdr_file_ext); }
+ public:
+  NODISCARD auto full_name() const { return full_name_("::"); }
+  NODISCARD auto file_name() const { return full_name_("."); }
+
+  NODISCARD auto gen_header_path() const {
+    return gen_dir_src_path / file_name().append(".ty").append(gen_hdr_file_ext);
+  }
 
   auto push_sub_space(SubSpace ns) {
     ns->parent_ = this;

@@ -119,7 +119,19 @@ inline std::ostream& newline(std::ostream& os) {
 
 inline std::ostream& newline(std::ostream& os, uint64_t count) {
   for (auto i = 0; i < count; ++i) {
-    os.put(os.widen('\n'));
+    os << newline;
+  }
+  return os;
+}
+
+inline std::ostream& indent(std::ostream& os) {
+  os.put(os.widen('\t'));
+  return os;
+}
+
+inline std::ostream& indent(std::ostream& os, uint64_t count) {
+  for (auto i = 0; i < count; ++i) {
+    os << indent;
   }
   return os;
 }

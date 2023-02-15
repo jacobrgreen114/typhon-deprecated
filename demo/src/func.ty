@@ -3,6 +3,7 @@
 
 namespace Demo;
 
+
 func main() -> i32 {
 	var result = 0;
 	return result;

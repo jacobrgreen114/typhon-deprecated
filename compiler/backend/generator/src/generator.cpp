@@ -183,7 +183,12 @@ auto generate_namespace_header(const NameSpace& ns) {
   write_source_header(writer, {});
   writer << "#pragma once" << newline << newline;
 
-  writer << "#include \"../../../__builtins.hpp\"" << newline << newline;
+  if (ns.parent()) {
+    writer << "#include \"" << deref(ns.parent()).gen_header_path().filename().string() << '"'
+           << newline;
+  } else {
+    writer << "#include \"../../../__builtins.hpp\"" << newline << newline;
+  }
 
   for (auto& ptree : ns.trees()) {
     auto& tree = deref(ptree);
@@ -205,4 +210,61 @@ auto generate(const NameSpace& ns) -> void {
   }
 }
 
-auto generate(const ProjectTree& source) -> void { generate(deref(source.root())); }
+auto write_cmake_source_paths(std::ostream& writer, const NameSpace& ns) -> void {
+  for (auto& ptree : ns.trees()) {
+    auto& tree    = deref(ptree);
+    auto src_path = relative(deref(tree.source()).gen_source_path(), gen_src_name).string();
+    std::replace_if(
+        src_path.begin(), src_path.end(), [](auto c) { return c == '\\'; }, '/');
+
+    writer << src_path << newline;
+  }
+
+  for (auto& psub : ns.sub_spaces()) {
+    write_cmake_source_paths(writer, deref(psub));
+  }
+}
+
+const auto cmake_file_path = obj_dir_path / "CMakeLists.txt";
+const auto build_path      = (obj_dir_path / "build");
+
+const auto cmake_command =
+    std::string{"cmake -S \""} + obj_dir_path.string() + "\" -B \"" + build_path.string() + '"';
+
+const auto solution_file = build_path / "Demo.sln";
+
+const auto build_command = std::string{"msbuild "} + '"' + solution_file.string() + '"';
+
+auto generate_cmake(const ProjectTree& source) -> void {
+  auto writer = std::ofstream{cmake_file_path};
+  writer << "cmake_minimum_required(VERSION 3.20)" << newline << newline << "project( Demo )"
+         << newline << newline << "add_executable( "
+         << "Demo" << newline << "\"../../__main.cpp\"" << newline;
+  write_cmake_source_paths(writer, deref(source.root()));
+  writer << ')' << newline;
+}
+
+auto generate(const ProjectTree& source) -> void {
+  generate(deref(source.root()));
+  generate_cmake(source);
+
+  {
+    std::cout << "[Typhon] CMake Command : " << cmake_command << std::endl;
+    TRACE_TIMER("CMake");
+    auto cmake_result = system(cmake_command.c_str());
+    if (cmake_result != 0) {
+      std::cerr << "Error : failed to configure cmake." << std::endl;
+      exit(-1);
+    }
+  }
+
+  {
+    std::cout << "[Typhon] Build Command : " << cmake_command << std::endl;
+    TRACE_TIMER("Build");
+    auto compile_result = system(build_command.c_str());
+    if (compile_result != 0) {
+      std::cerr << "Error : failed to compile." << std::endl;
+      exit(-1);
+    }
+  }
+}

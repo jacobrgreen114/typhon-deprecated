@@ -39,8 +39,6 @@ constexpr auto tok_file_ext = std::string_view{".tok.xml"};
 constexpr auto syn_file_ext = std::string_view{".syn.xml"};
 
 constexpr auto trc_dir_name = std::string_view{"trace"};
-constexpr auto tok_dir_name = std::string_view{"tokens"};
-constexpr auto syn_dir_name = std::string_view{"syntax"};
 
 const auto tok_dir_path     = obj_dir_path / trc_dir_name;
 const auto syn_dir_path     = obj_dir_path / trc_dir_name;

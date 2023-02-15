@@ -95,7 +95,7 @@ auto parse_sources(const SourceCollection& sources) -> SyntaxTreeCollection {
 }
 
 class Compiler final {
-  std::unique_ptr<ProjectConfig> config_;
+  ProjectConfig::ConstPointer config_;
 
  public:
   Compiler()

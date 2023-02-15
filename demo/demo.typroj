@@ -4,8 +4,11 @@
          xsi:schemaLocation="http://www.w3.org/2001/XMLSchema file://../utils/schemas/typroj.xsd">
     <ProjectName>Typhon.Demo</ProjectName>
     <BinaryType>Exe</BinaryType>
+    <SourceDir>src</SourceDir>
+    <BuildDir>obj</BuildDir>
+    <BinaryDir>bin</BinaryDir>
 
-    <NoStd>true</NoStd>
+    <LinkStd>false</LinkStd>
 
     <Configurations>
     </Configurations>

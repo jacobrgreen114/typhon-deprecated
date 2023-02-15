@@ -11,7 +11,11 @@
             <xsd:element name="ProjectName" type="ProjectName"/>
             <xsd:element name="BinaryType" type="BinaryType"/>
 
-            <xsd:element name="NoStd" type="xsd:boolean" minOccurs="0"/>
+            <xsd:element name="SourceDir" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="BuildDir" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="BinaryDir" type="xsd:string" minOccurs="0"/>
+
+            <xsd:element name="LinkStd" type="xsd:boolean" minOccurs="0"/>
 
             <xsd:element name="Configurations" type="ProjectConfigurationList" minOccurs="0"/>
             <xsd:element name="References" type="ProjectReferenceList" minOccurs="0"/>

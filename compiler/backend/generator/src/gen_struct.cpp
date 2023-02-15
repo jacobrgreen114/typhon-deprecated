@@ -8,7 +8,7 @@
 #include "gen_object.hpp"
 
 auto write_declaration(std::ostream& writer, const StructDefinition& def) -> void {
-  writer << "class " << def.name();
+  writer << "class " << identifer_prefix << def.name();
 }
 
 auto write_forward_decl(std::ostream& writer, const StructDefinition& def) -> void {
