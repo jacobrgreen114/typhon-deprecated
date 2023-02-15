@@ -9,3 +9,4 @@ function(target_msvc_runtime_library TARGET)
 endfunction()
 
 add_subdirectory(compiler)
+add_subdirectory(libraries)

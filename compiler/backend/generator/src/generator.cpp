@@ -235,18 +235,18 @@ auto generate_cmake(const ProjectConfig& config, const ProjectTree& source) -> v
   writer << "cmake_minimum_required(VERSION 3.20)" << newline << newline << "project( "
          << config.name() << " )" << newline << newline;
 
-  auto bin               = fs::absolute(config.dir_binary());
-  auto build             = fs::absolute(config.dir_build());
+  auto bin         = fs::absolute(config.dir_binary());
+  auto build       = fs::absolute(config.dir_build());
   auto rel_bin_dir = fs::proximate(bin, build).string();
-  std::replace_if(rel_bin_dir.begin(), rel_bin_dir.end(), [](auto c){ return c == '\\';}, '/');
+  std::replace_if(
+      rel_bin_dir.begin(), rel_bin_dir.end(), [](auto c) { return c == '\\'; }, '/');
 
-
-  writer << "set(CMAKE_RUNTIME_OUTPUT_DIRECTORY \"${CMAKE_SOURCE_DIR}/" << rel_bin_dir
-         << "\")" << newline;
-  writer << "set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY \"${CMAKE_SOURCE_DIR}/" << rel_bin_dir
-         << "\")" << newline;
-  writer << "set(CMAKE_LIBRARY_OUTPUT_DIRECTORY \"${CMAKE_SOURCE_DIR}/" << rel_bin_dir
-         << "\")" << newline << newline;
+  writer << "set(CMAKE_RUNTIME_OUTPUT_DIRECTORY \"${CMAKE_SOURCE_DIR}/" << rel_bin_dir << "\")"
+         << newline;
+  writer << "set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY \"${CMAKE_SOURCE_DIR}/" << rel_bin_dir << "\")"
+         << newline;
+  writer << "set(CMAKE_LIBRARY_OUTPUT_DIRECTORY \"${CMAKE_SOURCE_DIR}/" << rel_bin_dir << "\")"
+         << newline << newline;
 
   auto binary_type = config.binary_type();
   if (binary_type == BinaryType::Exe) {
@@ -266,37 +266,40 @@ auto generate_cmake(const ProjectConfig& config, const ProjectTree& source) -> v
   writer << ')' << newline;
 }
 
+auto make(const ProjectConfig& config, const fs::path& build_path) -> void {
+  const auto cmake_command = std::string{"cmake -S \""} + config.dir_build().string() + "\" -B \"" +
+                             build_path.string() + '"';
+
+  std::cout << "[Typhon] CMake Command : " << cmake_command << std::endl;
+  TRACE_TIMER("CMake");
+  auto cmake_result = system(cmake_command.c_str());
+  if (cmake_result != 0) {
+    std::cerr << "Error : failed to configure cmake." << std::endl;
+    exit(-1);
+  }
+}
+
+auto build(const ProjectConfig& config, const fs::path& build_path) -> void {
+  const auto solution_file = build_path / config.name() += ".sln";
+  const auto build_command = std::string{"msbuild "} + '"' + solution_file.string() + '"';
+
+  std::cout << "[Typhon] Build Command : " << build_command << std::endl;
+  TRACE_TIMER("Build");
+  auto compile_result = system(build_command.c_str());
+  if (compile_result != 0) {
+    std::cerr << "Error : failed to compile." << std::endl;
+    exit(-1);
+  }
+}
+
+auto compile(const ProjectConfig& config) -> void {
+  const auto build_path = config.dir_build() / "build";
+  make(config, build_path);
+  build(config, build_path);
+}
+
 auto generate(const ProjectConfig& config, const ProjectTree& source) -> void {
   generate(config, deref(source.root()));
   generate_cmake(config, source);
-
-  // Build
-  const auto build_path = config.dir_build() / "build";
-  {
-    const auto cmake_command = std::string{"cmake -S \""} + config.dir_build().string() +
-                               "\" -B \"" + build_path.string() + '"';
-
-    std::cout << "[Typhon] CMake Command : " << cmake_command << std::endl;
-    TRACE_TIMER("CMake");
-    auto cmake_result = system(cmake_command.c_str());
-    if (cmake_result != 0) {
-      std::cerr << "Error : failed to configure cmake." << std::endl;
-      exit(-1);
-    }
-  }
-
-  // Compile
-  {
-    const auto solution_file = build_path / config.name() += ".sln";
-
-    const auto build_command = std::string{"msbuild "} + '"' + solution_file.string() + '"';
-
-    std::cout << "[Typhon] Build Command : " << build_command << std::endl;
-    TRACE_TIMER("Build");
-    auto compile_result = system(build_command.c_str());
-    if (compile_result != 0) {
-      std::cerr << "Error : failed to compile." << std::endl;
-      exit(-1);
-    }
-  }
+  compile(config);
 }

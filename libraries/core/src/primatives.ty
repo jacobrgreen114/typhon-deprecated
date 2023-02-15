@@ -3,6 +3,8 @@
     Concepts
 */
 
+/*
+
 concept Boolean<T> {
     static FALSE : T;
     static TRUE : T;
@@ -25,9 +27,13 @@ concept Character<T> {
     static NULL : T;
 }
 
+*/
+
 /*
     Booleans
 */
+
+/*
 
 struct bool : Boolean<bool> {
     public const FALSE : bool = 0x00;
@@ -42,9 +48,13 @@ struct bool32 : Boolean<bool32> {
 
 assert bool32 implements Boolean;
 
+*/
+
 /*
     Unsigned Integers
 */
+
+/*
 
 struct u8 : UnsignedInteger<u8> {
     public const BIT_WIDTH : uword = 8;
@@ -78,9 +88,13 @@ struct u64 : UnsignedInteger<u64> {
 
 alias uword : u64;
 
+*/
+
 /*
     Signed Integers
 */
+
+/*
 
 struct i8 : SignedInteger<i8> {
     public const BIT_WIDTH : uword = 8;
@@ -112,9 +126,13 @@ struct i64 : SignedInteger<i64> {
 
 alias iword : i64;
 
+*/
+
 /*
     Floating Integers
 */
+
+/*
 
 struct flt : FloatingInteger<flt> {
     public const BIT_WIDTH : uword = 32;
@@ -132,9 +150,13 @@ struct dbl : FloatingInteger<dbl> {
     public const EPSILON : flt = 0x00; // todo
 }
 
+*/
+
 /*
     Character Types
 */
+
+/*
 
 struct char : Character<char> {
     public const NULL : char = '\0';
@@ -147,3 +169,5 @@ struct char16 : Character<char16> {
 struct char32 : Character<char32> {
     public const NULL : char32 = '\0';
 }
+
+*/

@@ -22,9 +22,7 @@ auto write_tokens(const SourceContext& source, const TokenCollection& tokens) ->
   fs::create_directories(token_path.parent_path());
 
   auto token_file = std::ofstream{token_path};
-  for (auto& token : tokens.tokens()) {
-    token.serialize(token_file, "token");
-  }
+  token_file << tokens;
 #endif
 }
 
@@ -34,7 +32,7 @@ auto write_syntax(const SourceContext& source, const SyntaxTree& tree) -> void {
   fs::create_directories(syntax_path.parent_path());
 
   auto syntax_file = std::ofstream{syntax_path};
-  tree.serialize(syntax_file, "Source");
+  syntax_file << tree;
 #endif
 }
 
@@ -106,14 +104,29 @@ class Compiler final {
     }
   }
 
-  auto run() -> int {
-    auto& config = deref(config_);
+ private:
+  auto run_frontend() {
+    TRACE_TIMER("Frontend");
+    auto& config      = deref(config_);
 
     auto sources      = find_source_files(config);
     auto syntax_trees = parse_sources(sources);
     auto project_tree = check(syntax_trees);
 
+    return project_tree;
+  }
+
+  auto run_backend(const auto& project_tree) {
+    TRACE_TIMER("Backend");
+
+    auto& config = deref(config_);
     generate(config, project_tree);
+  }
+
+ public:
+  auto run() -> int {
+    auto project_tree = run_frontend();
+    run_backend(project_tree);
     return 0;
   }
 };
@@ -121,12 +134,10 @@ class Compiler final {
 auto main(int argc, const char* argv[]) -> int {
   std::ios_base::sync_with_stdio(false);
 
-  auto app     = Compiler{};
+  auto app    = Compiler{};
 
-  auto timer   = Timer{};
-  auto result  = app.run();
-  auto elapsed = timer.elapsed();
+  auto timer  = Timer{"Compilation Time : "};
+  auto result = app.run();
 
-  std::cout << "Compilation Time : " << std::fixed << elapsed << " secs" << std::endl;
   return result;
 }

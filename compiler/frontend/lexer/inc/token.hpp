@@ -14,40 +14,13 @@
 
 #include "source.hpp"
 
+#include "xml/rapid_xml.hpp"
+
 #ifdef TRACE
 #include "xml/serialization.hpp"
 #endif
 
 // using String = std::unique_ptr<const std::string>;
-
-/*
- * File Position
- */
-
-class FilePosition final {
-  using int_type = size_t;
-
-  int_type line_;
-  int_type col_;
-
- public:
-  FilePosition(int_type line, int_type col)
-      : line_{line},
-        col_{col} {}
-  FilePosition()
-      : FilePosition{1, 0} {}
-
-  NODISCARD constexpr auto line() const -> auto& { return line_; }
-  NODISCARD constexpr auto col() const -> auto& { return col_; }
-
-  constexpr auto next() -> void { ++col_; }
-  constexpr auto nextline() -> void {
-    ++line_;
-    col_ = 0;
-  }
-};
-
-auto operator<<(std::ostream& stream, const FilePosition& position) -> std::ostream&;
 
 /*
  * Lexical Kind
@@ -292,41 +265,56 @@ constexpr auto get_lexical_type(LexicalKind kind) -> LexicalType {
       lexical_kind_type_offset);
 }
 
-/*
- * Lexical Token
+/**
+ * File Position
  */
+class FilePosition final {
+  using int_type = size_t;
 
-class LexicalToken final
-#ifdef TRACE
-    : public xml::Serializable
-#endif
-{
+  int_type line_;
+  int_type col_;
+
+ public:
+  FilePosition(int_type line = 1, int_type col = 0);
+
+  NODISCARD constexpr auto line() const -> auto& { return line_; }
+  NODISCARD constexpr auto col() const -> auto& { return col_; }
+
+  NODISCARD auto to_string() const -> std::string;
+
+  constexpr auto next() -> void { ++col_; }
+  constexpr auto nextline() -> void {
+    ++line_;
+    col_ = 0;
+  }
+
+  NODISCARD auto xml_create_attr(xml::document& doc) const -> xml::attr &;
+};
+
+auto operator<<(std::ostream& stream, const FilePosition& position) -> std::ostream&;
+
+/**
+ * LexicalToken
+ */
+class LexicalToken final {
  public:
   using ValueType = std::string;
 
  private:
   const FilePosition pos_;
   const LexicalKind kind_;
-  const std::string value_;
+  const ValueType value_;
 
  public:
-  LexicalToken(const FilePosition& pos, LexicalKind kind, std::string value)
-      : pos_{pos},
-        kind_{kind},
-        value_{std::move(value)} {}
-
-  LexicalToken(const FilePosition& pos, LexicalKind kind)
-      : pos_{pos},
-        kind_{kind} {}
+  LexicalToken(const FilePosition& pos, LexicalKind kind, ValueType value = {});
 
   NODISCARD constexpr auto& pos() const { return pos_; }
   NODISCARD constexpr auto& kind() const { return kind_; }
   NODISCARD constexpr auto& value() const { return value_; }
 
-#ifdef TRACE
- protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  NODISCARD constexpr auto has_value() const { return !value_.empty(); }
+
+  NODISCARD auto xml_create_node(xml::document& doc) const -> xml::node&;
 };
 
 auto operator<<(std::ostream& stream, const LexicalToken& token) -> std::ostream&;
@@ -342,4 +330,8 @@ class TokenCollection {
 
   NODISCARD auto& source() const { return source_; }
   NODISCARD auto& tokens() const { return tokens_; }
+
+  NODISCARD auto xml_create_node(xml::document& doc) const -> xml::node&;
 };
+
+auto operator<<(std::ostream& stream, const TokenCollection& token_collection) -> std::ostream&;

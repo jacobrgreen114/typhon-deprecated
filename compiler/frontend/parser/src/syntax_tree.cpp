@@ -4,6 +4,8 @@
 
 #include "syntax_tree.hpp"
 
+#include "xml/rapid_xml.hpp"
+
 /*
  * Syntax Kind
  */
@@ -197,213 +199,502 @@ auto to_string(AccessModifier modifier) -> std::string_view {
 }
 
 /*
- * Syntax Tree
+ * Xml Names
+ */
+constexpr auto base_syntax_node_name        = std::string_view{"Syntax"};
+
+constexpr auto statement_node_name          = std::string_view{"Statement"};
+constexpr auto block_node_name              = std::string_view{"StatementBlock"};
+constexpr auto expr_stmt_node_name          = std::string_view{"ExpressionStatement"};
+constexpr auto ret_stmt_node_name           = std::string_view{"ReturnStatement"};
+
+constexpr auto expr_node_name               = std::string_view{"Expression"};
+constexpr auto cnst_expr_node_name          = std::string_view{"ConstantExpression"};
+constexpr auto bool_expr_node_name          = std::string_view{"Boolean"};
+constexpr auto num_expr_node_name           = std::string_view{"Number"};
+constexpr auto str_expr_node_name           = std::string_view{"String"};
+constexpr auto ident_expr_node_name         = std::string_view{"Identifier"};
+
+constexpr auto op_node_name                 = std::string_view{"Operation"};
+constexpr auto unary_op_node_name           = std::string_view{"UnaryOperation"};
+constexpr auto binary_op_node_name          = std::string_view{"BinaryOperation"};
+
+constexpr auto body_stmt_node_name          = std::string_view{"BodyStatement"};
+constexpr auto if_stmt_node_name            = std::string_view{"IfStatement"};
+constexpr auto elif_stmt_node_name          = std::string_view{"ElifStatement"};
+constexpr auto else_stmt_node_name          = std::string_view{"ElseStatement"};
+constexpr auto loop_stmt_node_name          = std::string_view{"LoopStatement"};
+constexpr auto while_stmt_node_name         = std::string_view{"WhileStatement"};
+constexpr auto for_stmt_node_name           = std::string_view{"ForStatement"};
+constexpr auto foreach_stmt_node_name       = std::string_view{"ForeachStatement"};
+
+constexpr auto call_expr_node_name          = std::string_view{"Call"};
+
+constexpr auto base_definition_node_name    = std::string_view{"Definition"};
+constexpr auto var_def_node_name            = std::string_view{"Variable"};
+constexpr auto func_def_node_name           = std::string_view{"Function"};
+constexpr auto struct_def_node_name         = std::string_view{"Struct"};
+constexpr auto object_def_node_name         = std::string_view{"Object"};
+
+constexpr auto base_structure_def_node_name = std::string_view{"StructureDefinition"};
+
+constexpr auto ns_node_name                 = std::string_view{"Namespace"};
+constexpr auto import_node_name             = std::string_view{"Import"};
+
+constexpr auto syntax_tree_node_name        = std::string_view{"SyntaxTree"};
+
+constexpr auto assign_node_name             = std::string_view{"Assignment"};
+constexpr auto params_node_name             = std::string_view{"Parameters"};
+constexpr auto body_node_name               = std::string_view{"Body"};
+
+constexpr auto pos_attr_name                = std::string_view{"pos"};
+constexpr auto kind_attr_name               = std::string_view{"kind"};
+constexpr auto name_attr_name               = std::string_view{"name"};
+constexpr auto type_attr_name               = std::string_view{"type"};
+constexpr auto value_attr_name              = std::string_view{"value"};
+constexpr auto return_attr_name             = std::string_view{"return_type"};
+constexpr auto op_attr_name                 = std::string_view{"operation"};
+
+/*
+ * BaseSyntax
+ */
+
+auto BaseSyntax::xml_node_name(xml::document& doc) const -> std::string_view {
+  return base_syntax_node_name;
+}
+
+auto BaseSyntax::xml_append_elements(xml::document& doc, xml::node& node) const -> void {
+  node.append_attribute(
+      &xml::allocate_attribute(doc, pos_attr_name, xml::allocate_string(doc, pos().to_string())));
+  // node.append_attribute(&xml::allocate_attribute(doc, kind_attr_name, to_string(kind())));
+}
+
+auto BaseSyntax::xml_create_node(xml::document& doc) const -> xml::node& {
+  auto& node = xml::allocate_element(doc, xml_node_name(doc));
+  this->xml_append_elements(doc, node);
+  return node;
+}
+
+/*
+ * BaseExpression
+ */
+
+std::string_view BaseExpression::xml_node_name(xml::document& doc) const { return expr_node_name; }
+
+/*
+ * BaseConstantExpression
+ */
+
+std::string_view BaseConstantExpression::xml_node_name(xml::document& doc) const {
+  return cnst_expr_node_name;
+}
+
+/*
+ * BooleanExpression
+ */
+
+std::string_view BooleanExpression::xml_node_name(xml::document& doc) const {
+  return bool_expr_node_name;
+}
+
+void BooleanExpression::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseSyntax::xml_append_elements(doc, node);
+  node.append_attribute(&xml::allocate_attribute(doc, value_attr_name, value() ? "true" : "false"));
+}
+
+/*
+ * BooleanExpression
+ */
+
+std::string_view BaseConstantValueExpression::xml_node_name(xml::document& doc) const {
+  return bool_expr_node_name;
+}
+
+void BaseConstantValueExpression::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseSyntax::xml_append_elements(doc, node);
+}
+
+/*
+ * NumberExpression
+ */
+
+std::string_view NumberExpression::xml_node_name(xml::document& doc) const {
+  return num_expr_node_name;
+}
+
+/*
+ * StringExpression
+ */
+
+std::string_view StringExpression::xml_node_name(xml::document& doc) const {
+  return str_expr_node_name;
+}
+
+/*
+ * IdentifierExpression
+ */
+
+std::string_view IdentifierExpression::xml_node_name(xml::document& doc) const {
+  return ident_expr_node_name;
+}
+
+void IdentifierExpression::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseSyntax::xml_append_elements(doc, node);
+  doc.append_attribute(&xml::allocate_attribute(doc, value_attr_name, identifier()));
+}
+
+/*
+ * CallExpression
+ */
+
+std::string_view CallExpression::xml_node_name(xml::document& doc) const {
+  return call_expr_node_name;
+}
+
+void CallExpression::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseSyntax::xml_append_elements(doc, node);
+}
+
+/*
+ * BaseOperation
+ */
+
+std::string_view BaseOperation::xml_node_name(xml::document& doc) const { return op_node_name; }
+
+void BaseOperation::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseSyntax::xml_append_elements(doc, node);
+  node.append_attribute(&xml::allocate_attribute(doc, op_attr_name, to_string(op())));
+}
+
+/*
+ * UnaryExpression
+ */
+
+std::string_view UnaryExpression::xml_node_name(xml::document& doc) const {
+  return unary_op_node_name;
+}
+
+void UnaryExpression::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseOperation::xml_append_elements(doc, node);
+  node.append_node(&deref(expr()).xml_create_node(doc));
+}
+
+/*
+ * BinaryExpression
+ */
+
+std::string_view BinaryExpression::xml_node_name(xml::document& doc) const {
+  return binary_op_node_name;
+}
+
+void BinaryExpression::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseOperation::xml_append_elements(doc, node);
+  node.append_node(&deref(lhs()).xml_create_node(doc));
+  node.append_node(&deref(rhs()).xml_create_node(doc));
+}
+
+/*
+ * BaseStatement
+ */
+
+std::string_view BaseStatement::xml_node_name(xml::document& doc) const {
+  return statement_node_name;
+}
+
+/*
+ * StatementBlock
+ */
+
+std::string_view StatementBlock::xml_node_name(xml::document& doc) const { return block_node_name; }
+
+void StatementBlock::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseSyntax::xml_append_elements(doc, node);
+
+  for (auto& statement : statements()) {
+    node.append_node(&deref(statement).xml_create_node(doc));
+  }
+}
+
+/*
+ * ExpressionStatement
+ */
+
+std::string_view ExpressionStatement::xml_node_name(xml::document& doc) const {
+  return expr_stmt_node_name;
+}
+
+void ExpressionStatement::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseStatement::xml_append_elements(doc, node);
+  doc.append_node(&deref(expr()).xml_create_node(doc));
+}
+
+/*
+ * ReturnStatement
+ */
+
+std::string_view ReturnStatement::xml_node_name(xml::document& doc) const {
+  return ret_stmt_node_name;
+}
+
+void ReturnStatement::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseStatement::xml_append_elements(doc, node);
+  node.append_node(&deref(expr()).xml_create_node(doc));
+}
+
+/*
+ * BaseBodyStatement
+ */
+
+std::string_view BaseBodyStatement::xml_node_name(xml::document& doc) const {
+  return body_stmt_node_name;
+}
+
+void BaseBodyStatement::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseStatement::xml_append_elements(doc, node);
+  node.append_node(&deref(body()).xml_create_node(doc));
+}
+
+/*
+ * IfStatement
+ */
+
+std::string_view IfStatement::xml_node_name(xml::document& doc) const { return if_stmt_node_name; }
+
+void IfStatement::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseBodyStatement::xml_append_elements(doc, node);
+  node.append_node(&deref(expr()).xml_create_node(doc));
+}
+
+/*
+ * ElifStatement
+ */
+
+std::string_view ElifStatement::xml_node_name(xml::document& doc) const {
+  return elif_stmt_node_name;
+}
+
+/*
+ * ElseStatement
+ */
+
+std::string_view ElseStatement::xml_node_name(xml::document& doc) const {
+  return else_stmt_node_name;
+}
+
+/*
+ * LoopStatement
+ */
+
+std::string_view LoopStatement::xml_node_name(xml::document& doc) const {
+  return loop_stmt_node_name;
+}
+
+/*
+ * WhileStatement
+ */
+
+std::string_view WhileStatement::xml_node_name(xml::document& doc) const {
+  return while_stmt_node_name;
+}
+
+void WhileStatement::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseBodyStatement::xml_append_elements(doc, node);
+  node.append_node(&deref(expr()).xml_create_node(doc));
+}
+
+/*
+ * ForStatement
+ */
+
+std::string_view ForStatement::xml_node_name(xml::document& doc) const {
+  return for_stmt_node_name;
+}
+
+void ForStatement::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseBodyStatement::xml_append_elements(doc, node);
+}
+
+/*
+ * BaseDefinition
+ */
+
+std::string_view BaseDefinition::xml_node_name(xml::document& doc) const {
+  return base_definition_node_name;
+}
+
+void BaseDefinition::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseSyntax::xml_append_elements(doc, node);
+
+  if (!name().empty()) {
+    node.append_attribute(&xml::allocate_attribute(doc, name_attr_name, name()));
+  }
+}
+
+/*
+ * VariableDefinition
+ */
+
+std::string_view VariableDefinition::xml_node_name(xml::document& doc) const {
+  return var_def_node_name;
+}
+void VariableDefinition::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseDefinition::xml_append_elements(doc, node);
+
+  if (is_typed()) {
+    node.append_attribute(&xml::allocate_attribute(doc, type_attr_name, type_name()));
+  }
+
+  if (is_assigned()) {
+    auto& assign_node = xml::allocate_element(doc, assign_node_name);
+    assign_node.append_node(&deref(assignment()).xml_create_node(doc));
+  }
+}
+
+/*
+ * FunctionDefinition
+ */
+
+std::string_view FunctionDefinition::xml_node_name(xml::document& doc) const {
+  return func_def_node_name;
+}
+void FunctionDefinition::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseDefinition::xml_append_elements(doc, node);
+
+  if (!is_return_auto()) {
+    node.append_attribute(&xml::allocate_attribute(doc, return_attr_name, return_type()));
+  }
+
+  if (!parameters().empty()) {
+    auto& params_node = xml::allocate_element(doc, params_node_name);
+    for (auto& param : parameters()) {
+      params_node.append_node(&deref(param).xml_create_node(doc));
+    }
+    node.append_node(&params_node);
+  }
+
+  if (body()) {
+    // auto& body_node = xml::allocate_element(doc, body_node_name);
+    node.append_node(&deref(body()).xml_create_node(doc));
+    // node.append_node(&body_node);
+  }
+}
+
+/*
+ * BaseStructureDefinition
+ */
+
+std::string_view BaseStructureDefinition::xml_node_name(xml::document& doc) const {
+  return base_structure_def_node_name;
+}
+void BaseStructureDefinition::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseDefinition::xml_append_elements(doc, node);
+
+  for (auto& variable : variables()) {
+    node.append_node(&deref(variable).xml_create_node(doc));
+  }
+
+  for (auto& function : functions()) {
+    node.append_node(&deref(function).xml_create_node(doc));
+  }
+
+  for (auto& strct : structs()) {
+    node.append_node(&deref(strct).xml_create_node(doc));
+  }
+
+  for (auto& object : objects()) {
+    node.append_node(&deref(object).xml_create_node(doc));
+  }
+}
+
+/*
+ * StructDefinition
+ */
+
+std::string_view StructDefinition::xml_node_name(xml::document& doc) const {
+  return struct_def_node_name;
+}
+
+/*
+ * ObjectDefinition
+ */
+
+std::string_view ObjectDefinition::xml_node_name(xml::document& doc) const {
+  return object_def_node_name;
+}
+
+/*
+ * NamespaceDeclaration
+ */
+
+constexpr auto namespace_seperator = std::string_view{"::"};
+auto create_full_namespace(const std::vector<std::string>& subs) -> std::string {
+  auto name = std::string{};
+  for (auto& ns : subs) {
+    if (!name.empty()) {
+      name.append(namespace_seperator);
+    }
+    name.append(ns);
+  }
+  return name;
+}
+
+auto NamespaceDeclaration::full_name() const -> std::string {
+  return create_full_namespace(namespaces());
+}
+
+std::string_view NamespaceDeclaration::xml_node_name(xml::document& doc) const {
+  return ns_node_name;
+}
+
+void NamespaceDeclaration::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseSyntax::xml_append_elements(doc, node);
+  node.append_attribute(
+      &xml::allocate_attribute(doc, name_attr_name, xml::allocate_string(doc, full_name())));
+}
+
+/*
+ * NamespaceImport
+ */
+
+auto NamespaceImport::full_name() const -> std::string {
+  return create_full_namespace(namespaces());
+}
+
+std::string_view NamespaceImport::xml_node_name(xml::document& doc) const {
+  return import_node_name;
+}
+
+void NamespaceImport::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseSyntax::xml_append_elements(doc, node);
+  node.append_attribute(
+      &xml::allocate_attribute(doc, name_attr_name, xml::allocate_string(doc, full_name())));
+}
+
+/*
+ * SyntaxTree
  */
 
 const std::unique_ptr<NamespaceDeclaration> NamespaceDeclaration::root =
     std::make_unique<NamespaceDeclaration>(FilePosition{0, 0});
 
-/*
- * Xml Serialization Overrides
- */
-
-#ifdef TRACE
-
-auto BaseSyntax::on_serialize(xml::SerializationContext& context) const -> void {
-  context.add_attribute("pos", pos());
-  context.add_attribute("kind", to_string(kind()));
+std::string_view SyntaxTree::xml_node_name(xml::document& doc) const {
+  return syntax_tree_node_name;
 }
 
-void BooleanExpression::on_serialize(xml::SerializationContext& context) const {
-  BaseSyntax::on_serialize(context);
-  context.add_attribute("value", value_ ? "true" : "false");
-}
-
-void BaseConstantValueExpression::on_serialize(xml::SerializationContext& context) const {
-  BaseSyntax::on_serialize(context);
-  if (!value_.empty()) {
-    context.add_attribute("value", value_);
+void SyntaxTree::xml_append_elements(xml::document& doc, xml::node& node) const {
+  for (auto& imprt : imports()) {
+    node.append_node(&deref(imprt).xml_create_node(doc));
   }
-}
-
-void IdentifierExpression::on_serialize(xml::SerializationContext& context) const {
-  BaseExpression::on_serialize(context);
-  if (!identifier_.empty()) {
-    context.add_attribute("name", identifier_);
-  }
-}
-
-auto CallExpression::on_serialize(xml::SerializationContext& context) const -> void {
-  BaseSyntax::on_serialize(context);
-  if (!identifier_.empty()) {
-    context.add_attribute("name", identifier_);
-  }
-
-  for (auto& param : parameters()) {
-    context.add_element("param", *param);
-  }
-}
-
-auto BaseOperation::on_serialize(xml::SerializationContext& context) const -> void {
-  BaseSyntax::on_serialize(context);
-  context.add_attribute("op", to_string(op()));
-}
-
-void UnaryExpression::on_serialize(xml::SerializationContext& context) const {
-  BaseOperation::on_serialize(context);
-  if (expr_) {
-    context.add_element("expr", *expr_);
-  }
-}
-
-void BinaryExpression::on_serialize(xml::SerializationContext& context) const {
-  BaseOperation::on_serialize(context);
-  if (lhs_) {
-    context.add_element("lhs", *lhs_);
-  }
-  if (rhs_) {
-    context.add_element("rhs", *rhs_);
-  }
-}
-
-auto DefinitionStatement::on_serialize(xml::SerializationContext& context) const -> void {
-  BaseSyntax::on_serialize(context);
-  if (def_) {
-    context.add_element("def", *def_);
-  }
-}
-
-void ExpressionStatement::on_serialize(xml::SerializationContext& context) const {
-  BaseStatement::on_serialize(context);
-  if (expr_) {
-    context.add_element("expr", *expr_);
-  }
-}
-
-void ReturnStatement::on_serialize(xml::SerializationContext& context) const {
-  BaseSyntax::on_serialize(context);
-  if (expr_) {
-    context.add_element("expr", *expr_);
-  }
-}
-
-void IfStatement::on_serialize(xml::SerializationContext& context) const {
-  BaseSyntax::on_serialize(context);
-  if (expr_) {
-    context.add_element("pred", *expr_);
-  }
-  if (body()) {
-    context.add_element("body", *body());
-  }
-}
-
-auto WhileStatement::on_serialize(xml::SerializationContext& context) const -> void {
-  BaseSyntax::on_serialize(context);
-  if (expr_) {
-    context.add_element("pred", *expr_);
-  }
-  if (body()) {
-    context.add_element("body", *body());
-  }
-}
-
-auto ForStatement::on_serialize(xml::SerializationContext& context) const -> void {
-  BaseSyntax::on_serialize(context);
-  if (prefix_) {
-    context.add_element("pre", *prefix_);
-  }
-  if (cond_) {
-    context.add_element("cond", *cond_);
-  }
-  if (postfix_) {
-    context.add_element("post", *postfix_);
-  }
-
-  if (body()) {
-    context.add_element("body", *body());
-  }
-}
-
-void StatementBlock::on_serialize(xml::SerializationContext& context) const {
-  //SyntaxNode::on_serialize(context);
-  for (auto& statement : statements_) {
-    context.add_element("statement", *statement);
-  }
-}
-
-void BaseDefinition::on_serialize(xml::SerializationContext& context) const {
-  BaseSyntax::on_serialize(context);
-  if (!name_.empty()) {
-    context.add_attribute("name", name_);
-  }
-  context.add_attribute("access", to_string(modifier_));
-}
-
-void VariableDefinition::on_serialize(xml::SerializationContext& context) const {
-  BaseDefinition::on_serialize(context);
-  if (!type_name_.empty()) {
-    context.add_attribute("type", type_name_);
-  }
-
-  if (assignment_) {
-    context.add_element("assign", *assignment_);
-  }
-}
-
-void FunctionDefinition::on_serialize(xml::SerializationContext& context) const {
-  BaseDefinition::on_serialize(context);
-  if (!return_.empty()) {
-    context.add_attribute("return", return_);
-  }
-  if (body_) {
-    context.add_element("body", *body_);
-  }
-}
-
-auto NamespaceDeclaration::on_serialize(xml::SerializationContext& context) const -> void {
-  BaseSyntax::on_serialize(context);
-
-  auto str = std::string{};
-  for (auto& ns : namespaces_) {
-    str += "::";
-    str += ns;
-  }
-  context.add_attribute("namespace", str);
-}
-
-auto NamespaceImport::on_serialize(xml::SerializationContext& context) const -> void {
-  BaseSyntax::on_serialize(context);
-
-  auto str = std::string{};
-  for (auto& ns : namespaces_) {
-    str += "::";
-    str += ns;
-  }
-  context.add_attribute("namespace", str);
-}
-
-auto SyntaxTree::on_serialize(xml::SerializationContext& context) const -> void {
-  BaseSyntax::on_serialize(context);
 
   for (auto& ns : namespaces()) {
-    context.add_element("import", deref(ns));
+    node.append_node(&deref(ns).xml_create_node(doc));
   }
 
-  for (auto& imp : imports()) {
-    context.add_element("import", deref(imp));
-  }
-
-  for (auto& var : variables()) {
-    context.add_element("var", deref(var));
-  }
-
-  for (auto& fn : functions()) {
-    context.add_element("func", deref(fn));
-  }
-
-  for (auto& strct : structs()) {
-    context.add_element("struct", deref(strct));
-  }
+  BaseStructureDefinition::xml_append_elements(doc, node);
 }
 
-#endif
+auto operator<<(std::ostream& stream, const SyntaxTree& tree) -> std::ostream& {
+  auto doc = xml::document{};
+  doc.append_node(&tree.xml_create_node(doc));
+  return stream << doc;
+}

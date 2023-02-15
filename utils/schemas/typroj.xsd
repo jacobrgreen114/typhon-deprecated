@@ -14,7 +14,7 @@
             <xsd:element name="SourceDir" type="xsd:string" minOccurs="0"/>
             <xsd:element name="BuildDir" type="xsd:string" minOccurs="0"/>
             <xsd:element name="BinaryDir" type="xsd:string" minOccurs="0"/>
-
+            
             <xsd:element name="LinkStd" type="xsd:boolean" minOccurs="0"/>
 
             <xsd:element name="Configurations" type="ProjectConfigurationList" minOccurs="0"/>

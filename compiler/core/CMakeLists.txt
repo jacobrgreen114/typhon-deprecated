@@ -6,7 +6,7 @@ add_library(typhon_core
         src/project_config.cpp
 
         src/xml/serialization.cpp
-)
+        inc/xml/rapid_xml.hpp)
 
 target_include_directories(typhon_core
     PUBLIC

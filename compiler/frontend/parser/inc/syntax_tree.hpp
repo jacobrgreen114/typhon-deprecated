@@ -229,11 +229,7 @@ auto to_string(AccessModifier modifier) -> std::string_view;
  * BaseSyntax
  * \todo implement file position of syntax
  */
-class BaseSyntax
-#ifdef TRACE
-    : public xml::Serializable
-#endif
-{
+class BaseSyntax {
  public:
   using Pointer = std::unique_ptr<BaseSyntax>;
 
@@ -246,16 +242,16 @@ class BaseSyntax
       : kind_{kind},
         pos_{pos} {}
 
+  virtual auto xml_node_name(xml::document& doc) const -> std::string_view;
+  virtual auto xml_append_elements(xml::document& doc, xml::node& node) const -> void;
+
  public:
   virtual ~BaseSyntax() = default;
 
   NODISCARD constexpr auto kind() const noexcept { return kind_; }
   NODISCARD constexpr auto& pos() const noexcept { return pos_; }
 
- protected:
-#ifdef TRACE
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_create_node(xml::document& doc) const -> xml::node&;
 };
 
 /**
@@ -268,6 +264,8 @@ class BaseExpression : public BaseSyntax {
  protected:
   explicit constexpr BaseExpression(const SyntaxKind kind, const FilePosition& pos)
       : BaseSyntax{kind, pos} {}
+
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -281,6 +279,8 @@ class BaseConstantExpression : public BaseExpression {
  protected:
   constexpr explicit BaseConstantExpression(SyntaxKind kind, const FilePosition& pos)
       : BaseExpression{kind, pos} {}
+
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -300,10 +300,9 @@ class BooleanExpression final : public BaseConstantExpression {
 
   NODISCARD auto value() const { return value_; }
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -327,10 +326,9 @@ class BaseConstantValueExpression : public BaseConstantExpression {
  public:
   NODISCARD auto& value() const { return value_; }
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -342,6 +340,9 @@ class NumberExpression final : public BaseConstantValueExpression {
 
   explicit NumberExpression(const FilePosition& pos, const std::string& value)
       : BaseConstantValueExpression{SyntaxKind::ExprNumber, pos, value} {}
+
+ protected:
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -353,6 +354,9 @@ class StringExpression final : public BaseConstantValueExpression {
 
   explicit StringExpression(const FilePosition& pos, const std::string& value)
       : BaseConstantValueExpression{SyntaxKind::ExprString, pos, value} {}
+
+ protected:
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -372,10 +376,9 @@ class IdentifierExpression final : public BaseExpression {
 
   NODISCARD auto& identifier() const { return identifier_; }
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -402,10 +405,9 @@ class CallExpression final : public BaseExpression {
     parameters_.emplace_back(std::move(parameter));
   }
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /*
@@ -431,10 +433,9 @@ class BaseOperation : public BaseExpression {
  public:
   NODISCARD auto op() const { return op_; }
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -451,12 +452,13 @@ class UnaryExpression final : public BaseOperation {
   constexpr explicit UnaryExpression(const FilePosition& pos, Operator op)
       : BaseOperation{SyntaxKind::ExprUnary, pos, op} {}
 
+  auto& expr() const { return expr_; }
+
   auto set_expr(BaseExpression::Pointer expr) -> void { expr_ = std::move(expr); }
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -481,10 +483,9 @@ class BinaryExpression final : public BaseOperation {
 
   auto set_rhs(BaseExpression::Pointer rhs) -> void { rhs_ = std::move(rhs); }
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /*
@@ -502,6 +503,8 @@ class BaseStatement : public BaseSyntax {
  protected:
   constexpr explicit BaseStatement(SyntaxKind kind, const FilePosition& pos)
       : BaseSyntax{kind, pos} {}
+
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -527,10 +530,9 @@ class StatementBlock final : public BaseSyntax {
     statements_.emplace_back(std::move(statement));
   }
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
 };
 
 /**
@@ -551,10 +553,9 @@ class ExpressionStatement final : public BaseStatement {
 
   auto set_expr(BaseExpression::Pointer expr) { expr_ = std::move(expr); }
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -575,10 +576,9 @@ class ReturnStatement final : public BaseStatement {
 
   auto set_expr(BaseExpression::Pointer expr) { expr_ = std::move(expr); }
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /*
@@ -604,6 +604,10 @@ class BaseBodyStatement : public BaseStatement {
   NODISCARD auto& body() const { return block_; }
 
   auto set_body(StatementBlock::Pointer block) { block_ = std::move(block); }
+
+ protected:
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -628,10 +632,9 @@ class IfStatement : public BaseBodyStatement {
 
   auto set_expr(BaseExpression::Pointer expr) -> void { expr_ = std::move(expr); }
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -643,6 +646,9 @@ class ElifStatement final : public IfStatement {
 
   constexpr ElifStatement(const FilePosition& pos)
       : IfStatement{SyntaxKind::StmtElif, pos} {}
+
+ protected:
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -654,6 +660,9 @@ class ElseStatement final : public BaseBodyStatement {
 
   constexpr ElseStatement(const FilePosition& pos)
       : BaseBodyStatement{SyntaxKind::StmtElse, pos} {}
+
+ protected:
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -665,6 +674,9 @@ class LoopStatement final : public BaseBodyStatement {
 
   constexpr LoopStatement(const FilePosition& pos)
       : BaseBodyStatement{SyntaxKind::StmtLoop, pos} {}
+
+ protected:
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -685,10 +697,9 @@ class WhileStatement final : public BaseBodyStatement {
 
   auto set_expr(std::unique_ptr<BaseExpression> expr) -> void { expr_ = std::move(expr); }
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -719,10 +730,9 @@ class ForStatement final : public BaseBodyStatement {
   auto set_cond(Condition cond) { cond_ = std::move(cond); }
   auto set_postfix(Postfix postfix) { postfix_ = std::move(postfix); }
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -750,14 +760,15 @@ class NamespaceDeclaration final : public BaseSyntax {
 
   NODISCARD auto& namespaces() const { return namespaces_; }
 
+  NODISCARD auto full_name() const -> std::string;
+
   auto push_namespace(const std::string& ns) { namespaces_.emplace_back(ns); }
 
   static const std::unique_ptr<NamespaceDeclaration> root;
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
 };
 
 /**
@@ -776,12 +787,13 @@ class NamespaceImport final : public BaseSyntax {
 
   NODISCARD auto& namespaces() const { return namespaces_; }
 
+  NODISCARD auto full_name() const -> std::string;
+
   auto push_namespace(const std::string& ns) { namespaces_.emplace_back(ns); }
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
 };
 
 /**
@@ -811,10 +823,9 @@ class BaseDefinition : public BaseSyntax {
 
   auto set_name(const std::string& name) noexcept -> void { name_ = name; }
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
 };
 
 /**
@@ -834,11 +845,6 @@ class DefinitionStatement final : public BaseStatement {
   NODISCARD auto& def() const { return def_; }
 
   auto set_def(std::unique_ptr<BaseDefinition> def) { def_ = std::move(def); }
-
-#ifdef TRACE
- protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
 };
 
 /**
@@ -875,10 +881,9 @@ class VariableDefinition final : public BaseDefinition {
 
   auto set_mutable(bool mut) noexcept -> void { mutable_ = mut; }
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
 };
 
 /**
@@ -935,10 +940,9 @@ class FunctionDefinition final : public BaseDefinition {
 
   auto set_body(Body body) { body_ = std::move(body); }
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
 };
 
 class StructDefinition;
@@ -982,6 +986,10 @@ class BaseStructureDefinition : public BaseDefinition {
   constexpr auto& push_object(std::unique_ptr<ObjectDefinition> str) {
     return objects_.emplace_back(std::move(str));
   }
+
+ protected:
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
 };
 
 /**
@@ -993,6 +1001,9 @@ class StructDefinition final : public BaseStructureDefinition {
 
   explicit StructDefinition(const FilePosition& pos)
       : BaseStructureDefinition(SyntaxKind::DefStruct, pos) {}
+
+ protected:
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -1004,6 +1015,9 @@ class ObjectDefinition final : public BaseStructureDefinition {
 
   explicit ObjectDefinition(const FilePosition& pos)
       : BaseStructureDefinition(SyntaxKind::DefObject, pos) {}
+
+ protected:
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
 };
 
 /**
@@ -1038,11 +1052,12 @@ class SyntaxTree final : public BaseStructureDefinition {
     return namespaces_.emplace_back(std::move(ns));
   }
 
-#ifdef TRACE
  protected:
-  auto on_serialize(xml::SerializationContext& context) const -> void override;
-#endif
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
 };
+
+auto operator<<(std::ostream& stream, const SyntaxTree& tree) -> std::ostream&;
 
 using SyntaxTreeCollection = std::vector<std::unique_ptr<SyntaxTree>>;
 

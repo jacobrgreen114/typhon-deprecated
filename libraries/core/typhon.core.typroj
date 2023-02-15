@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Project xmlns="Typhon.Project"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.w3.org/2001/XMLSchema file://../../utils/schemas/typroj.xsd">
+    <ProjectName>Typhon.Core</ProjectName>
+    <BinaryType>Lib</BinaryType>
+    <SourceDir>src</SourceDir>
+    <BuildDir>obj</BuildDir>
+    <BinaryDir>bin</BinaryDir>
+
+    <__ty_link_core>false</__ty_link_core>
+    <LinkStd>false</LinkStd>
+
+    <Configurations>
+    </Configurations>
+
+    <References>
+    </References>
+</Project>
