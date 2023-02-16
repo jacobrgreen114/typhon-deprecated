@@ -26,11 +26,15 @@
         },
         {
             "name": "storage.type.typhon",
-            "match": "\\b(alias|const|var|func|struct|class|object|concept|interface|constructor|destructor|this|void|bool|bool32|u8|u16|u32|u64|uword|i8|i16|i32|i64|uword|f32|f64|char|char16|char32|string|string16|string32)\\b"
+            "match": "\\b(alias|const|var|func|struct|class|object|concept|interface|constructor|destructor|this|void|bool|bool32|u8|u16|u32|u64|uword|i8|i16|i32|i64|iword|f32|f64|char|char16|char32|string|string16|string32)\\b"
         },
         {
             "name": "storage.modifier.typhon",
             "match": "\\b(private|module|protected|internal|public|mut|static|extern)\\b"
+        },
+        {
+            "name": "storage.other.typhon",
+            "match": "\\b(__c_type|__c_include)\\b"
         },
         {
             "name": "keyword.control.typhon",

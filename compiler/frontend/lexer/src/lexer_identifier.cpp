@@ -6,42 +6,45 @@
 #define CACHE_IDENTIFIERS true
 
 const auto keywords = std::unordered_map<std::string_view, LexicalKind>{
-    {"true",      LexicalKind::KeywordTrue     },
-    {"false",     LexicalKind::KeywordFalse    },
+    {"true",        LexicalKind::KeywordTrue     },
+    {"false",       LexicalKind::KeywordFalse    },
 
-    {"var",       LexicalKind::KeywordVar      },
-    {"func",      LexicalKind::KeywordFunc     },
-    {"struct",    LexicalKind::KeywordStruct   },
-    {"object",    LexicalKind::KeywordObject   },
+    {"var",         LexicalKind::KeywordVar      },
+    {"func",        LexicalKind::KeywordFunc     },
+    {"struct",      LexicalKind::KeywordStruct   },
+    {"object",      LexicalKind::KeywordObject   },
 
-    {"concept",   LexicalKind::KeywordConcept  },
-    {"interface", LexicalKind::KeywordInterface},
+    {"concept",     LexicalKind::KeywordConcept  },
+    {"interface",   LexicalKind::KeywordInterface},
 
-    {"return",    LexicalKind::KeywordReturn   },
+    {"return",      LexicalKind::KeywordReturn   },
 
-    {"if",        LexicalKind::KeywordIf       },
-    {"elif",      LexicalKind::KeywordElif     },
-    {"else",      LexicalKind::KeywordElse     },
+    {"if",          LexicalKind::KeywordIf       },
+    {"elif",        LexicalKind::KeywordElif     },
+    {"else",        LexicalKind::KeywordElse     },
 
-    {"switch",    LexicalKind::KeywordSwitch   },
-    {"match",     LexicalKind::KeywordMatch    },
+    {"switch",      LexicalKind::KeywordSwitch   },
+    {"match",       LexicalKind::KeywordMatch    },
 
-    {"loop",      LexicalKind::KeywordLoop     },
-    {"while",     LexicalKind::KeywordWhile    },
-    {"for",       LexicalKind::KeywordFor      },
-    {"foreach",   LexicalKind::KeywordForeach  },
+    {"loop",        LexicalKind::KeywordLoop     },
+    {"while",       LexicalKind::KeywordWhile    },
+    {"for",         LexicalKind::KeywordFor      },
+    {"foreach",     LexicalKind::KeywordForeach  },
 
-    {"namespace", LexicalKind::KeywordNamespace},
-    {"import",    LexicalKind::KeywordImport   },
+    {"namespace",   LexicalKind::KeywordNamespace},
+    {"import",      LexicalKind::KeywordImport   },
 
-    {"private",   LexicalKind::KeywordPrivate  },
-    {"module",    LexicalKind::KeywordModule   },
-    {"internal",  LexicalKind::KeywordInternal },
-    {"protected", LexicalKind::KeywordProtected},
-    {"public",    LexicalKind::KeywordPublic   },
+    {"private",     LexicalKind::KeywordPrivate  },
+    {"module",      LexicalKind::KeywordModule   },
+    {"internal",    LexicalKind::KeywordInternal },
+    {"protected",   LexicalKind::KeywordProtected},
+    {"public",      LexicalKind::KeywordPublic   },
 
-    {"static",    LexicalKind::KeywordStatic   },
-    {"mut",       LexicalKind::KeywordMutable  },
+    {"static",      LexicalKind::KeywordStatic   },
+    {"mut",         LexicalKind::KeywordMutable  },
+
+    {"__c_type",    LexicalKind::KeywordCType    },
+    {"__c_include", LexicalKind::KeywordCInclude },
 };
 
 auto create_identifier_token(LexerContext& ctx) -> void {

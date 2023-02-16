@@ -15,32 +15,6 @@
 #include "gen_struct.hpp"
 #include "gen_object.hpp"
 
-#define FIND_IF_OPTIMIZATION false
-
-auto find_if_def_var(auto begin, auto end) {
-  return std::find_if(std::execution::par, begin, end, [](auto& node) -> bool {
-    return node->kind() == SyntaxKind::DefVar;
-  });
-}
-
-auto find_if_def_func(auto begin, auto end) {
-  return std::find_if(std::execution::par, begin, end, [](auto& node) -> bool {
-    return node->kind() == SyntaxKind::DefFunc;
-  });
-}
-
-auto find_if_def_struct(auto begin, auto end) {
-  return std::find_if(std::execution::par, begin, end, [](auto& node) -> bool {
-    return node->kind() == SyntaxKind::DefStruct;
-  });
-}
-
-auto find_if_def_object(auto begin, auto end) {
-  return std::find_if(std::execution::par, begin, end, [](auto& node) -> bool {
-    return node->kind() == SyntaxKind::DefObject;
-  });
-}
-
 auto forward_decl_structs(std::ostream& writer, const SyntaxTree& tree, GeneratedFile file) {
   for (auto& strc : tree.structs()) {
     writer << newline;
@@ -171,6 +145,19 @@ auto generate_internal_header(const NameSpace& ns, const SyntaxTree& syntax_tree
 
   writer << "#pragma once" << newline << newline;
 
+  for (auto& pcinclude : syntax_tree.cincludes()) {
+    auto& cinclude = deref(pcinclude);
+    writer << "#include <" << cinclude.name() << '>' << newline;
+  }
+
+  writer << newline;
+
+  for (auto& pctype : syntax_tree.ctypes()) {
+    auto& ctype = deref(pctype);
+    writer << "using __ty_" << ctype.name() << " = " << ctype.c_name() << ';' << newline;
+  }
+
+  writer << newline;
   writer << "#include \"" << ns.file_name() << '"' << newline << newline;
 
   forward_declare_internal(writer, syntax_tree);
@@ -185,7 +172,7 @@ auto generate_namespace_header(const ProjectConfig& config, const NameSpace& ns)
   if (ns.parent()) {
     writer << "#include \"" << deref(ns.parent()).file_name() << '"' << newline;
   } else {
-    writer << "#include \"../../__builtins.hpp\"" << newline << newline;
+    // writer << "#include \"../../__builtins.hpp\"" << newline << newline;
   }
 
   for (auto& ptree : ns.trees()) {
@@ -261,11 +248,15 @@ auto generate_cmake(const ProjectConfig& config, const ProjectTree& source) -> v
     writer << " SHARED";
   }
 
-  writer << newline << indent << "\"../../__main.cpp\"" << newline;
+  if (binary_type == BinaryType::Exe) {
+    writer << newline << indent << "\"../../__main.cpp\"" << newline;
+  }
+
   write_cmake_source_paths(config, writer, deref(source.root()));
   writer << ')' << newline;
 }
 
+// todo : redirect cmake and compiler output to pipe
 auto make(const ProjectConfig& config, const fs::path& build_path) -> void {
   const auto cmake_command = std::string{"cmake -S \""} + config.dir_build().string() + "\" -B \"" +
                              build_path.string() + '"';

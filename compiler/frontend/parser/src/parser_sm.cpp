@@ -10,6 +10,7 @@
 #include "parser_def_func.hpp"
 #include "parser_def_struct.hpp"
 #include "parser_def_object.hpp"
+#include "parser_c.hpp"
 
 auto is_unary_pre_operator(const LexicalToken& token) -> bool {
   switch (token.kind()) {
@@ -95,23 +96,29 @@ auto error_handler_(ParserContext& ctx) -> ParserState;
 auto unexpected_token_error_handler_(ParserContext& ctx) -> ParserState;
 auto end_handler_(ParserContext& ctx) -> ParserState;
 
-auto source_import_end_exit_handler_(ParserContext& ctx) -> ParserState;
+auto source_import_end_eof_handler_(ParserContext& ctx) -> ParserState;
 auto source_import_end_handler_(ParserContext& ctx) -> ParserState;
 
-auto source_ns_end_exit_handler_(ParserContext& ctx) -> ParserState;
+auto source_ns_end_eof_handler_(ParserContext& ctx) -> ParserState;
 auto source_ns_end_handler_(ParserContext& ctx) -> ParserState;
 
-auto source_var_end_exit_handler_(ParserContext& ctx) -> ParserState;
+auto source_var_end_eof_handler_(ParserContext& ctx) -> ParserState;
 auto source_var_end_handler_(ParserContext& ctx) -> ParserState;
 
-auto source_func_end_exit_handler_(ParserContext& ctx) -> ParserState;
+auto source_func_end_eof_handler_(ParserContext& ctx) -> ParserState;
 auto source_func_end_handler_(ParserContext& ctx) -> ParserState;
 
-auto source_struct_end_exit_handler_(ParserContext& ctx) -> ParserState;
+auto source_struct_end_eof_handler_(ParserContext& ctx) -> ParserState;
 auto source_struct_end_handler_(ParserContext& ctx) -> ParserState;
 
-auto source_object_end_exit_handler_(ParserContext& ctx) -> ParserState;
+auto source_object_end_eof_handler_(ParserContext& ctx) -> ParserState;
 auto source_object_end_handler_(ParserContext& ctx) -> ParserState;
+
+auto source_cinclude_end_eof_handler_(ParserContext& ctx) -> ParserState;
+auto source_cinclude_end_handler_(ParserContext& ctx) -> ParserState;
+
+auto source_ctype_end_eof_handler_(ParserContext& ctx) -> ParserState;
+auto source_ctype_end_handler_(ParserContext& ctx) -> ParserState;
 
 auto unknown_handler(ParserContext& ctx) -> ParserState;
 
@@ -121,23 +128,29 @@ constexpr ParserState error_state                  = ParserState{error_handler_}
 constexpr ParserState unexpected_token_error_state = ParserState{unexpected_token_error_handler_};
 constexpr auto exit_state                          = ParserState{nullptr};
 
-constexpr auto source_import_end_exit_state        = ParserState{source_import_end_exit_handler_};
+constexpr auto source_import_end_eof_state         = ParserState{source_import_end_eof_handler_};
 constexpr auto source_import_end_state             = ParserState{source_import_end_handler_};
 
-constexpr auto source_ns_end_exit_state            = ParserState{source_ns_end_exit_handler_};
+constexpr auto source_ns_end_eof_state             = ParserState{source_ns_end_eof_handler_};
 constexpr auto source_ns_end_state                 = ParserState{source_ns_end_handler_};
 
-constexpr auto source_var_end_exit_state           = ParserState{source_var_end_exit_handler_};
+constexpr auto source_var_end_eof_state            = ParserState{source_var_end_eof_handler_};
 constexpr auto source_var_end_state                = ParserState{source_var_end_handler_};
 
-constexpr auto source_func_end_exit_state          = ParserState{source_func_end_exit_handler_};
+constexpr auto source_func_end_eof_state           = ParserState{source_func_end_eof_handler_};
 constexpr auto source_func_end_state               = ParserState{source_func_end_handler_};
 
-constexpr auto source_struct_end_exit_state        = ParserState{source_struct_end_exit_handler_};
+constexpr auto source_struct_end_eof_state         = ParserState{source_struct_end_eof_handler_};
 constexpr auto source_struct_end_state             = ParserState{source_struct_end_handler_};
 
-constexpr auto source_object_end_exit_state        = ParserState{source_object_end_exit_handler_};
+constexpr auto source_object_end_eof_state         = ParserState{source_object_end_eof_handler_};
 constexpr auto source_object_end_state             = ParserState{source_object_end_handler_};
+
+constexpr auto source_cinclude_end_eof_state       = ParserState{source_cinclude_end_eof_handler_};
+constexpr auto source_cinclude_end_state           = ParserState{source_cinclude_end_handler_};
+
+constexpr auto source_ctype_end_eof_state          = ParserState{source_ctype_end_eof_handler_};
+constexpr auto source_ctype_end_state              = ParserState{source_ctype_end_handler_};
 
 constexpr auto unknown_state                       = ParserState{unknown_handler};
 
@@ -155,7 +168,7 @@ auto unexpected_token_error_handler_(ParserContext& ctx) -> ParserState {
   exit(-1);
 }
 
-auto source_import_end_exit_handler_(ParserContext& ctx) -> ParserState {
+auto source_import_end_eof_handler_(ParserContext& ctx) -> ParserState {
   ctx.source->push_import(ctx.pop_syntax_node<NamespaceImport>());
   return exit_state;
 }
@@ -165,7 +178,7 @@ auto source_import_end_handler_(ParserContext& ctx) -> ParserState {
   return unknown_state;
 }
 
-auto source_ns_end_exit_handler_(ParserContext& ctx) -> ParserState {
+auto source_ns_end_eof_handler_(ParserContext& ctx) -> ParserState {
   ctx.source->push_namespace(ctx.pop_syntax_node<NamespaceDeclaration>());
   return exit_state;
 }
@@ -175,7 +188,7 @@ auto source_ns_end_handler_(ParserContext& ctx) -> ParserState {
   return unknown_state;
 }
 
-auto source_var_end_exit_handler_(ParserContext& ctx) -> ParserState {
+auto source_var_end_eof_handler_(ParserContext& ctx) -> ParserState {
   ctx.source->push_var(ctx.pop_syntax_node<VariableDefinition>());
   return exit_state;
 }
@@ -185,7 +198,7 @@ auto source_var_end_handler_(ParserContext& ctx) -> ParserState {
   return unknown_state;
 }
 
-auto source_func_end_exit_handler_(ParserContext& ctx) -> ParserState {
+auto source_func_end_eof_handler_(ParserContext& ctx) -> ParserState {
   ctx.source->push_func(ctx.pop_syntax_node<FunctionDefinition>());
   return exit_state;
 }
@@ -195,7 +208,7 @@ auto source_func_end_handler_(ParserContext& ctx) -> ParserState {
   return unknown_state;
 }
 
-auto source_struct_end_exit_handler_(ParserContext& ctx) -> ParserState {
+auto source_struct_end_eof_handler_(ParserContext& ctx) -> ParserState {
   ctx.source->push_struct(ctx.pop_syntax_node<StructDefinition>());
   return exit_state;
 }
@@ -205,7 +218,7 @@ auto source_struct_end_handler_(ParserContext& ctx) -> ParserState {
   return unknown_state;
 }
 
-auto source_object_end_exit_handler_(ParserContext& ctx) -> ParserState {
+auto source_object_end_eof_handler_(ParserContext& ctx) -> ParserState {
   ctx.source->push_object(ctx.pop_syntax_node<ObjectDefinition>());
   return exit_state;
 }
@@ -215,37 +228,64 @@ auto source_object_end_handler_(ParserContext& ctx) -> ParserState {
   return unknown_state;
 }
 
+auto source_cinclude_end_eof_handler_(ParserContext& ctx) -> ParserState {
+  ctx.source->push_cinclude(ctx.pop_syntax_node<CInclude>());
+  return exit_state;
+}
+
+auto source_cinclude_end_handler_(ParserContext& ctx) -> ParserState {
+  ctx.source->push_cinclude(ctx.pop_syntax_node<CInclude>());
+  return unknown_state;
+}
+
+auto source_ctype_end_eof_handler_(ParserContext& ctx) -> ParserState {
+  ctx.source->push_ctype(ctx.pop_syntax_node<CTypeDefinition>());
+  return exit_state;
+}
+
+auto source_ctype_end_handler_(ParserContext& ctx) -> ParserState {
+  ctx.source->push_ctype(ctx.pop_syntax_node<CTypeDefinition>());
+  return unknown_state;
+}
+
 auto unknown_handler(ParserContext& ctx) -> ParserState {
   if (is_def_modifier(ctx.current())) {
     ctx.push_current_token();
-
   }
 
   auto kind = ctx.current().kind();
   switch (kind) {
     case LexicalKind::KeywordVar: {
-      ctx.push_states(source_var_end_state, source_var_end_exit_state);
+      ctx.push_states(source_var_end_state, source_var_end_eof_state);
       return var_def_start_state;
     }
     case LexicalKind::KeywordFunc: {
-      ctx.push_states(source_func_end_state, source_func_end_exit_state);
+      ctx.push_states(source_func_end_state, source_func_end_eof_state);
       return func_def_start_state;
     }
     case LexicalKind::KeywordStruct: {
-      ctx.push_states(source_struct_end_state, source_struct_end_exit_state);
+      ctx.push_states(source_struct_end_state, source_struct_end_eof_state);
       return def_struct_start_state;
     }
     case LexicalKind::KeywordObject: {
-      ctx.push_states(source_object_end_state, source_object_end_exit_state);
+      ctx.push_states(source_object_end_state, source_object_end_eof_state);
       return def_object_start_state;
     }
     case LexicalKind::KeywordImport: {
-      ctx.push_states(source_import_end_state, source_import_end_exit_state);
+      ctx.push_states(source_import_end_state, source_import_end_eof_state);
       return import_start_state;
     }
     case LexicalKind::KeywordNamespace: {
-      ctx.push_states(source_ns_end_state, source_ns_end_exit_state);
+      ctx.push_states(source_ns_end_state, source_ns_end_eof_state);
       return namespace_start_state;
+    }
+    case LexicalKind::KeywordCInclude: {
+      ctx.push_states(source_cinclude_end_state, source_cinclude_end_eof_state);
+      return cinclude_start_state;
+    }
+    case LexicalKind::KeywordCType: {
+      ctx.push_states(source_ctype_end_state, source_ctype_end_eof_state);
+      return ctype_start_state;
     }
     default: {
       return unexpected_token_error_state;

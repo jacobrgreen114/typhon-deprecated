@@ -205,6 +205,22 @@ constexpr LexicalTokenPredicate is_keyword_mut = [](auto& token) {
   return is_token_kind(token, LexicalKind::KeywordMutable);
 };
 
+constexpr LexicalTokenPredicate is_keyword_cinclude = [](auto& token) {
+  return is_token_kind(token, LexicalKind::KeywordCInclude);
+};
+
+constexpr LexicalTokenPredicate is_keyword_ctype = [](auto& token) {
+  return is_token_kind(token, LexicalKind::KeywordCType);
+};
+
+constexpr LexicalTokenPredicate is_number = [](auto& token) {
+  return is_token_kind(token, LexicalKind::Number);
+};
+
+constexpr LexicalTokenPredicate is_string = [](auto& token) {
+  return is_token_kind(token, LexicalKind::String);
+};
+
 auto is_unary_pre_operator(const LexicalToken& token) -> bool;
 auto is_unary_post_operator(const LexicalToken& token) -> bool;
 

@@ -46,6 +46,7 @@ class ProjectConfig {
 #endif
 
   BinaryType binary_type_ = BinaryType::Exe;
+  bool link_core_         = true;
   bool link_std_          = true;
 
   std::string name_;
@@ -65,6 +66,7 @@ class ProjectConfig {
 
  public:
   NODISCARD auto binary_type() const { return binary_type_; }
+  NODISCARD auto link_core() const { return link_core_; }
   NODISCARD auto link_std() const { return link_std_; }
 
   NODISCARD auto& name() const { return name_; }
@@ -93,6 +95,7 @@ class ProjectConfig {
   auto set_binary_dir(const std::string_view path) { bin_dir_ = path; }
 
   auto set_binary_type(BinaryType type) { binary_type_ = type; }
+  auto set_link_core(bool link_core) { link_core_ = link_core; }
   auto set_link_std(bool link_std) { link_std_ = link_std; }
 
   static auto load(const fs::path& dir_path = fs::current_path()) -> ConstPointer;

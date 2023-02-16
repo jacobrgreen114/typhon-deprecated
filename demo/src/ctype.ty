@@ -1,0 +1,8 @@
+// Copyright (c) 2023 Jacob R. Green
+// All Rights Reserved.
+
+__c_include "cstdint";
+__c_include "string";
+
+__c_type i32 : "int32_t";
+__c_type f32 : "float";

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Root xmlns="Typhon.UI"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.w3.org/2001/XMLSchema file://../tyui.xsd">
+
+    <Window id="MainWindow" title="MainWindow">
+
+    </Window>
+
+
+</Root>

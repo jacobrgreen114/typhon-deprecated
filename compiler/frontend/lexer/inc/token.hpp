@@ -255,6 +255,11 @@ enum class LexicalKind : lexical_kind_t {
   SymbolLessThanEqual,
   // >=
   SymbolGreaterThanEqual,
+
+  // Internal Symbols
+
+  KeywordCType,
+  KeywordCInclude,
 };
 
 auto operator<<(std::ostream& stream, LexicalKind kind) -> std::ostream&;
@@ -288,7 +293,7 @@ class FilePosition final {
     col_ = 0;
   }
 
-  NODISCARD auto xml_create_attr(xml::document& doc) const -> xml::attr &;
+  NODISCARD auto xml_create_attr(xml::document& doc) const -> xml::attr&;
 };
 
 auto operator<<(std::ostream& stream, const FilePosition& position) -> std::ostream&;

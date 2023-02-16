@@ -43,6 +43,8 @@ enum class SyntaxKind : syntax_kind_t {
   Namespace      = make_syntax_kind(SyntaxType::Misc, 0x11),
   Import         = make_syntax_kind(SyntaxType::Misc, 0x12),
 
+  CInclude       = make_syntax_kind(SyntaxType::Misc, 0x21),
+
   ExprBool       = make_syntax_kind(SyntaxType::Expression, 0x01),
   ExprNumber     = make_syntax_kind(SyntaxType::Expression, 0x02),
   ExprString     = make_syntax_kind(SyntaxType::Expression, 0x03),
@@ -70,6 +72,8 @@ enum class SyntaxKind : syntax_kind_t {
   DefStruct      = make_syntax_kind(SyntaxType::Definition, 0x04),
   DefObject      = make_syntax_kind(SyntaxType::Definition, 0x05),
   DefInterface   = make_syntax_kind(SyntaxType::Definition, 0x06),
+
+  DefCType       = make_syntax_kind(SyntaxType::Definition, 0x11),
 };
 
 auto to_string(SyntaxKind kind) -> std::string_view;
@@ -1021,6 +1025,52 @@ class ObjectDefinition final : public BaseStructureDefinition {
 };
 
 /**
+ * CInclude
+ */
+class CInclude final : public BaseSyntax {
+ public:
+  using Pointer = std::unique_ptr<CInclude>;
+
+ private:
+  std::string name_;
+
+ public:
+  explicit CInclude(const FilePosition& pos)
+      : BaseSyntax{SyntaxKind::CInclude, pos} {}
+
+  NODISCARD auto& name() const { return name_; }
+
+  auto set_name(std::string name) { name_ = std::move(name); }
+
+ protected:
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
+};
+
+/**
+ * CType
+ */
+class CTypeDefinition final : public BaseDefinition {
+ public:
+  using Pointer = std::unique_ptr<CTypeDefinition>;
+
+ private:
+  std::string c_name_;
+
+ public:
+  explicit CTypeDefinition(const FilePosition& pos)
+      : BaseDefinition{SyntaxKind::DefCType, pos} {}
+
+  NODISCARD auto& c_name() const { return c_name_; }
+
+  auto set_c_name(std::string name) { c_name_ = std::move(name); }
+
+ protected:
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
+};
+
+/**
  * SyntaxTree
  * \brief Root node
  */
@@ -1034,6 +1084,9 @@ class SyntaxTree final : public BaseStructureDefinition {
   std::vector<NamespaceImport::Pointer> imports_;
   std::vector<NamespaceDeclaration::Pointer> namespaces_;
 
+  std::vector<CInclude::Pointer> cincludes_;
+  std::vector<CTypeDefinition::Pointer> ctypes_;
+
  public:
   explicit SyntaxTree(SourceContext::Pointer source)
       : BaseStructureDefinition{SyntaxKind::Source, {0, 0}},
@@ -1044,12 +1097,23 @@ class SyntaxTree final : public BaseStructureDefinition {
   NODISCARD auto& imports() const { return imports_; }
   NODISCARD auto& namespaces() const { return namespaces_; }
 
+  NODISCARD auto& cincludes() const { return cincludes_; }
+  NODISCARD auto& ctypes() const { return ctypes_; }
+
   constexpr auto& push_import(NamespaceImport::Pointer ns) {
     return imports_.emplace_back(std::move(ns));
   }
 
   constexpr auto& push_namespace(NamespaceDeclaration::Pointer ns) {
     return namespaces_.emplace_back(std::move(ns));
+  }
+
+  constexpr auto& push_cinclude(CInclude::Pointer ns) {
+    return cincludes_.emplace_back(std::move(ns));
+  }
+
+  constexpr auto& push_ctype(CTypeDefinition::Pointer ns) {
+    return ctypes_.emplace_back(std::move(ns));
   }
 
  protected:

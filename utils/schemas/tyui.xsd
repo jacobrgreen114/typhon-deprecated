@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="Typhon.UI"
+            xmlns="Typhon.UI"
+            elementFormDefault="qualified">
+
+    <xsd:element name="Root" type="Root"/>
+
+    <xsd:complexType name="RootChoice">
+
+    </xsd:complexType>
+
+    <xsd:complexType name="Root">
+        <xsd:choice maxOccurs="unbounded">
+            <xsd:element name="Window" type="Window"/>
+        </xsd:choice>
+    </xsd:complexType>
+
+
+    <xsd:group name="Content">
+        <xsd:choice>
+            <xsd:group ref="Panels"/>
+            <xsd:group ref="Controls"/>
+        </xsd:choice>
+    </xsd:group>
+
+
+    <!-- Panels -->
+
+    <xsd:complexType name="UIElement" abstract="true">
+        <xsd:all>
+
+        </xsd:all>
+        <xsd:attribute name="id" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="Control" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="UIElement">
+
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="ContentControl" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="Control">
+                <xsd:choice>
+                    <xsd:group ref="Content"/>
+                </xsd:choice>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="Window">
+        <xsd:complexContent>
+            <xsd:extension base="ContentControl">
+                <xsd:attribute name="title"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+
+    <!-- Panels -->
+
+    <xsd:group name="Panels">
+        <xsd:choice>
+            <xsd:element name="StackPanel" type="StackPanel"/>
+            <xsd:element name="GridPanel" type="GridPanel"/>
+            <xsd:element name="DockPanel" type="DockPanel"/>
+        </xsd:choice>
+    </xsd:group>
+
+
+    <xsd:complexType name="StackPanel">
+
+    </xsd:complexType>
+
+    <xsd:complexType name="GridPanel">
+
+    </xsd:complexType>
+
+    <xsd:complexType name="DockPanel">
+
+    </xsd:complexType>
+
+
+    <!-- Controls -->
+
+    <xsd:group name="Controls">
+        <xsd:choice>
+
+        </xsd:choice>
+    </xsd:group>
+
+
+</xsd:schema>

@@ -241,6 +241,9 @@ constexpr auto base_structure_def_node_name = std::string_view{"StructureDefinit
 constexpr auto ns_node_name                 = std::string_view{"Namespace"};
 constexpr auto import_node_name             = std::string_view{"Import"};
 
+constexpr auto cinclude_node_name           = std::string_view{"CInclude"};
+constexpr auto ctype_node_name              = std::string_view{"CType"};
+
 constexpr auto syntax_tree_node_name        = std::string_view{"SyntaxTree"};
 
 constexpr auto assign_node_name             = std::string_view{"Assignment"};
@@ -254,6 +257,8 @@ constexpr auto type_attr_name               = std::string_view{"type"};
 constexpr auto value_attr_name              = std::string_view{"value"};
 constexpr auto return_attr_name             = std::string_view{"return_type"};
 constexpr auto op_attr_name                 = std::string_view{"operation"};
+
+constexpr auto ctype_attr_name              = std::string_view{"ctype"};
 
 /*
  * BaseSyntax
@@ -671,6 +676,28 @@ void NamespaceImport::xml_append_elements(xml::document& doc, xml::node& node) c
 }
 
 /*
+ * CInclude
+ */
+
+std::string_view CInclude::xml_node_name(xml::document& doc) const { return cinclude_node_name; }
+void CInclude::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseSyntax::xml_append_elements(doc, node);
+  node.append_attribute(&xml::allocate_attribute(doc, name_attr_name, name()));
+}
+
+/*
+ * CTypeDefinition
+ */
+
+std::string_view CTypeDefinition::xml_node_name(xml::document& doc) const {
+  return ctype_node_name;
+}
+void CTypeDefinition::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseDefinition::xml_append_elements(doc, node);
+  node.append_attribute(&xml::allocate_attribute(doc, ctype_attr_name, c_name()));
+}
+
+/*
  * SyntaxTree
  */
 
@@ -682,6 +709,14 @@ std::string_view SyntaxTree::xml_node_name(xml::document& doc) const {
 }
 
 void SyntaxTree::xml_append_elements(xml::document& doc, xml::node& node) const {
+  for (auto& inc : cincludes()) {
+    node.append_node(&deref(inc).xml_create_node(doc));
+  }
+
+  for (auto& type : ctypes()) {
+    node.append_node(&deref(type).xml_create_node(doc));
+  }
+
   for (auto& imprt : imports()) {
     node.append_node(&deref(imprt).xml_create_node(doc));
   }

@@ -19,12 +19,16 @@ endif()
 # Enable LTO
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 
-add_compile_definitions(
-        # Uncomment to enable compilation tracing
-        TRACE
-        # Uncomment to make code generation human readable
-        GENERATE_READABLE
-)
+
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    add_compile_definitions(
+            # Uncomment to enable compilation tracing
+            TRACE
+            # Uncomment to make code generation human readable
+            GENERATE_READABLE
+    )
+endif()
+
 
 add_subdirectory(core)
 add_subdirectory(frontend)

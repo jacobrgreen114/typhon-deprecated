@@ -97,6 +97,9 @@ const auto lexical_kind_names_ = std::unordered_map<LexicalKind, std::string_vie
 
     {LexicalKind::SymbolLessThanEqual,    "SymbolLessThanEqual"   },
     {LexicalKind::SymbolGreaterThanEqual, "SymbolGreaterThanEqual"},
+
+    {LexicalKind::KeywordCType,           "KeywordCType"          },
+    {LexicalKind::KeywordCInclude,        "KeywordCInclude"       },
 };
 
 auto to_string(LexicalKind kind) -> std::string_view {
@@ -147,8 +150,8 @@ LexicalToken::LexicalToken(const FilePosition& pos, LexicalKind kind, ValueType 
       value_{std::move(value)} {}
 
 auto& create_pos_attribute(xml::document& doc, const FilePosition& pos) {
-  auto str      = pos.to_string();
-  auto pos_str  = xml::allocate_string(doc, str);
+  auto str     = pos.to_string();
+  auto pos_str = xml::allocate_string(doc, str);
 
   return xml::allocate_attribute(doc, token_pos_attr_name, pos_str);
 }
@@ -187,11 +190,11 @@ constexpr auto tokens_node_name           = std::string_view{"Tokens"};
 constexpr auto token_source_attr_name     = std::string_view{"source"};
 
 auto TokenCollection::xml_create_node(xml::document& doc) const -> xml::node& {
-  auto& node        = xml::allocate_element(doc, token_collection_node_name);
+  auto& node       = xml::allocate_element(doc, token_collection_node_name);
   auto source_path = deref(source()).path().string();
 
-  node.append_attribute(
-      &xml::allocate_attribute(doc, token_source_attr_name, xml::allocate_string(doc, source_path)));
+  node.append_attribute(&xml::allocate_attribute(
+      doc, token_source_attr_name, xml::allocate_string(doc, source_path)));
 
   auto& tokens_node = xml::allocate_element(doc, tokens_node_name);
   for (auto& token : tokens()) {

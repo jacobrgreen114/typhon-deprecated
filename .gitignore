@@ -33,6 +33,7 @@
 
 # Output Directories
 build/
+install/
 
 # Ide Files
 .vs/

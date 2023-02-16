@@ -13,7 +13,7 @@ add_library(typhon_parser
     src/parser_def_var.cpp
     src/parser_def_func.cpp
     src/parser_def_struct.cpp
-        src/parser_def_object.cpp src/parser_def_object.hpp)
+        src/parser_def_object.cpp src/parser_def_object.hpp src/parser_c.cpp src/parser_c.hpp)
 
 target_include_directories(typhon_parser
     PUBLIC

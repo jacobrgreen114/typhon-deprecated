@@ -63,4 +63,12 @@ inline auto allocate_string(document& doc, std::string_view value) {
   return std::string_view{doc.allocate_string(value.data(), value.size()), value.size()};
 }
 
+inline auto get_node_name(const node& node) {
+  return std::string_view{node.name(), node.name_size()};
+}
+
+inline auto get_node_value(const node& node) {
+  return std::string_view{node.value(), node.value_size()};
+}
+
 }  // namespace xml
