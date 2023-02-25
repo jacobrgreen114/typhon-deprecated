@@ -76,3 +76,10 @@ auto get_operator_symbol(Operator op) -> std::string_view {
   }
   return sym->second;
 }
+
+constexpr auto include_prefix  = std::string_view{"#include \""};
+constexpr auto include_postfix = std::string_view{"\""};
+
+auto write_include(std::ostream& stream, std::string_view header) -> std::ostream& {
+  return stream << include_prefix << header << include_postfix << newline;
+}

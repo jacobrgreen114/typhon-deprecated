@@ -133,6 +133,18 @@ auto def_struct_name_handler_(ParserContext& ctx) -> ParserState {
 auto def_struct_handler_(ParserContext& ctx) -> ParserState {
   assert(is_keyword_struct(ctx.current()));
   ctx.syntax_stack.push(std::make_unique<StructDefinition>(ctx.current().pos()));
+  auto& def = ctx.get_syntax_node<StructDefinition>();
+
+  while (!ctx.token_stack.empty()) {
+    auto token = ctx.pop_token_stack();
+    if (auto opt_acc_mod = get_access_modifier(token.kind()); opt_acc_mod.has_value()) {
+      def.set_access(opt_acc_mod.value());
+    }
+    else {
+      throw_not_implemented();
+    }
+  }
+
   return ctx.move_next_state(is_identifier,
                              def_struct_name_state,
                              def_struct_error_state,

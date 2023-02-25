@@ -2,7 +2,7 @@
 
 add_executable(tyc
         source/main.cpp
-        ../../libraries/core/src/cpp/builtins.hpp)
+)
 
 target_link_libraries(tyc
     PUBLIC

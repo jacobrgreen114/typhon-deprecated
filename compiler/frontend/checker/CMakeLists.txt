@@ -2,6 +2,7 @@
 add_library(typhon_checker
         src/project_tree.cpp
         src/checker.cpp
+        src/symbol_table.cpp
 )
 
 target_include_directories(typhon_checker

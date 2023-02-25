@@ -94,7 +94,7 @@ auto is_def_modifier(const LexicalToken& token) -> bool {
 
 auto error_handler_(ParserContext& ctx) -> ParserState;
 auto unexpected_token_error_handler_(ParserContext& ctx) -> ParserState;
-auto end_handler_(ParserContext& ctx) -> ParserState;
+auto unexpected_eof_error_handler_(ParserContext& ctx) -> ParserState;
 
 auto source_import_end_eof_handler_(ParserContext& ctx) -> ParserState;
 auto source_import_end_handler_(ParserContext& ctx) -> ParserState;
@@ -126,6 +126,8 @@ auto start_handler_(ParserContext& ctx) -> ParserState;
 
 constexpr ParserState error_state                  = ParserState{error_handler_};
 constexpr ParserState unexpected_token_error_state = ParserState{unexpected_token_error_handler_};
+constexpr ParserState unexpected_eof_error_state   = ParserState{unexpected_eof_error_handler_};
+
 constexpr auto exit_state                          = ParserState{nullptr};
 
 constexpr auto source_import_end_eof_state         = ParserState{source_import_end_eof_handler_};
@@ -167,6 +169,8 @@ auto unexpected_token_error_handler_(ParserContext& ctx) -> ParserState {
   assert(false);
   exit(-1);
 }
+
+auto unexpected_eof_error_handler_(ParserContext& ctx) -> ParserState { throw_not_implemented(); }
 
 auto source_import_end_eof_handler_(ParserContext& ctx) -> ParserState {
   ctx.source->push_import(ctx.pop_syntax_node<NamespaceImport>());
@@ -251,6 +255,7 @@ auto source_ctype_end_handler_(ParserContext& ctx) -> ParserState {
 auto unknown_handler(ParserContext& ctx) -> ParserState {
   if (is_def_modifier(ctx.current())) {
     ctx.push_current_token();
+    return ctx.move_next_state(unknown_state, unexpected_eof_error_state);
   }
 
   auto kind = ctx.current().kind();

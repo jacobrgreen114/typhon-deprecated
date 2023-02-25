@@ -8,7 +8,10 @@ add_library(typhon_generator
         src/gen_var.cpp
         src/gen_func.cpp
         src/gen_struct.cpp
-        src/gen_object.cpp src/gen_object.hpp src/gen_c.cpp src/gen_c.hpp)
+        src/gen_object.cpp
+        src/gen_c.cpp
+        src/gen_pst.cpp
+)
 
 target_include_directories(typhon_generator
     PUBLIC

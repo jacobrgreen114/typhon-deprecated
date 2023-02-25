@@ -23,3 +23,5 @@ enum class GeneratedFile {
 auto mutate_type_name(std::string_view view) -> std::string_view;
 
 auto get_operator_symbol(Operator op) -> std::string_view;
+
+auto write_include(std::ostream& stream, std::string_view header) -> std::ostream&;

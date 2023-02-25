@@ -34,6 +34,7 @@ target_precompile_headers(typhon_core
         <set>
         <future>
         <execution>
+        <stdexcept>
         <cassert>
 )
 

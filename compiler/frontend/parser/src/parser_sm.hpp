@@ -64,6 +64,12 @@ class ParserContext final : public EnumeratingContext<ParserContext, LexicalToke
  public:
   auto push_current_token() -> void { token_stack.emplace(current()); }
 
+  auto pop_token_stack() -> LexicalToken {
+    auto token = token_stack.top();
+    token_stack.pop();
+    return token;
+  }
+
   auto pop_ret_state() -> ParserState { return pop_states().ret; }
 
   auto pop_end_state() -> ParserState { return pop_states().end; }

@@ -220,18 +220,20 @@ enum class Modifiers : uint8_t {
 };
 
 enum class AccessModifier : uint8_t {
+  Unspecified,
   Private,
   Module,
   Internal,
+  Public,
   Protected,
-  Public
 };
 
 auto to_string(AccessModifier modifier) -> std::string_view;
 
+auto get_access_modifier(LexicalKind kind) -> std::optional<AccessModifier>;
+
 /**
  * BaseSyntax
- * \todo implement file position of syntax
  */
 class BaseSyntax {
  public:
@@ -256,6 +258,33 @@ class BaseSyntax {
   NODISCARD constexpr auto& pos() const noexcept { return pos_; }
 
   auto xml_create_node(xml::document& doc) const -> xml::node&;
+};
+
+/**
+ * AccessSyntax
+ */
+class BaseAccessSyntax : public BaseSyntax {
+ public:
+  using Pointer = std::unique_ptr<BaseSyntax>;
+
+ private:
+  AccessModifier access_;
+
+ protected:
+  explicit constexpr BaseAccessSyntax(const SyntaxKind kind,
+                                      const FilePosition& pos,
+                                      AccessModifier access = AccessModifier::Unspecified)
+      : BaseSyntax{kind, pos},
+        access_{access} {}
+
+ public:
+  auto access() const { return access_; }
+
+  auto set_access(AccessModifier access) { access_ = access; };
+
+ protected:
+  auto xml_node_name(xml::document& doc) const -> std::string_view override;
+  auto xml_append_elements(xml::document& doc, xml::node& node) const -> void override;
 };
 
 /**
@@ -804,22 +833,19 @@ class NamespaceImport final : public BaseSyntax {
  * BaseDefinition
  * \brief Abstract base class for all type definitions
  */
-class BaseDefinition : public BaseSyntax {
+class BaseDefinition : public BaseAccessSyntax {
  public:
   using Pointer = std::unique_ptr<BaseDefinition>;
 
  private:
-  AccessModifier modifier_;
   std::string name_;
 
  protected:
   explicit BaseDefinition(SyntaxKind kind, const FilePosition& pos)
-      : BaseSyntax{kind, pos},
-        modifier_{AccessModifier::Public} {}
+      : BaseAccessSyntax{kind, pos} {}
 
   explicit BaseDefinition(SyntaxKind kind, const FilePosition& pos, std::string name)
-      : BaseSyntax{kind, pos},
-        modifier_{AccessModifier::Public},
+      : BaseAccessSyntax{kind, pos},
         name_{std::move(name)} {}
 
  public:
@@ -1027,7 +1053,7 @@ class ObjectDefinition final : public BaseStructureDefinition {
 /**
  * CInclude
  */
-class CInclude final : public BaseSyntax {
+class CInclude final : public BaseAccessSyntax {
  public:
   using Pointer = std::unique_ptr<CInclude>;
 
@@ -1036,7 +1062,7 @@ class CInclude final : public BaseSyntax {
 
  public:
   explicit CInclude(const FilePosition& pos)
-      : BaseSyntax{SyntaxKind::CInclude, pos} {}
+      : BaseAccessSyntax{SyntaxKind::CInclude, pos} {}
 
   NODISCARD auto& name() const { return name_; }
 

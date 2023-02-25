@@ -1,0 +1,17 @@
+<SymbolTable project="Typhon.Core">
+    <Namespace>
+        <CInclude name="cstdint"/>
+
+        <CType name="u8" ctype="uint8_t"/>
+        <CType name="u16" ctype="uint16_t"/>
+        <CType name="u32" ctype="uint32_t"/>
+        <CType name="u64" ctype="uint64_t"/>
+        <CType name="uword" ctype="uintptr_t"/>
+
+        <CType name="i8" ctype="int8_t"/>
+        <CType name="i16" ctype="int16_t"/>
+        <CType name="i32" ctype="int32_t"/>
+        <CType name="i64" ctype="int64_t"/>
+        <CType name="iword" ctype="intptr_t"/>
+    </Namespace>
+</SymbolTable>

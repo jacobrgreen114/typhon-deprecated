@@ -2,7 +2,6 @@
 // All Rights Reserved.
 
 __c_include "cstdint";
-__c_include "string";
 
 __c_type u8 : "uint8_t";
 __c_type u16 : "uint16_t";
@@ -18,5 +17,3 @@ __c_type iword : "uintptr_t";
 
 __c_type f32 : "float";
 __c_type f64 : "double";
-
-__c_type string : "std::string";

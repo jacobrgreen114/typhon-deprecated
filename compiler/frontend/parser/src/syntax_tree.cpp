@@ -183,11 +183,12 @@ auto get_binary_op(LexicalKind kind) -> Operator {
  */
 
 const auto access_modifier_names = std::unordered_map<AccessModifier, std::string_view>{
-    {AccessModifier::Private,   "Private"  },
-    {AccessModifier::Module,    "Module"   },
-    {AccessModifier::Internal,  "Internal" },
-    {AccessModifier::Protected, "Protected"},
-    {AccessModifier::Public,    "Public"   },
+    {AccessModifier::Unspecified, "Unspecified"},
+    {AccessModifier::Private,     "Private"    },
+    {AccessModifier::Module,      "Module"     },
+    {AccessModifier::Internal,    "Internal"   },
+    {AccessModifier::Public,      "Public"     },
+    {AccessModifier::Protected,   "Protected"  },
 };
 
 auto to_string(AccessModifier modifier) -> std::string_view {
@@ -198,10 +199,28 @@ auto to_string(AccessModifier modifier) -> std::string_view {
   return name->second;
 }
 
+auto get_access_modifier(LexicalKind kind) -> std::optional<AccessModifier> {
+  switch(kind) {
+    case LexicalKind::KeywordPrivate:
+      return AccessModifier::Private;
+    case LexicalKind::KeywordInternal:
+      return AccessModifier::Internal;
+    case LexicalKind::KeywordPublic:
+      return AccessModifier::Public;
+    default:
+      return {};
+  }
+
+
+
+  return std::optional<AccessModifier>();
+}
+
 /*
  * Xml Names
  */
 constexpr auto base_syntax_node_name        = std::string_view{"Syntax"};
+constexpr auto base_access_node_name        = std::string_view{"AccessSyntax"};
 
 constexpr auto statement_node_name          = std::string_view{"Statement"};
 constexpr auto block_node_name              = std::string_view{"StatementBlock"};
@@ -252,6 +271,7 @@ constexpr auto body_node_name               = std::string_view{"Body"};
 
 constexpr auto pos_attr_name                = std::string_view{"pos"};
 constexpr auto kind_attr_name               = std::string_view{"kind"};
+constexpr auto access_attr_name             = std::string_view{"access"};
 constexpr auto name_attr_name               = std::string_view{"name"};
 constexpr auto type_attr_name               = std::string_view{"type"};
 constexpr auto value_attr_name              = std::string_view{"value"};
@@ -278,6 +298,22 @@ auto BaseSyntax::xml_create_node(xml::document& doc) const -> xml::node& {
   auto& node = xml::allocate_element(doc, xml_node_name(doc));
   this->xml_append_elements(doc, node);
   return node;
+}
+
+/*
+ * BaseAccessSyntax
+ */
+
+std::string_view BaseAccessSyntax::xml_node_name(xml::document& doc) const {
+  return base_access_node_name;
+}
+
+void BaseAccessSyntax::xml_append_elements(xml::document& doc, xml::node& node) const {
+  BaseSyntax::xml_append_elements(doc, node);
+
+  if (access() != AccessModifier::Unspecified) {
+    node.append_attribute(&xml::allocate_attribute(doc, access_attr_name, to_string(access())));
+  }
 }
 
 /*
@@ -528,7 +564,7 @@ std::string_view BaseDefinition::xml_node_name(xml::document& doc) const {
 }
 
 void BaseDefinition::xml_append_elements(xml::document& doc, xml::node& node) const {
-  BaseSyntax::xml_append_elements(doc, node);
+  BaseAccessSyntax::xml_append_elements(doc, node);
 
   if (!name().empty()) {
     node.append_attribute(&xml::allocate_attribute(doc, name_attr_name, name()));
@@ -733,3 +769,4 @@ auto operator<<(std::ostream& stream, const SyntaxTree& tree) -> std::ostream& {
   doc.append_node(&tree.xml_create_node(doc));
   return stream << doc;
 }
+

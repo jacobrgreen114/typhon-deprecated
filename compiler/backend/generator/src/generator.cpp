@@ -2,34 +2,32 @@
 // All Rights Reserved.
 
 #include "generator.hpp"
-#include "gen_var.hpp"
-
-#include "paths.hpp"
-
-#include "common.hpp"
-
-#include "timer.hpp"
 
 #include "gen_var.hpp"
 #include "gen_func.hpp"
 #include "gen_struct.hpp"
 #include "gen_object.hpp"
 
-auto forward_decl_structs(std::ostream& writer, const SyntaxTree& tree, GeneratedFile file) {
+#include "gen_pst.hpp"
+
+#include "common.hpp"
+#include "timer.hpp"
+
+auto forward_decl_structs(std::ostream& writer, const SyntaxTree& tree) {
   for (auto& strc : tree.structs()) {
     writer << newline;
     write_forward_decl(writer, deref(strc));
   }
 }
 
-auto forward_decl_objects(std::ostream& writer, const SyntaxTree& tree, GeneratedFile file) {
+auto forward_decl_objects(std::ostream& writer, const SyntaxTree& tree) {
   for (auto& object : tree.objects()) {
     writer << newline;
     write_forward_decl(writer, deref(object));
   }
 }
 
-auto forward_decl_aliases(std::ostream& writer, const SyntaxTree& nodes, GeneratedFile file) {
+auto forward_decl_aliases(std::ostream& writer, const SyntaxTree& nodes) {
   // for (auto& node : nodes) {
   //   if (node->kind() == SyntaxKind::DefObject) {
   //     empty = false;
@@ -38,13 +36,13 @@ auto forward_decl_aliases(std::ostream& writer, const SyntaxTree& nodes, Generat
   // }
 }
 
-auto forward_declare_funcs(std::ostream& writer, const SyntaxTree& tree, GeneratedFile file) {
+auto forward_declare_funcs(std::ostream& writer, const SyntaxTree& tree) {
   for (auto& fn : tree.functions()) {
     write_forward_decl(writer, deref(fn));
   }
 }
 
-auto forward_declare_vars(std::ostream& writer, const SyntaxTree& tree, GeneratedFile file) {
+auto forward_declare_vars(std::ostream& writer, const SyntaxTree& tree) {
   for (auto& var : tree.variables()) {
     write_forward_decl(writer, deref(ptr_cast<VariableDefinition>(var.get())));
   }
@@ -66,16 +64,11 @@ auto forward_declare_source(std::ostream& writer, const SyntaxTree& tree) -> voi
 auto forward_declare_internal(std::ostream& writer, const SyntaxTree& tree) -> void {
   writer << "/*" << newline << " *  Forward Declarations" << newline << " */" << newline << newline;
 
-  forward_declare_vars(writer, tree, GeneratedFile::HeaderInternal);
-  //writer << newline;
-  forward_decl_structs(writer, tree, GeneratedFile::HeaderInternal);
-  //writer << newline;
-  forward_decl_objects(writer, tree, GeneratedFile::HeaderInternal);
-  //writer << newline;
+  forward_declare_vars(writer, tree);
+  forward_decl_structs(writer, tree);
+  forward_decl_objects(writer, tree);
   //forward_decl_aliases(writer, nodes);
-  //writer << newline;
-  forward_declare_funcs(writer, tree, GeneratedFile::HeaderInternal);
-  //writer << newline;
+  forward_declare_funcs(writer, tree);
 }
 
 auto write_definitions(std::ostream& writer, const SyntaxTree& source) -> void {
@@ -104,16 +97,16 @@ auto write_source_header(std::ostream& writer, const fs::path& rel_path) -> void
          << " *      Source File : " << rel_path << newline << " */" << newline << newline;
 }
 
-const auto includes = std::vector<std::string_view>{"<cstdint>"};
-
-auto write_includes(std::ostream& writer) {
-  for (auto& include : includes) {
-    writer << "#include " << include << newline;
-  }
-  if (!includes.empty()) {
-    writer << newline;
-  }
-}
+// const auto includes = std::vector<std::string_view>{"cstdint"};
+//
+// auto write_includes(std::ostream& writer) {
+//   for (auto& include : includes) {
+//     writer << "#include " << include << newline;
+//   }
+//   if (!includes.empty()) {
+//     writer << newline;
+//   }
+// }
 
 auto generate_source_file(const NameSpace& ns, const SyntaxTree& syntax_tree) -> void {
   auto& source        = deref(syntax_tree.source());
@@ -126,7 +119,7 @@ auto generate_source_file(const NameSpace& ns, const SyntaxTree& syntax_tree) ->
   TRACE_TIMER("Generator");
   write_source_header(writer, source.rel_path());
 
-  writer << "#include \"" << ns.file_name() << "\"" << newline << newline;
+  write_include(writer, ns.file_name()) << newline;
 
   forward_declare_source(writer, syntax_tree);
   write_definitions(writer, syntax_tree);
@@ -147,18 +140,20 @@ auto generate_internal_header(const NameSpace& ns, const SyntaxTree& syntax_tree
 
   for (auto& pcinclude : syntax_tree.cincludes()) {
     auto& cinclude = deref(pcinclude);
-    writer << "#include <" << cinclude.name() << '>' << newline;
+    write_include(writer, cinclude.name());
   }
 
   writer << newline;
 
+  // todo : move to seperate function
   for (auto& pctype : syntax_tree.ctypes()) {
     auto& ctype = deref(pctype);
-    writer << "using __ty_" << ctype.name() << " = " << ctype.c_name() << ';' << newline;
+    writer << "using " << identifer_prefix << ctype.name() << " = " << ctype.c_name() << ';'
+           << newline;
   }
 
   writer << newline;
-  writer << "#include \"" << ns.file_name() << '"' << newline << newline;
+  write_include(writer, ns.file_name()) << newline;
 
   forward_declare_internal(writer, syntax_tree);
 }
@@ -170,15 +165,12 @@ auto generate_namespace_header(const ProjectConfig& config, const NameSpace& ns)
   writer << "#pragma once" << newline << newline;
 
   if (ns.parent()) {
-    writer << "#include \"" << deref(ns.parent()).file_name() << '"' << newline;
-  } else {
-    // writer << "#include \"../../__builtins.hpp\"" << newline << newline;
+    write_include(writer, deref(ns.parent()).file_name());
   }
 
   for (auto& ptree : ns.trees()) {
     auto& tree = deref(ptree);
-    writer << "#include \"" << deref(tree.source()).gen_header_internal_path().filename().string()
-           << '"' << newline;
+    write_include(writer, deref(tree.source()).gen_header_internal_path().filename().string());
   }
 }
 
@@ -215,15 +207,25 @@ auto write_cmake_source_paths(const ProjectConfig& config,
   }
 }
 
+constexpr auto cmake_minimim_version = std::string_view{"cmake_minimum_required(VERSION 3.20)"};
+
+constexpr auto cmake_project_prefix  = std::string_view{"project( "};
+constexpr auto cmake_project_postfix = std::string_view{" )"};
+
+constexpr auto cmake_exe_prefix      = std::string_view{"add_executable( "};
+constexpr auto cmake_lib_prefix      = std::string_view{"add_library( "};
+
+constexpr auto cmake_lists_file_name = std::string_view{"CMakeLists.txt"};
+
 auto generate_cmake(const ProjectConfig& config, const ProjectTree& source) -> void {
-  const auto cmake_file_path = config.dir_build() / "CMakeLists.txt";
+  const auto cmake_file_path = config.dir_build() / cmake_lists_file_name;
 
   auto writer                = std::ofstream{cmake_file_path};
-  writer << "cmake_minimum_required(VERSION 3.20)" << newline << newline << "project( "
-         << config.name() << " )" << newline << newline;
+  writer << cmake_minimim_version << newline << newline;
+  writer << cmake_project_prefix << config.name() << cmake_project_postfix << newline << newline;
 
-  auto bin         = fs::absolute(config.dir_binary());
-  auto build       = fs::absolute(config.dir_build());
+  const auto bin   = fs::absolute(config.dir_binary());
+  const auto build = fs::absolute(config.dir_build());
   auto rel_bin_dir = fs::proximate(bin, build).string();
   std::replace_if(
       rel_bin_dir.begin(), rel_bin_dir.end(), [](auto c) { return c == '\\'; }, '/');
@@ -235,11 +237,11 @@ auto generate_cmake(const ProjectConfig& config, const ProjectTree& source) -> v
   writer << "set(CMAKE_LIBRARY_OUTPUT_DIRECTORY \"${CMAKE_SOURCE_DIR}/" << rel_bin_dir << "\")"
          << newline << newline;
 
-  auto binary_type = config.binary_type();
+  const auto binary_type = config.binary_type();
   if (binary_type == BinaryType::Exe) {
-    writer << "add_executable( ";
+    writer << cmake_exe_prefix;
   } else {
-    writer << "add_library( ";
+    writer << cmake_lib_prefix;
   }
 
   writer << config.name();
@@ -263,20 +265,21 @@ auto make(const ProjectConfig& config, const fs::path& build_path) -> void {
 
   std::cout << "[Typhon] CMake Command : " << cmake_command << std::endl;
   TRACE_TIMER("CMake");
-  auto cmake_result = system(cmake_command.c_str());
+  const auto cmake_result = system(cmake_command.c_str());
   if (cmake_result != 0) {
     std::cerr << "Error : failed to configure cmake." << std::endl;
     exit(-1);
   }
 }
 
+// todo : build command needs to be implemented for different build systems
 auto build(const ProjectConfig& config, const fs::path& build_path) -> void {
   const auto solution_file = build_path / config.name() += ".sln";
-  const auto build_command = std::string{"msbuild "} + '"' + solution_file.string() + '"';
+  const auto build_command = std::string{"msbuild \""} + solution_file.string() + '"';
 
   std::cout << "[Typhon] Build Command : " << build_command << std::endl;
   TRACE_TIMER("Build");
-  auto compile_result = system(build_command.c_str());
+  const auto compile_result = system(build_command.c_str());
   if (compile_result != 0) {
     std::cerr << "Error : failed to compile." << std::endl;
     exit(-1);
@@ -289,8 +292,9 @@ auto compile(const ProjectConfig& config) -> void {
   build(config, build_path);
 }
 
-auto generate(const ProjectConfig& config, const ProjectTree& source) -> void {
-  generate(config, deref(source.root()));
-  generate_cmake(config, source);
+auto generate(const ProjectConfig& config, const ProjectTree& project_tree) -> void {
+  generate(config, deref(project_tree.root()));
+  generate_public_symbol_table(config, project_tree);
+  generate_cmake(config, project_tree);
   compile(config);
 }

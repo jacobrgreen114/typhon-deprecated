@@ -3,7 +3,7 @@
 
 namespace Demo;
 
-struct iVec3 {
+public struct iVec3 {
 	var mut x : f32;
 	var mut y : f32;
 	var mut z : f32;
